@@ -85,3 +85,99 @@ test('Date instance for updated is accepted (gray-matter parses YAML dates)', ()
     { ...VALID, updated: new Date('2026-08-04') }, 'test-blueprint', TAXONOMY);
   assert.deepEqual(errors, []);
 });
+
+const fsForFixtures = require('node:fs');
+const os = require('node:os');
+const pathForFixtures = require('node:path');
+
+const {
+  validateBody, validateManifest, scanCredentials, validateBlueprintDir,
+} = require('./validate.js');
+
+function makeBlueprintDir(files) {
+  const parent = fsForFixtures.mkdtempSync(pathForFixtures.join(os.tmpdir(), 'bp-'));
+  const dir = pathForFixtures.join(parent, 'test-blueprint');
+  fsForFixtures.mkdirSync(dir);
+  for (const [name, content] of Object.entries(files)) {
+    fsForFixtures.writeFileSync(pathForFixtures.join(dir, name), content);
+  }
+  return dir;
+}
+
+const FULL_BODY = [
+  '## Problem Statement', 'text',
+  '## Architecture', 'text',
+  '## Implementation Guide', 'text',
+  '## App Manifest', 'text',
+].join('\n\n');
+
+const VALID_FM_YAML = `---
+title: Test Blueprint
+slug: test-blueprint
+description: A test blueprint.
+products: [rtms]
+verticals: [healthcare]
+difficulty: intermediate
+estimated_time: 2-4 hours
+author: Test Author
+status: draft
+updated: 2026-08-04
+github_repo: https://github.com/zoom/example
+---`;
+
+test('body with all four required sections passes', () => {
+  assert.deepEqual(validateBody(FULL_BODY), []);
+});
+
+test('each missing required section is an error', () => {
+  const errors = validateBody('## Problem Statement\n\ntext\n');
+  for (const section of ['Architecture', 'Implementation Guide', 'App Manifest']) {
+    assert.ok(errors.some((e) => e.includes(section)), `expected error for ${section}`);
+  }
+});
+
+test('missing manifest.json is an error', () => {
+  const dir = makeBlueprintDir({});
+  assert.ok(validateManifest(dir).some((e) => e.includes('missing manifest.json')));
+});
+
+test('invalid manifest JSON is an error', () => {
+  const dir = makeBlueprintDir({ 'manifest.json': '{ nope' });
+  assert.ok(validateManifest(dir).some((e) => e.includes('not valid JSON')));
+});
+
+test('empty-object manifest is an error', () => {
+  const dir = makeBlueprintDir({ 'manifest.json': '{}' });
+  assert.ok(validateManifest(dir).some((e) => e.includes('non-empty')));
+});
+
+test('credential scan flags AWS key and PEM header', () => {
+  const dir = makeBlueprintDir({
+    'index.md': 'key is AKIAIOSFODNN7EXAMPLE',
+    'notes.txt': '-----BEGIN RSA PRIVATE KEY-----',
+  });
+  const errors = scanCredentials(dir);
+  assert.equal(errors.length, 2);
+});
+
+test('validateBlueprintDir passes a complete valid blueprint', () => {
+  const dir = makeBlueprintDir({
+    'index.md': `${VALID_FM_YAML}\n\n${FULL_BODY}\n`,
+    'manifest.json': '{ "name": "test-app" }',
+  });
+  const { errors, warnings } = validateBlueprintDir(dir, {
+    products: new Set(['rtms']),
+    verticals: new Set(['healthcare']),
+    solution_types: new Set(),
+  });
+  assert.deepEqual(errors, []);
+  assert.deepEqual(warnings, []);
+});
+
+test('validateBlueprintDir errors on missing index.md', () => {
+  const dir = makeBlueprintDir({});
+  const { errors } = validateBlueprintDir(dir, {
+    products: new Set(), verticals: new Set(), solution_types: new Set(),
+  });
+  assert.ok(errors.some((e) => e.includes('missing index.md')));
+});

@@ -73,4 +73,71 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
   return { errors, warnings };
 }
 
-module.exports = { loadTaxonomy, validateFrontmatter };
+const REQUIRED_SECTIONS = [
+  'Problem Statement', 'Architecture', 'Implementation Guide', 'App Manifest',
+];
+
+// Parse + non-empty check only for now. Field-level checks land during
+// integration weeks once the Marketplace manifests API schema is confirmed.
+const CREDENTIAL_PATTERNS = [
+  /AKIA[0-9A-Z]{16}/,
+  /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+  /(?:api[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*["'][A-Za-z0-9_-]{20,}["']/i,
+];
+
+function validateBody(body) {
+  const errors = [];
+  for (const section of REQUIRED_SECTIONS) {
+    const heading = new RegExp(`^## ${section}\\s*$`, 'm');
+    if (!heading.test(body)) errors.push(`missing required section: ## ${section}`);
+  }
+  return errors;
+}
+
+function validateManifest(dir) {
+  const manifestPath = path.join(dir, 'manifest.json');
+  if (!fs.existsSync(manifestPath)) return ['missing manifest.json'];
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)
+      || !Object.keys(manifest).length) {
+      return ['manifest.json must be a non-empty JSON object'];
+    }
+  } catch (err) {
+    return [`manifest.json is not valid JSON: ${err.message}`];
+  }
+  return [];
+}
+
+function scanCredentials(dir) {
+  const errors = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    const content = fs.readFileSync(path.join(dir, entry.name), 'utf8');
+    for (const pattern of CREDENTIAL_PATTERNS) {
+      if (pattern.test(content)) {
+        errors.push(`possible credential in ${entry.name} (matched ${pattern})`);
+      }
+    }
+  }
+  return errors;
+}
+
+function validateBlueprintDir(dir, taxonomy) {
+  const slug = path.basename(dir);
+  const indexPath = path.join(dir, 'index.md');
+  if (!fs.existsSync(indexPath)) {
+    return { slug, errors: ['missing index.md'], warnings: [] };
+  }
+  const parsed = matter(fs.readFileSync(indexPath, 'utf8'));
+  const { errors, warnings } = validateFrontmatter(parsed.data, slug, taxonomy);
+  errors.push(...validateBody(parsed.content));
+  errors.push(...validateManifest(dir));
+  errors.push(...scanCredentials(dir));
+  return { slug, errors, warnings };
+}
+
+module.exports = {
+  loadTaxonomy, validateFrontmatter, validateBody,
+  validateManifest, scanCredentials, validateBlueprintDir,
+};
