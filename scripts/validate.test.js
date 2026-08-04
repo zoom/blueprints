@@ -181,3 +181,30 @@ test('validateBlueprintDir errors on missing index.md', () => {
   });
   assert.ok(errors.some((e) => e.includes('missing index.md')));
 });
+
+test('credential scan catches quoted JSON keys and env-style values', () => {
+  const dir = makeBlueprintDir({
+    'manifest.json': '{ "client_secret": "aB3dEfGh1jKlMnOpQrStUvWx" }',
+    'setup.md': 'ZOOM_ACCESS_TOKEN=aB3dEfGh1jKlMnOpQrStUvWx',
+  });
+  const errors = scanCredentials(dir);
+  assert.equal(errors.length, 2);
+});
+
+test('credential scan ignores documentation placeholders', () => {
+  const dir = makeBlueprintDir({
+    'index.md': 'Set api_key: "YOUR_API_KEY_GOES_RIGHT_HERE" and client_secret: "<your-client-secret-value>"',
+    '.env.example': 'ZOOM_CLIENT_SECRET=CHANGE_ME_BEFORE_DEPLOYING',
+  });
+  assert.deepEqual(scanCredentials(dir), []);
+});
+
+test('missing index.md still surfaces manifest and credential errors', () => {
+  const dir = makeBlueprintDir({ 'notes.txt': 'AKIAIOSFODNN7EXAMPLE' });
+  const { errors } = validateBlueprintDir(dir, {
+    products: new Set(), verticals: new Set(), solution_types: new Set(),
+  });
+  assert.ok(errors.some((e) => e.includes('missing index.md')));
+  assert.ok(errors.some((e) => e.includes('missing manifest.json')));
+  assert.ok(errors.some((e) => e.includes('possible credential')));
+});

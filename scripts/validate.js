@@ -82,8 +82,17 @@ const REQUIRED_SECTIONS = [
 const CREDENTIAL_PATTERNS = [
   /AKIA[0-9A-Z]{16}/,
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
-  /(?:api[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*["'][A-Za-z0-9_-]{20,}["']/i,
 ];
+
+// Key-value scan: matches quoted JSON keys ("client_secret": "...") and
+// unquoted .env-style values (ZOOM_CLIENT_SECRET=...). The [A-Z0-9_]* affixes
+// let env-style names like ZOOM_CLIENT_SECRET match; the i flag covers case.
+const SECRET_KEY_PATTERN =
+  /["']?(?:[A-Z0-9_]*(?:api[_-]?key|client[_-]?secret|access[_-]?token)[A-Z0-9_]*)["']?\s*[:=]\s*["']?([A-Za-z0-9_-]{20,})["']?/gi;
+
+// Documentation placeholders (YOUR_CLIENT_SECRET_HERE, <your-secret>, etc.)
+// are legitimate in blueprint tutorials and must not hard-error.
+const PLACEHOLDER_PATTERN = /YOUR_|EXAMPLE|PLACEHOLDER|CHANGE_?ME|xxx|</i;
 
 function validateBody(body) {
   const errors = [];
@@ -119,6 +128,13 @@ function scanCredentials(dir) {
         errors.push(`possible credential in ${entry.name} (matched ${pattern})`);
       }
     }
+    // matchAll gives fresh iteration state per call, avoiding lastIndex
+    // pitfalls with the shared global regex literal.
+    for (const match of content.matchAll(SECRET_KEY_PATTERN)) {
+      if (!PLACEHOLDER_PATTERN.test(match[0])) {
+        errors.push(`possible credential in ${entry.name} (secret-like value for a key named like api_key/client_secret/access_token)`);
+      }
+    }
   }
   return errors;
 }
@@ -126,12 +142,19 @@ function scanCredentials(dir) {
 function validateBlueprintDir(dir, taxonomy) {
   const slug = path.basename(dir);
   const indexPath = path.join(dir, 'index.md');
+  const errors = [];
+  const warnings = [];
+
   if (!fs.existsSync(indexPath)) {
-    return { slug, errors: ['missing index.md'], warnings: [] };
+    errors.push('missing index.md');
+  } else {
+    const parsed = matter(fs.readFileSync(indexPath, 'utf8'));
+    const fm = validateFrontmatter(parsed.data, slug, taxonomy);
+    errors.push(...fm.errors);
+    warnings.push(...fm.warnings);
+    errors.push(...validateBody(parsed.content));
   }
-  const parsed = matter(fs.readFileSync(indexPath, 'utf8'));
-  const { errors, warnings } = validateFrontmatter(parsed.data, slug, taxonomy);
-  errors.push(...validateBody(parsed.content));
+
   errors.push(...validateManifest(dir));
   errors.push(...scanCredentials(dir));
   return { slug, errors, warnings };
