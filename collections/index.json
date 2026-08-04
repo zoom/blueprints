@@ -1,0 +1,39 @@
+{
+  "collections": [
+    {
+      "slug": "healthcare",
+      "title": "Healthcare Blueprints",
+      "description": "Enterprise healthcare solutions built on the Zoom developer platform.",
+      "icon": "health",
+      "blueprints": ["clinical-note-generation"]
+    },
+    {
+      "slug": "finance",
+      "title": "Finance & Compliance Blueprints",
+      "description": "Financial services solutions for compliance, auditing, and real-time analysis.",
+      "icon": "finance",
+      "blueprints": ["enterprise-compliance-audit", "in-meeting-legal-assist"]
+    },
+    {
+      "slug": "customer-support",
+      "title": "Customer Support & Contact Center",
+      "description": "AI-powered contact center and customer support solutions.",
+      "icon": "support",
+      "blueprints": ["contact-center-agent-assist", "incident-response-sentiment"]
+    },
+    {
+      "slug": "enterprise",
+      "title": "Enterprise Solutions",
+      "description": "Cross-industry enterprise patterns for the Zoom developer platform.",
+      "icon": "enterprise",
+      "blueprints": ["real-time-transcription", "data-sovereignty-pii", "keyword-detection-alerts", "sdk-partner-integration"]
+    },
+    {
+      "slug": "agents",
+      "title": "AI Agents & Automation",
+      "description": "Build autonomous agents and automation on the Zoom platform.",
+      "icon": "agent",
+      "blueprints": ["ai-agent-connector-mcp", "bring-your-own-agent"]
+    }
+  ]
+}

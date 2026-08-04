@@ -1,0 +1,32 @@
+{
+  "products": [
+    { "id": "rtms", "label": "RTMS" },
+    { "id": "meeting-sdk", "label": "Meeting SDK" },
+    { "id": "video-sdk", "label": "Video SDK" },
+    { "id": "web-sdk", "label": "Web SDK" },
+    { "id": "zoom-apps", "label": "Zoom Apps" },
+    { "id": "ai-services", "label": "AI Services" },
+    { "id": "ai-services-scribe", "label": "AI Services Scribe" },
+    { "id": "team-chat", "label": "Team Chat" },
+    { "id": "phone", "label": "Zoom Phone" },
+    { "id": "contact-center", "label": "Zoom Contact Center" },
+    { "id": "webhooks", "label": "Webhooks" },
+    { "id": "mcp", "label": "MCP" }
+  ],
+  "verticals": [
+    { "id": "healthcare", "label": "Healthcare" },
+    { "id": "finance", "label": "Finance & Compliance" },
+    { "id": "customer-support", "label": "Customer Support & Contact Center" },
+    { "id": "enterprise", "label": "Enterprise" },
+    { "id": "agents", "label": "AI Agents & Automation" }
+  ],
+  "solution_types": [
+    { "id": "transcription-summarization", "label": "Transcription & Summarization" },
+    { "id": "real-time-analysis", "label": "Real-Time Analysis & Monitoring" },
+    { "id": "data-integration", "label": "Data Integration" },
+    { "id": "compliance-auditing", "label": "Compliance & Auditing" },
+    { "id": "agent-automation", "label": "Agent / Automation" },
+    { "id": "media-processing", "label": "Media Processing" },
+    { "id": "security-encryption", "label": "Security & Encryption" }
+  ]
+}
