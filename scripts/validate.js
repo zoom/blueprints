@@ -42,12 +42,13 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
     if (missing) errors.push(`missing required field: ${field}`);
   }
 
-  if (data.slug && data.slug !== dirSlug) {
+  if (data.slug != null && data.slug !== '' && data.slug !== dirSlug) {
     errors.push(`slug "${data.slug}" does not match directory "${dirSlug}"`);
   }
 
   for (const [field, allowed] of Object.entries(ENUMS)) {
-    if (data[field] && !allowed.includes(data[field])) {
+    const value = data[field];
+    if (value != null && value !== '' && !allowed.includes(value)) {
       errors.push(`${field} must be one of: ${allowed.join(', ')}`);
     }
   }
@@ -58,7 +59,7 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
     const values = asArray(data[facet]);
     const kept = values.filter((v) => taxonomy[facet].has(v));
     for (const v of values) {
-      if (!taxonomy[facet].has(v)) warnings.push(`dropped off-vocab ${facet} value: "${v}"`);
+      if (!taxonomy[facet].has(v)) warnings.push(`off-vocab ${facet} value (ignored): "${v}"`);
     }
     if (REQUIRED_FACETS.includes(facet) && values.length && !kept.length) {
       errors.push(`${facet} has no valid values after vocabulary check`);

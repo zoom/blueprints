@@ -53,6 +53,15 @@ test('invalid enum values are errors', () => {
   assert.ok(res.errors.some((e) => e.includes('status')));
 });
 
+test('falsy non-null enum and slug values are rejected, not skipped', () => {
+  let res = validateFrontmatter({ ...VALID, difficulty: false }, 'test-blueprint', TAXONOMY);
+  assert.ok(res.errors.some((e) => e.includes('difficulty')));
+  res = validateFrontmatter({ ...VALID, status: 0 }, 'test-blueprint', TAXONOMY);
+  assert.ok(res.errors.some((e) => e.includes('status')));
+  res = validateFrontmatter({ ...VALID, slug: false }, 'test-blueprint', TAXONOMY);
+  assert.ok(res.errors.some((e) => e.includes('slug')));
+});
+
 test('off-vocab facet value warns; error only if none survive', () => {
   const mixed = validateFrontmatter(
     { ...VALID, products: ['rtms', 'not-a-product'] }, 'test-blueprint', TAXONOMY);

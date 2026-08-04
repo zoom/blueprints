@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Curated, use-case-driven reference implementations for the Zoom developer platform.",
-  "engines": { "node": ">=20" },
+  "engines": { "node": ">=22" },
   "scripts": {
     "validate": "node scripts/validate.js",
     "test": "node --test \"scripts/**/*.test.js\""
