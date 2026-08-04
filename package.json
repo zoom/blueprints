@@ -6,7 +6,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "validate": "node scripts/validate.js",
-    "test": "node --test scripts/"
+    "test": "node --test \"scripts/**/*.test.js\""
   },
   "dependencies": {
     "gray-matter": "^4.0.3"
