@@ -139,10 +139,10 @@ This guide walks through setting up Arlo's sales coaching functionality locally.
 
 Want to skip local setup? Deploy the full stack to the cloud with one click:
 
-| Platform | What You Get | Deploy |
-|----------|--------------|--------|
-| **Render** | Backend, Frontend, RTMS service, Postgres database | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/zoom/arlo) |
-| **Railway** | Backend, Frontend, RTMS service, Postgres database | [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/zoom/arlo) |
+| Platform | What You Get |
+|----------|--------------|
+| [**Deploy to Render**](https://render.com/deploy?repo=https://github.com/zoom/arlo) | Backend, Frontend, RTMS service, Postgres database |
+| [**Deploy to Railway**](https://railway.app/template?template=https://github.com/zoom/arlo) | Backend, Frontend, RTMS service, Postgres database |
 
 After deploying, you'll need to:
 1. Create a Zoom App in the [Marketplace](https://marketplace.zoom.us/)
