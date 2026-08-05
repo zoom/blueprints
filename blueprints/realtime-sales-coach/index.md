@@ -22,9 +22,9 @@ partners: ["anthropic", "openai"]
 license_required: false
 stack: "Node · Express · React · Postgres"
 deploy:
-  - { label: "Vercel", url: "" }
+  - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https://github.com/zoom/arlo" }
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
-  - { label: "Railway", url: "" }
+  - { label: "Railway", url: "https://railway.app/new/template?template=https://github.com/zoom/arlo" }
 ---
 
 ## Problem Statement
