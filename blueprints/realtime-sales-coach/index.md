@@ -2,9 +2,10 @@
 title: "Real-Time Sales Coach in Zoom Meetings"
 slug: "realtime-sales-coach"
 description: >-
-  Coach sellers while the deal is still on the call: stream live transcripts
-  with RTMS into an in-meeting Zoom App that surfaces AI talking points,
-  objection handling, and next steps in real time.
+  Build a real-time sales coaching panel that lives inside Zoom meetings.
+  Stream transcripts with RTMS, analyze for qualification signals and competitor
+  mentions, and surface AI coaching cues while the deal is still on the line.
+  No bot participant. No post-call delay.
 products: ["rtms", "zoom-apps"]
 verticals: ["sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
