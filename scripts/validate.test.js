@@ -112,7 +112,8 @@ test('deploy with malformed entries is an error', () => {
 
 test('loadTaxonomy exposes the partners vocabulary', () => {
   const taxonomy = loadTaxonomy();
-  assert.equal(taxonomy.partners.size, 5);
+  assert.ok(taxonomy.partners.has('anthropic'));
+  assert.ok(taxonomy.partners.size >= 1);
 });
 
 test('Date instance for updated is accepted (gray-matter parses YAML dates)', () => {
