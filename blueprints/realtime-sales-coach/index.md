@@ -22,7 +22,9 @@ partners: ["anthropic", "openai"]
 license_required: false
 stack: "Node · Express · React · Postgres"
 deploy:
+  - { label: "Vercel", url: "" }
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
+  - { label: "Railway", url: "" }
 ---
 
 ## Problem Statement
@@ -49,7 +51,11 @@ A real-time sales coaching application that:
 - Tracks commitments and next steps as they're spoken
 - Displays coaching cues in a Surface App panel visible only to the seller
 
-![Arlo Sales Qualification](https://raw.githubusercontent.com/zoom/arlo/main/docs/images/sales-qualification.png)
+<p align="center">
+  <img src="/blueprints/realtime-sales-coach/images/deal-qualification.png" alt="Deal Qualification" width="400" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="/blueprints/realtime-sales-coach/images/competitor-intel.png" alt="Competitor Intel" width="400" />
+</p>
 
 ### See It In Action
 
@@ -66,13 +72,11 @@ Arlo runs as a **Zoom Surface App** inside the meeting. The seller sees a sideba
 **RTMS** handles the connection between the meeting and your backend. When the host enables transcription, RTMS streams transcript segments over a WebSocket. Your backend receives each segment as it's spoken, typically within 300-500ms.
 
 ```mermaid
-graph LR
-    A[Zoom Meeting] -->|RTMS transcript stream| B[Backend]
-    A -->|Zoom Apps SDK| E[In-Meeting Panel]
-    B -->|Conversation context| C[LLM Provider]
-    C -->|Coaching cues| B
-    B -->|WebSocket push| E
-    B -->|Persist| D[(Postgres)]
+flowchart TD
+    M[Meeting] --> B[Backend]
+    B --> L[LLM]
+    B --> D[(DB)]
+    B --> P[Panel]
 ```
 
 ### Component Walkthrough
@@ -117,13 +121,13 @@ The frontend is a React application embedded in the Zoom client via the Zoom App
 
 The panel updates in real time as the conversation progresses.
 
-### Why No Bot?
+### Why No Bot Participant?
 
-Traditional meeting assistants join as a participant. A bot appears in the participant list. Everyone knows it's there.
+Traditional meeting assistants work by joining the meeting as a participant. A third-party app appears in the participant list alongside your attendees. For some use cases, that's fine. For sales calls, it can change the dynamic.
 
-RTMS works differently. The transcript stream comes directly from Zoom's infrastructure. No bot joins. No extra participant. No "Recording has started" announcement beyond the standard transcription notice.
+RTMS takes a different approach. The transcript stream comes directly from Zoom's infrastructure rather than from a separate participant. The standard transcription notice still appears to all attendees. The difference is in how the experience feels: no unfamiliar name in the participant list, no "who invited that?" moment.
 
-For sales calls, this matters. Prospects behave differently when they know they're being recorded by a third party. RTMS lets you build intelligence into the meeting without changing the meeting dynamic.
+This isn't about hiding transcription. It's about keeping the meeting focused on the conversation.
 
 ---
 

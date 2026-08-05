@@ -35,6 +35,8 @@ github_repo: ""                    # sample code lives in its own repo, linked h
 
      Body rules:
      - GitHub-flavored markdown ONLY. No JSX/MDX components.
+     - No inline style attributes on HTML elements (causes hydration errors).
+       Use width/height attributes for sizing; use &nbsp; for spacing.
      - Diagrams are ```mermaid fences (keep architecture.mmd in sync).
      - Long code blocks may be wrapped in <details> collapsibles.
      - The four H2 sections below are REQUIRED and validated by CI.

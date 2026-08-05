@@ -16,8 +16,11 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
 
 - **Markdown only.** GitHub-flavored markdown; Mermaid fences for diagrams.
   No JSX/MDX components.
+- **No inline styles on HTML elements.** The site uses MDX which causes
+  hydration errors with `style` attributes. Use `width` and `height` attributes
+  for sizing; use `&nbsp;` for spacing between elements.
 - **Customer-perspective framing.** Problem statements describe business
-  outcomes, grounded in real use cases — no hypotheticals.
+  outcomes, grounded in real use cases, not hypotheticals.
 - **Followable without external docs.** Implementation guides include real
   code with imports, config, and error handling.
 - **No Agent Skill Export section.** It is auto-generated from your content.
