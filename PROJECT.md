@@ -39,7 +39,7 @@ Definition of done: a developer who has never seen arlo can follow the Implement
 
 ## Later (scheduled, don't start yet)
 
-- **Integration weeks (Sep 15–26):** `build-catalog.js`, `generate-agent-skills.js` (auto skill export), retire the sample blueprints in the site repo (= flip `BLUEPRINTS_SOURCE` default to `repo`), **Blueprints entry point in the developers.zoom.us site nav** (header dropdown). ~~Site fetch script~~ ~~Mermaid renderer~~ — done early, see above
+- **Integration weeks (Sep 15–26):** `build-catalog.js`, `generate-agent-skills.js` (auto skill export), **Blueprints entry point in the developers.zoom.us site nav** (header dropdown). ~~Site fetch script~~ ~~Mermaid renderer~~ ~~retire local samples~~ — done early: this repo is now the site's ONLY blueprint source; drafts render on the site until launch (`BLUEPRINTS_HIDE_DRAFTS=1` on the launch build restores published-only)
 - Verify manifests against the live **Marketplace manifests API** (create-app roundtrip, not just schema shape) — needs API access; unblocks the "one-click install" promise
 - Decide fate of the `real-time-transcription` skeleton (keep as second blueprint vs fold into catalog work)
 - Validate `collections/index.json` slugs against real blueprint dirs (typos currently 404 silently at site build)
