@@ -1,0 +1,8 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+graph LR
+    A[Zoom Meeting] -->|RTMS transcript stream| B[Backend - Node/Express]
+    A -->|Zoom Apps SDK panel| E[In-Meeting Coach UI - React]
+    B -->|Conversation context| C[LLM Provider]
+    C -->|Talking points and cues| B
+    B -->|WebSocket push| E
+    B -->|Meetings and transcripts| D[(Postgres)]

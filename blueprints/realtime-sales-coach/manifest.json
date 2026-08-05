@@ -1,0 +1,22 @@
+{
+  "display_information": {
+    "display_name": "Real-Time Sales Coach",
+    "description": "In-meeting sales coaching with live RTMS transcription",
+    "long_description": "Streams live meeting transcripts with RTMS (no bot required) and surfaces AI coaching cues — talking points, objection handling, next steps — inside the Zoom meeting via a Zoom App panel."
+  },
+  "oauth_information": {
+    "usage": "USER_OPERATION",
+    "development_redirect_uri": "https://your-dev-url.example.com/api/auth/callback",
+    "production_redirect_uri": "https://your-app.example.com/api/auth/callback",
+    "oauth_allow_list": ["https://your-app.example.com"],
+    "scopes": [
+      { "scope": "zoomapp:inmeeting", "optional": false },
+      { "scope": "meeting:read:meeting", "optional": false },
+      { "scope": "user:read", "optional": true }
+    ],
+    "scope_description": "In-meeting panel access, meeting read for RTMS transcription, optional user profile for personalization."
+  },
+  "features": {
+    "products": ["ZOOM_MEETING"]
+  }
+}
