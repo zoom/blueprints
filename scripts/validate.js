@@ -164,3 +164,26 @@ module.exports = {
   loadTaxonomy, validateFrontmatter, validateBody,
   validateManifest, scanCredentials, validateBlueprintDir,
 };
+
+function main() {
+  const taxonomy = loadTaxonomy();
+  const args = process.argv.slice(2);
+  const targets = args.length
+    ? args.map((p) => path.resolve(p))
+    : fs.readdirSync(path.join(ROOT, 'blueprints'), { withFileTypes: true })
+        .filter((e) => e.isDirectory() && !e.name.startsWith('_'))
+        .map((e) => path.join(ROOT, 'blueprints', e.name));
+
+  let failed = false;
+  for (const dir of targets) {
+    const { slug, errors, warnings } = validateBlueprintDir(dir, taxonomy);
+    for (const w of warnings) console.warn(`  WARN  ${slug}: ${w}`);
+    for (const e of errors) console.error(`  FAIL  ${slug}: ${e}`);
+    if (errors.length) failed = true;
+    else console.log(`  OK    ${slug}${warnings.length ? ` (${warnings.length} warning(s))` : ''}`);
+  }
+  if (!targets.length) console.log('  no blueprints to validate');
+  process.exit(failed ? 1 : 0);
+}
+
+if (require.main === module) main();
