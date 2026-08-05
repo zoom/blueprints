@@ -52,8 +52,8 @@ An AI-powered meeting notetaker that:
 - Displays everything in a Surface App panel visible to participants
 
 <div align="center">
-  <img src="/blueprints/ai-meeting-notetaker/images/live-transcript.png" alt="Live Transcript View" width="640" />
-  <img src="/blueprints/ai-meeting-notetaker/images/meeting-summary.png" alt="AI Meeting Summary" width="640" />
+  <img src="/blueprints/ai-meeting-notetaker/images/notetaker-q-decisions.png" alt="Open Questions and Decisions" width="640" />
+  <img src="/blueprints/ai-meeting-notetaker/images/notetaker-summary.png" alt="AI Meeting Summary" width="640" />
 </div>
 
 ### See It In Action
