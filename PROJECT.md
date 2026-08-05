@@ -10,7 +10,8 @@
 - ✅ Repo scaffolded: template, taxonomy, collections, validation (24 tests), CI on every PR
 - ✅ Exemplar swapped: **`realtime-sales-coach`** (grounded in [zoom/arlo](https://github.com/zoom/arlo)) is the flagship; `real-time-transcription` skeleton kept for now
 - ✅ Partners vocabulary + `deploy` shape validation
-- ✅ Site fetch integration (pulled forward from Sep): dev-docs pulls this repo at build time behind `BLUEPRINTS_SOURCE=repo`, maps the schema, renders Mermaid — staging can demo real content with `BLUEPRINTS_SHOW_DRAFTS=1`
+- ✅ Site integration complete (pulled forward from Sep): **this repo is now the site's ONLY blueprint source.** dev-docs pulls it at build time, maps the schema, and renders Mermaid diagrams. Drafts are visible on the site until launch — your merged draft is demoable immediately
+- ⚠ Gotcha: Zoom's push-time secret scanner matches key-shaped strings even in docs and test fixtures. Fake keys in examples must be obvious placeholders (`YOUR_KEY_HERE`), never realistic-looking values
 - 🔜 Team outlines due **Aug 18**; drafts Aug 25–Sep 5
 
 ## Handoff: write the `realtime-sales-coach` blueprint (due Aug 15)
@@ -36,6 +37,7 @@ Definition of done: a developer who has never seen arlo can follow the Implement
 | 3 | Align all manifests to the real Zoom app schema (arlo-style `display_information`/`oauth_information`/`features`) — template + `real-time-transcription` still use the old placeholder shape — and add manifest field-level validation | — | this week (~1 hr) |
 | 4 | Editorial review skill(s): codify problem-statement + implementation-guide standards for reviewers | Michael + editorial | before drafts (Aug 25) |
 | 5 | Update the catalog table in the project spec (exemplar row still says real-time-transcription) | Michael | editorial call |
+| 6 | Add the fake-credentials-must-be-placeholders rule to CONTRIBUTING (see gotcha above) | — | ~5 min |
 
 ## Later (scheduled, don't start yet)
 
