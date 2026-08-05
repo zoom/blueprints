@@ -23,7 +23,7 @@ license_required: false
 stack: "Node · Express · React · Postgres"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
-  - { label: "Railway", url: "https://railway.app/new/template?template=https://github.com/zoom/arlo" }
+  - { label: "Railway", url: "https://railway.app/template?template=https://github.com/zoom/arlo" }
 ---
 
 ## Problem Statement
@@ -200,7 +200,8 @@ Keep this terminal running and note your URL.
 3. Select **General App** and name it (e.g., "Sales Coach")
 4. Copy your **Client ID** and **Client Secret**
 
-### Step 4: Configure Environment Variables
+<details>
+<summary><strong>Step 4: Configure Environment Variables</strong></summary>
 
 Edit `.env` with your values:
 
@@ -217,7 +218,10 @@ SESSION_SECRET=       # node -e "console.log(require('crypto').randomBytes(32).t
 REDIS_ENCRYPTION_KEY= # node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
 ```
 
-### Step 5: Configure Zoom App Settings
+</details>
+
+<details>
+<summary><strong>Step 5: Configure Zoom App Settings</strong></summary>
 
 In the Zoom Marketplace, configure your app:
 
@@ -240,6 +244,8 @@ In the Zoom Marketplace, configure your app:
 **Event Subscriptions:**
 - Event notification endpoint: `https://YOUR-NGROK-URL/api/rtms/webhook`
 - Events: `meeting.rtms_started`, `meeting.rtms_stopped`
+
+</details>
 
 ### Step 6: Start the Application
 
@@ -349,7 +355,8 @@ This is a simplified representation. See the full manifest in [`manifest.json`](
 
 ---
 
-## Production Considerations
+<details>
+<summary><strong>Production Considerations</strong></summary>
 
 Arlo is a reference implementation designed for learning and prototyping. Before deploying to production, consider:
 
@@ -361,7 +368,7 @@ Arlo is a reference implementation designed for learning and prototyping. Before
 | **WebSockets** | Single instance | Redis pub/sub for horizontal scaling |
 | **HTTPS** | ngrok tunnel | Load balancer with TLS termination |
 
-### Scaling WebSocket Connections
+**Scaling WebSocket Connections**
 
 Each active meeting maintains a WebSocket connection for RTMS streaming. For high-volume deployments:
 
@@ -369,13 +376,15 @@ Each active meeting maintains a WebSocket connection for RTMS streaming. For hig
 - Implement connection affinity or sticky sessions at the load balancer
 - Monitor connection counts and implement graceful degradation
 
-### Data Retention
+**Data Retention**
 
 Transcript data may contain sensitive business information. Consider:
 
 - Retention policies aligned with your compliance requirements
 - User controls for deleting meeting data
 - Encryption for data at rest and in transit
+
+</details>
 
 ---
 
