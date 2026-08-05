@@ -24,7 +24,7 @@ license_required: false
 stack: "Node · Express · React · Postgres"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
-  - { label: "Railway", url: "https://railway.app/template?template=https://github.com/zoom/arlo" }
+  - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
 ---
 
 ## Problem Statement
@@ -142,7 +142,9 @@ Want to skip local setup? Deploy the full stack to the cloud with one click:
 | Platform | What You Get |
 |----------|--------------|
 | [**Deploy to Render**](https://render.com/deploy?repo=https://github.com/zoom/arlo) | Backend, Frontend, RTMS service, Postgres database |
-| [**Deploy to Railway**](https://railway.app/template?template=https://github.com/zoom/arlo) | Backend, Frontend, RTMS service, Postgres database |
+| [**Deploy to Railway**](https://railway.app/new?repo=https://github.com/zoom/arlo) | Backend, Frontend, RTMS service, Postgres database |
+
+Both platforms offer free tiers. You'll need to create an account if you don't have one.
 
 After deploying, you'll need to:
 1. Create a Zoom App in the [Marketplace](https://marketplace.zoom.us/)
