@@ -51,11 +51,10 @@ A real-time sales coaching application that:
 - Tracks commitments and next steps as they're spoken
 - Displays coaching cues in a Surface App panel visible only to the seller
 
-<p align="center">
-  <img src="/blueprints/realtime-sales-coach/images/deal-qualification.png" alt="Deal Qualification" width="400" />
-  &nbsp;&nbsp;&nbsp;
-  <img src="/blueprints/realtime-sales-coach/images/competitor-intel.png" alt="Competitor Intel" width="400" />
-</p>
+<div align="center">
+  <img src="/blueprints/realtime-sales-coach/images/deal-qualification.png" alt="Deal Qualification" width="640" />
+  <img src="/blueprints/realtime-sales-coach/images/competitor-intel.png" alt="Competitor Intel" width="640" />
+</div>
 
 ### See It In Action
 
@@ -72,11 +71,12 @@ Arlo runs as a **Zoom Surface App** inside the meeting. The seller sees a sideba
 **RTMS** handles the connection between the meeting and your backend. When the host enables transcription, RTMS streams transcript segments over a WebSocket. Your backend receives each segment as it's spoken, typically within 300-500ms.
 
 ```mermaid
-flowchart TD
-    M[Meeting] --> B[Backend]
-    B --> L[LLM]
-    B --> D[(DB)]
-    B --> P[Panel]
+graph LR
+    A[Zoom Meeting] -->|RTMS stream| B[Your Server]
+    B -->|Transcript context| C[LLM]
+    C -->|Coaching cues| B
+    B -->|Store| D[(Database)]
+    B -->|WebSocket| E[In-Meeting Panel]
 ```
 
 ### Component Walkthrough
