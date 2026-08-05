@@ -26,7 +26,7 @@
       "title": "Enterprise Solutions",
       "description": "Cross-industry enterprise patterns for the Zoom developer platform.",
       "icon": "enterprise",
-      "blueprints": ["real-time-transcription", "data-sovereignty-pii", "keyword-detection-alerts", "sdk-partner-integration"]
+      "blueprints": ["realtime-sales-coach", "real-time-transcription", "data-sovereignty-pii", "keyword-detection-alerts", "sdk-partner-integration"]
     },
     {
       "slug": "agents",

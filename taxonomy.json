@@ -18,6 +18,7 @@
     { "id": "finance", "label": "Finance & Compliance" },
     { "id": "customer-support", "label": "Customer Support & Contact Center" },
     { "id": "enterprise", "label": "Enterprise" },
+    { "id": "sales", "label": "Sales" },
     { "id": "agents", "label": "AI Agents & Automation" }
   ],
   "solution_types": [
