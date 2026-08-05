@@ -25,7 +25,7 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
 
 ## Adding vocabulary
 
-New product, vertical, or solution type? Add an `{ "id", "label" }` entry to
+New product, vertical, solution type, or partner? Add an `{ "id", "label" }` entry to
 `taxonomy.json` in your PR — no code changes needed.
 
 ## Timeline (V1)

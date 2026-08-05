@@ -28,5 +28,12 @@
     { "id": "agent-automation", "label": "Agent / Automation" },
     { "id": "media-processing", "label": "Media Processing" },
     { "id": "security-encryption", "label": "Security & Encryption" }
+  ],
+  "partners": [
+    { "id": "anthropic", "label": "Anthropic" },
+    { "id": "openai", "label": "OpenAI" },
+    { "id": "aws", "label": "AWS" },
+    { "id": "vercel", "label": "Vercel" },
+    { "id": "render", "label": "Render" }
   ]
 }

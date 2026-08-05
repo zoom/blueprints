@@ -20,12 +20,16 @@ const ENUMS = {
 const FACETS = ['products', 'verticals', 'solution_types'];
 const REQUIRED_FACETS = ['products', 'verticals'];
 
+// partners is a vocabulary but NOT a facet: it never participates in the
+// required-facet degrade policy below.
+const VOCABULARIES = [...FACETS, 'partners'];
+
 const asArray = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
 
 function loadTaxonomy(root = ROOT) {
   const raw = JSON.parse(fs.readFileSync(path.join(root, 'taxonomy.json'), 'utf8'));
   const ids = {};
-  for (const key of FACETS) {
+  for (const key of VOCABULARIES) {
     ids[key] = new Set((raw[key] || []).map((entry) => entry.id));
   }
   return ids;
@@ -64,6 +68,25 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
     if (REQUIRED_FACETS.includes(facet) && values.length && !kept.length) {
       errors.push(`${facet} has no valid values after vocabulary check`);
     }
+  }
+
+  // Unknown partners warn only — the vocabulary guards display names, not
+  // publishability. Guard: callers may pass a taxonomy without partners.
+  const knownPartners = taxonomy.partners || new Set();
+  for (const partner of asArray(data.partners)) {
+    if (!knownPartners.has(partner)) {
+      warnings.push(`unknown partner id (ignored): "${partner}"`);
+    }
+  }
+
+  // deploy, when present, must be [{ label, url }] — non-empty label,
+  // string url (empty is fine; placeholders are legitimate in drafts).
+  if (data.deploy != null) {
+    const entries = Array.isArray(data.deploy) ? data.deploy : null;
+    const wellFormed = entries && entries.every((e) => e && typeof e === 'object'
+      && !Array.isArray(e) && typeof e.label === 'string' && e.label !== ''
+      && typeof e.url === 'string');
+    if (!wellFormed) errors.push('deploy entries must be { label, url } objects');
   }
 
   if (!data.github_repo) {

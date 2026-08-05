@@ -3,12 +3,13 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { validateFrontmatter } = require('./validate.js');
+const { validateFrontmatter, loadTaxonomy } = require('./validate.js');
 
 const TAXONOMY = {
   products: new Set(['rtms', 'ai-services-scribe']),
   verticals: new Set(['healthcare', 'enterprise']),
   solution_types: new Set(['transcription-summarization']),
+  partners: new Set(['anthropic', 'aws']),
 };
 
 const VALID = {
@@ -78,6 +79,40 @@ test('empty github_repo warns but does not error', () => {
     { ...VALID, github_repo: '' }, 'test-blueprint', TAXONOMY);
   assert.deepEqual(errors, []);
   assert.ok(warnings.some((w) => w.includes('github_repo')));
+});
+
+test('known partner passes with no warnings', () => {
+  const { errors, warnings } = validateFrontmatter(
+    { ...VALID, partners: ['anthropic'] }, 'test-blueprint', TAXONOMY);
+  assert.deepEqual(errors, []);
+  assert.deepEqual(warnings, []);
+});
+
+test('unknown partner warns but does not error', () => {
+  const { errors, warnings } = validateFrontmatter(
+    { ...VALID, partners: ['anthropc'] }, 'test-blueprint', TAXONOMY);
+  assert.deepEqual(errors, []);
+  assert.ok(warnings.some((w) => w.includes('anthropc')));
+});
+
+test('deploy with { label, url } entries passes', () => {
+  const { errors } = validateFrontmatter(
+    { ...VALID, deploy: [{ label: 'Vercel', url: '' }] }, 'test-blueprint', TAXONOMY);
+  assert.deepEqual(errors, []);
+});
+
+test('deploy with malformed entries is an error', () => {
+  let res = validateFrontmatter(
+    { ...VALID, deploy: ['vercel'] }, 'test-blueprint', TAXONOMY);
+  assert.ok(res.errors.some((e) => e.includes('deploy')));
+  res = validateFrontmatter(
+    { ...VALID, deploy: [{ label: '', url: 'x' }] }, 'test-blueprint', TAXONOMY);
+  assert.ok(res.errors.some((e) => e.includes('deploy')));
+});
+
+test('loadTaxonomy exposes the partners vocabulary', () => {
+  const taxonomy = loadTaxonomy();
+  assert.equal(taxonomy.partners.size, 5);
 });
 
 test('Date instance for updated is accepted (gray-matter parses YAML dates)', () => {
