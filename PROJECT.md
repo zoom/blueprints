@@ -3,7 +3,7 @@
 > Living doc. Update when you pick up or finish a task (PR welcome).
 > Project context: the full spec lives with the site team (`BLUEPRINTS_CONTEXT.md` in the dev-docs repo). Timeline dates in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-05
 
 ## Where we are
 
@@ -38,7 +38,8 @@ Definition of done: a developer who has never seen arlo can follow the Implement
 
 ## Later (scheduled, don't start yet)
 
-- **Integration weeks (Sep 15–26):** `build-catalog.js`, `generate-agent-skills.js` (auto skill export), site fetch script (`GITHUB_TOKEN` auth), site Mermaid renderer, retire the sample blueprints in the site repo
+- **Integration weeks (Sep 15–26):** `build-catalog.js`, `generate-agent-skills.js` (auto skill export), site fetch script (`GITHUB_TOKEN` auth), site Mermaid renderer, retire the sample blueprints in the site repo, **Blueprints entry point in the developers.zoom.us site nav** (header dropdown)
+- Verify manifests against the live **Marketplace manifests API** (create-app roundtrip, not just schema shape) — needs API access; unblocks the "one-click install" promise
 - Decide fate of the `real-time-transcription` skeleton (keep as second blueprint vs fold into catalog work)
 - Validate `collections/index.json` slugs against real blueprint dirs (typos currently 404 silently at site build)
 - Credential scan is top-level-files only — recurse if blueprints grow subdirectories
