@@ -22,7 +22,6 @@ partners: ["anthropic", "openai"]
 license_required: false
 stack: "Node · Express · React · Postgres"
 deploy:
-  - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https://github.com/zoom/arlo" }
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
   - { label: "Railway", url: "https://railway.app/new/template?template=https://github.com/zoom/arlo" }
 ---
@@ -134,6 +133,26 @@ This isn't about hiding transcription. It's about keeping the meeting focused on
 ## Implementation Guide
 
 This guide walks through setting up Arlo's sales coaching functionality locally. By the end, you'll have a working in-meeting sales coach connected to live Zoom meetings.
+
+### One-Click Deploy
+
+Want to skip local setup? Deploy the full stack to the cloud with one click:
+
+| Platform | What You Get | Deploy |
+|----------|--------------|--------|
+| **Render** | Backend, Frontend, RTMS service, Postgres database | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/zoom/arlo) |
+| **Railway** | Backend, Frontend, RTMS service, Postgres database | [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/zoom/arlo) |
+
+After deploying, you'll need to:
+1. Create a Zoom App in the [Marketplace](https://marketplace.zoom.us/)
+2. Add your `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN` to the environment variables
+3. Update your Zoom App's OAuth redirect URL to point to your deployed backend
+
+Both platforms auto-provision the database and wire up the services. Secrets are generated automatically.
+
+### Local Development
+
+If you prefer to run locally (recommended for development and customization):
 
 ### Prerequisites
 
