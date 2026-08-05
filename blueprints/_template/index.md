@@ -21,7 +21,7 @@ github_repo: ""                    # sample code lives in its own repo, linked h
 # tags: ["real-time", "hipaa"]                      # free-form
 # seo_title: "What someone would Google to find this"
 # seo_keywords: ["zoom something integration", "two to four phrases"]
-# partners: []
+# partners: ["anthropic"]                          # ids from /taxonomy.json → partners
 # demo_url: ""
 # license_required: false
 # license_note: "Requires RTMS add-on license"
