@@ -66,9 +66,15 @@ Watch a 3-minute demo of the sales coaching experience:
 
 ## Architecture
 
-Arlo runs as a **Zoom Surface App** inside the meeting. The seller sees a sidebar panel. The prospect sees nothing different.
+### The No-Bot Advantage
 
-**RTMS** handles the connection between the meeting and your backend. When the host enables transcription, RTMS streams transcript segments over a WebSocket. Your backend receives each segment as it's spoken, typically within 300-500ms.
+Traditional meeting assistants join as participants. A third-party name appears in your roster. Attendees notice. On a sales call, that changes the dynamic.
+
+This architecture takes a different approach. **RTMS streams the transcript directly from Zoom's infrastructure** — no bot participant, no unfamiliar name, no "who invited that?" moment. The standard transcription notice still appears. The difference is in how it feels: focused on the conversation, not the tooling.
+
+### Real-Time, Not Post-Call
+
+RTMS delivers transcript segments over WebSocket with sub-second latency. Your backend receives each phrase as it's spoken — typically within 300-500ms. That's fast enough for real-time coaching.
 
 ```mermaid
 graph LR
@@ -79,9 +85,21 @@ graph LR
     B -->|WebSocket| E[In-Meeting Panel]
 ```
 
+**Arlo runs as a Zoom Surface App.** The seller sees a sidebar panel. The prospect sees nothing different.
+
+### The Intelligence Layer
+
+Your backend is the orchestration point — and it's yours to customize. Swap LLM providers. Add CRM integrations. Route competitor mentions to Slack. The RTMS stream is the input; what you do with it is up to you.
+
+The core flow:
+
+1. **Ingest** — Receive RTMS transcript segments, buffer for out-of-order delivery, persist to Postgres
+2. **Analyze** — Build prompts with conversation context, call your LLM of choice, parse for signals
+3. **Deliver** — Push coaching cues to the frontend over WebSocket in real time
+
 ### Component Walkthrough
 
-**1. RTMS Transcript Stream**
+**RTMS Transcript Stream**
 
 When a meeting starts and the user enables Arlo, the Zoom client calls `startRTMS` through the Zoom Apps SDK. This triggers a webhook to your backend with connection details. Your backend then opens a WebSocket to receive transcript segments.
 
@@ -91,7 +109,7 @@ Each segment includes:
 - Start and end timestamps (milliseconds)
 - Sequence number for ordering
 
-**2. Backend Processing (Node/Express)**
+**Backend Processing (Node/Express)**
 
 The backend maintains a WebSocket connection to RTMS for each active meeting. As segments arrive, it:
 
@@ -100,7 +118,7 @@ The backend maintains a WebSocket connection to RTMS for each active meeting. As
 - Persists to Postgres for post-meeting retrieval
 - Broadcasts to connected frontend clients
 
-**3. AI Orchestration**
+**AI Orchestration**
 
 The sales coaching logic lives in the Intelligence Layer. When enough conversation context accumulates (or on explicit request), the backend:
 
@@ -109,7 +127,7 @@ The sales coaching logic lives in the Intelligence Layer. When enough conversati
 - Parses the response for qualification signals, competitor mentions, and coaching cues
 - Pushes results to the frontend via WebSocket
 
-**4. In-Meeting Surface App (React)**
+**In-Meeting Surface App (React)**
 
 The frontend is a React application embedded in the Zoom client via the Zoom Apps SDK. It connects to the backend over WebSocket and renders:
 
@@ -120,14 +138,6 @@ The frontend is a React application embedded in the Zoom client via the Zoom App
 - AI-generated coaching suggestions
 
 The panel updates in real time as the conversation progresses.
-
-### Why No Bot Participant?
-
-Traditional meeting assistants work by joining the meeting as a participant. A third-party app appears in the participant list alongside your attendees. For some use cases, that's fine. For sales calls, it can change the dynamic.
-
-RTMS takes a different approach. The transcript stream comes directly from Zoom's infrastructure rather than from a separate participant. The standard transcription notice still appears to all attendees. The difference is in how the experience feels: no unfamiliar name in the participant list, no "who invited that?" moment.
-
-This isn't about hiding transcription. It's about keeping the meeting focused on the conversation.
 
 ---
 
