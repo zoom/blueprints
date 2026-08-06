@@ -1,5 +1,6 @@
 {
     "manifest": {
+<<<<<<< HEAD
   "display_information" : {
     "display_name" : "Zoom Workplace Chatbot",
     "discover_type" : "LISTED",
@@ -412,3 +413,302 @@
   }
 }
 }
+=======
+        "display_information": {
+            "display_name": "your-app-name",
+            "discover_type": "LISTED",
+            "install_type": "APP_DIRECTORY"
+        },
+        "oauth_information": {
+            "usage": "USER_OPERATION",
+            "development_redirect_uri": "https://example.ngrok.app/auth/callback",
+            "production_redirect_uri": "",
+            "oauth_allow_list": [
+                "https://oauth.pstmn.io/v1/callback",
+                "https://example.ngrok.app/auth/callback",
+                "https://example.ngrok.app"
+            ],
+            "strict_mode": false,
+            "subdomain_strict_mode": false,
+            "scopes": [
+                {
+                    "scope": "imchat:userapp",
+                    "optional": false
+                },
+                {
+                    "scope": "team_chat:read:user_message",
+                    "optional": false
+                },
+                {
+                    "scope": "app:channel_content:write",
+                    "optional": false
+                },
+                {
+                    "scope": "user:read:user",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:meeting",
+                    "optional": false
+                },
+                {
+                    "scope": "zoomapp:inmeeting",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:meeting_audio",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:meeting_video",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:update:participant_rtms_app_status",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:meeting_transcript",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:zcc_voice_rtms_stopped",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:zcc_voice_rtms_interrupted",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:rtms_concurrency_near_limit",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:zcc_voice_rtms_started",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:rtms_interrupted",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:rtms_concurrency_limited",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:meeting_screenshare",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:meeting_chat",
+                    "optional": false
+                },
+                {
+                    "scope": "marketplace:read:app",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:rtms_started",
+                    "optional": false
+                },
+                {
+                    "scope": "rtms:read:rtms_stopped",
+                    "optional": false
+                },
+                {
+                    "scope": "docs:write:import",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:assets",
+                    "optional": false
+                },
+                {
+                    "scope": "meeting:read:search",
+                    "optional": false
+                },
+                {
+                    "scope": "docs:read:export",
+                    "optional": false
+                },
+                {
+                    "scope": "ai_companion:read:search",
+                    "optional": false
+                },
+                {
+                    "scope": "cloud_recording:read:content",
+                    "optional": false
+                },
+                {
+                    "scope": "docs:write:file",
+                    "optional": false
+                },
+                {
+                    "scope": "cloud_recording:read:list_user_recordings",
+                    "optional": false
+                }
+            ]
+        },
+        "features": {
+            "products": [
+                "ZOOM_CHAT",
+                "ZOOM_MEETING"
+            ],
+            "development_home_uri": "https://example.ngrok.app",
+            "production_home_uri": "",
+            "domain_allow_list": [
+                {
+                    "domain": "ngrok.app",
+                    "explanation": ""
+                },
+                {
+                    "domain": "appssdk.zoom.us",
+                    "explanation": ""
+                }
+            ],
+            "in_client_feature": {
+                "zoom_app_api": {
+                    "enable": true,
+                    "zoom_app_apis": [
+                        "authorize",
+                        "composeCard",
+                        "getAppContext",
+                        "getChatContext",
+                        "getRTMSStatus",
+                        "getRunningContext",
+                        "getSupportedJsApis",
+                        "getUserContext",
+                        "onAuthorized",
+                        "onRTMSStatusChange",
+                        "pauseRTMS",
+                        "resumeRTMS",
+                        "sendMessageToChat",
+                        "startRTMS",
+                        "stopRTMS"
+                    ]
+                },
+                "guest_mode": {
+                    "enable": false,
+                    "enable_test_guest_mode": false
+                },
+                "in_client_oauth": {
+                    "enable": false
+                },
+                "collaborate_mode": {
+                    "enable": false,
+                    "enable_screen_sharing": false,
+                    "enable_play_together": false,
+                    "enable_start_immediately": false,
+                    "enable_join_immediately": false
+                },
+                "team_chat_tab": {
+                    "enable_home_tab": true,
+                    "enable_channel_tab": true
+                }
+            },
+            "zoom_client_support": {
+                "mobile": {
+                    "enable": false
+                },
+                "zoom_room": {
+                    "enable": false,
+                    "enable_personal_zoom_room": false,
+                    "enable_shared_zoom_room": false,
+                    "enable_digital_signage": false,
+                    "enable_zoom_rooms_controller": false
+                },
+                "pwa_client": {
+                    "enable": false
+                }
+            },
+            "embed": {
+                "meeting_sdk": {
+                    "enable": false,
+                    "enable_device": false,
+                    "devices": []
+                },
+                "contact_center_sdk": {
+                    "enable": false
+                },
+                "phone_sdk": {
+                    "enable": false
+                }
+            },
+            "team_chat_subscription": {
+                "enable": true,
+                "enable_support_channel": false,
+                "slash_command": {
+                    "command": "zwc",
+                    "command_hints": [
+                        {
+                            "usage_hint": "General Chatbot Command",
+                            "description": "A Zoom Workplace Chatbot command"
+                        }
+                    ],
+                    "enable_add_to_channel": false,
+                    "enable_mention": false,
+                    "development_message_url": "https://example.ngrok.app/webhooks",
+                    "production_message_url": "",
+                    "sender_type": "zoom",
+                    "welcome_msg": {
+                        "title": "",
+                        "body": ""
+                    },
+                    "trust_domain_list": []
+                },
+                "shortcuts": [
+                    {
+                        "shortcut_id": "your_shortcut_id_here",
+                        "action_label": "Create note",
+                        "action_id": "create_note",
+                        "action_types": [
+                            "COMPOSE_BOX",
+                            "MESSAGE_ACTION"
+                        ],
+                        "action_usage": "DIALOG",
+                        "dialog_config": {
+                            "title": "Create a note",
+                            "size": "M"
+                        }
+                    }
+                ]
+            },
+            "event_subscription": {
+                "enable": true,
+                "events": [
+                    {
+                        "subscription_id": "your_subscription_id_here",
+                        "event_types": [
+                            "team_chat.channel_app_removed",
+                            "team_chat.channel_app_added",
+                            "contact_center.voice_rtms_interrupted",
+                            "contact_center.voice_rtms_started",
+                            "contact_center.voice_rtms_stopped",
+                            "meeting.rtms_started",
+                            "meeting.rtms_stopped",
+                            "rtms.concurrency_limited",
+                            "rtms.concurrency_near_limit",
+                            "meeting.rtms_interrupted",
+                            "webinar.rtms_started",
+                            "webinar.rtms_stopped",
+                            "webinar.rtms_interrupted"
+                        ],
+                        "development_webhook_url": "https://example.ngrok.app/webhooks",
+                        "event_usage": "EVENT_FOR_USER",
+                        "communicate_type": "WEB_HOOK"
+                    }
+                ]
+            },
+            "custom_form": {
+                "enable": false
+            },
+            "marketplace_actions": {
+                "enable": false
+            },
+            "marketplace_triggers": {
+                "enable": false
+            }
+        }
+    }
+}
+>>>>>>> 5595fe4 (draft human-in-loop)
