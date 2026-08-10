@@ -47,6 +47,13 @@ test('slug mismatch with directory is an error', () => {
   assert.ok(errors.some((e) => e.includes('does not match')));
 });
 
+test('reserved site-route slugs are rejected', () => {
+  for (const dirSlug of ['preview', 'preview-frame', 'collections']) {
+    const { errors } = validateFrontmatter({ ...VALID, slug: dirSlug }, dirSlug, TAXONOMY);
+    assert.ok(errors.some((e) => e.includes('reserved')), `expected reserved error for ${dirSlug}`);
+  }
+});
+
 test('invalid enum values are errors', () => {
   let res = validateFrontmatter({ ...VALID, difficulty: 'expert' }, 'test-blueprint', TAXONOMY);
   assert.ok(res.errors.some((e) => e.includes('difficulty')));
