@@ -23,6 +23,25 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
 - **No Agent Skill Export section.** It is auto-generated from your content.
 - **No credentials anywhere.** CI scans for keys and secrets.
 
+## Previewing your blueprint
+
+The site hosts a preview page that renders your local draft exactly as it
+will ship — nothing is pushed or uploaded; your files are read locally in
+the browser:
+
+1. Open `/blueprints/preview/` on the staging site (VPN required until
+   launch — ask Michael for the staging URL; after launch it will be at
+   `https://developers.zoom.us/blueprints/preview/`)
+2. Click **Choose blueprint folder…** and select your
+   `blueprints/<your-slug>/` directory
+3. Edit `index.md` locally and save — the preview re-renders automatically
+   (Chrome/Edge; in other browsers, re-select the folder to refresh)
+
+The panel above the preview shows the same frontmatter errors and warnings
+that CI validation and the site build would report, plus any MDX syntax
+errors (e.g. a stray `{` or `<` — markdown that GitHub tolerates but the
+site's MDX compiler rejects).
+
 ## Adding vocabulary
 
 New product, vertical, solution type, or partner? Add an `{ "id", "label" }` entry to
