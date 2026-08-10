@@ -20,6 +20,12 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
   outcomes, grounded in real use cases — no hypotheticals.
 - **Followable without external docs.** Implementation guides include real
   code with imports, config, and error handling.
+- **Images stay with the blueprint.** Put image files in your blueprint's
+  `images/` folder and reference them with **relative** paths — in the body as
+  `![alt](images/foo.png)`, or as the header via the `hero_image:` frontmatter
+  field. The site serves them at `/img/blueprints/<slug>/…`; don't hand-write
+  that path (it 404s in GitHub preview). No `hero_image`? The site generates a
+  thumbnail from your metadata. Validation errors on a ref with no file behind it.
 - **No Agent Skill Export section.** It is auto-generated from your content.
 - **No credentials anywhere.** CI scans for keys and secrets.
 

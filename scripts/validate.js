@@ -125,6 +125,21 @@ const SECRET_KEY_PATTERN =
 // are legitimate in blueprint tutorials and must not hard-error.
 const PLACEHOLDER_PATTERN = /YOUR_|EXAMPLE|PLACEHOLDER|CHANGE_?ME|xxx|</i;
 
+// Binary/media files can't hold a readable secret and would be slurped as
+// garbage UTF-8 (risking false positives) — the credential scan skips them.
+const BINARY_EXTENSIONS = new Set([
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.ico', '.pdf',
+  '.mp4', '.mov', '.webm', '.woff', '.woff2',
+]);
+
+// Markdown image refs: capture the URL up to whitespace or the closing paren,
+// so an optional "title" suffix — ![alt](path "title") — is not swept in.
+const IMAGE_MD_PATTERN = /!\[[^\]]*\]\(\s*([^)\s]+)/g;
+
+// Remote (http(s):, data:) and site-absolute (/…) refs are the author's
+// responsibility; only relative paths resolve to a file we can check on disk.
+const isRemoteOrAbsolute = (ref) => /^(?:https?:|data:|\/)/i.test(ref);
+
 function validateBody(body) {
   const errors = [];
   for (const section of REQUIRED_SECTIONS) {
@@ -153,6 +168,7 @@ function scanCredentials(dir) {
   const errors = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isFile()) continue;
+    if (BINARY_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
     const content = fs.readFileSync(path.join(dir, entry.name), 'utf8');
     for (const pattern of CREDENTIAL_PATTERNS) {
       if (pattern.test(content)) {
@@ -165,6 +181,37 @@ function scanCredentials(dir) {
       if (!PLACEHOLDER_PATTERN.test(match[0])) {
         errors.push(`possible credential in ${entry.name} (secret-like value for a key named like api_key/client_secret/access_token)`);
       }
+    }
+  }
+  return errors;
+}
+
+// Every relative image ref — hero_image (frontmatter) and body ![](…) — must
+// resolve to a file inside the blueprint dir; the site copies them verbatim to
+// /img/blueprints/<slug>/. An absent hero_image is fine (a thumbnail is
+// generated from metadata), but a set-but-broken ref is a typo we catch here.
+function validateImages(dir, data = {}, body = '') {
+  const errors = [];
+  const refs = [];
+
+  if (data.hero_image != null && data.hero_image !== '') {
+    refs.push({ ref: String(data.hero_image), where: 'hero_image' });
+  }
+  // Strip HTML comments first — a commented-out ![](…) renders nothing on the
+  // site, so it needn't resolve (this is also how template examples survive).
+  const visible = body.replace(/<!--[\s\S]*?-->/g, '');
+  for (const match of visible.matchAll(IMAGE_MD_PATTERN)) {
+    refs.push({ ref: match[1], where: `body image "${match[1]}"` });
+  }
+
+  for (const { ref, where } of refs) {
+    if (isRemoteOrAbsolute(ref)) continue;
+    const resolved = path.resolve(dir, ref);
+    // Reject ../ traversal escaping the blueprint dir before touching disk.
+    if (resolved !== dir && !resolved.startsWith(dir + path.sep)) {
+      errors.push(`${where} escapes the blueprint directory`);
+    } else if (!fs.existsSync(resolved)) {
+      errors.push(`${where === 'hero_image' ? `hero_image "${ref}"` : where} not found on disk`);
     }
   }
   return errors;
@@ -184,6 +231,7 @@ function validateBlueprintDir(dir, taxonomy) {
     errors.push(...fm.errors);
     warnings.push(...fm.warnings);
     errors.push(...validateBody(parsed.content));
+    errors.push(...validateImages(dir, parsed.data, parsed.content));
   }
 
   errors.push(...validateManifest(dir));
@@ -193,7 +241,7 @@ function validateBlueprintDir(dir, taxonomy) {
 
 module.exports = {
   loadTaxonomy, validateFrontmatter, validateBody,
-  validateManifest, scanCredentials, validateBlueprintDir,
+  validateManifest, scanCredentials, validateImages, validateBlueprintDir,
 };
 
 function main() {
