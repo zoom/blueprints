@@ -17,6 +17,9 @@ updated: 2026-08-04                # YYYY-MM-DD, bump on every edit
 github_repo: ""                    # sample code lives in its own repo, linked here
 
 # ── Optional — delete what you don't use ────────────────────────────────────
+# hero_image: images/hero.png       # header + catalog thumbnail; relative to this
+                                    # folder. Omit and the site auto-generates one
+                                    # from your metadata (title, description, tags)
 # solution_types: ["transcription-summarization"]   # ids from /taxonomy.json
 # tags: ["real-time", "hipaa"]                      # free-form
 # seo_title: "What someone would Google to find this"
@@ -37,6 +40,10 @@ github_repo: ""                    # sample code lives in its own repo, linked h
      - GitHub-flavored markdown ONLY. No JSX/MDX components.
      - Diagrams are ```mermaid fences (keep architecture.mmd in sync).
      - Long code blocks may be wrapped in <details> collapsibles.
+     - Images live in this folder's images/ subdir; reference them with a
+       RELATIVE path — ![Coaching panel](images/coaching-panel.png). The site
+       rewrites it to /img/blueprints/<slug>/…; never hand-write that /img path
+       (it 404s in GitHub preview). Validation errors on a ref with no file.
      - The four H2 sections below are REQUIRED and validated by CI.
      - Do NOT write an Agent Skill Export section — it is auto-generated
        from this content by the build pipeline. -->
