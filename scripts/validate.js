@@ -17,6 +17,10 @@ const ENUMS = {
   status: ['draft', 'review', 'published'],
 };
 
+// Route names claimed by developers.zoom.us/blueprints/* — a blueprint with
+// one of these slugs would collide with a site page.
+const RESERVED_SLUGS = new Set(['preview', 'preview-frame', 'collections']);
+
 const FACETS = ['products', 'verticals', 'solution_types'];
 const REQUIRED_FACETS = ['products', 'verticals'];
 
@@ -48,6 +52,10 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
 
   if (data.slug != null && data.slug !== '' && data.slug !== dirSlug) {
     errors.push(`slug "${data.slug}" does not match directory "${dirSlug}"`);
+  }
+
+  if (RESERVED_SLUGS.has(dirSlug)) {
+    errors.push(`slug "${dirSlug}" is reserved by the site and cannot be used`);
   }
 
   for (const [field, allowed] of Object.entries(ENUMS)) {
