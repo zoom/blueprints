@@ -29,9 +29,7 @@ The site hosts a preview page that renders your local draft exactly as it
 will ship — nothing is pushed or uploaded; your files are read locally in
 the browser:
 
-1. Open `/blueprints/preview/` on the staging site (VPN required until
-   launch — ask Michael for the staging URL; after launch it will be at
-   `https://developers.zoom.us/blueprints/preview/`)
+1. Open [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
 2. Click **Choose blueprint folder…** and select your
    `blueprints/<your-slug>/` directory
 3. Edit `index.md` locally and save — the preview re-renders automatically
