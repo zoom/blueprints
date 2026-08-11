@@ -12,6 +12,7 @@
 - **Taxonomy is use case + industry vertical, not Zoom product.** Products are tags
 - **Live demos are optional for V1** — shown when a demo URL exists, never a publishing gate
 - **Surface Apps are one supported pattern, not the preferred default.** Future blueprints should also cover CRM, dashboard, automation, and agent flows
+- **Blueprint images live with the blueprint** (`blueprints/<slug>/images/`), referenced by relative path. `hero_image` frontmatter sets the header; the site auto-generates a metadata thumbnail when it's absent. The site serves them at `/img/blueprints/<slug>/…` via a build-time path rewrite
 
 ## Where we are
 
@@ -42,7 +43,7 @@ Claim a topic by adding a row here (PR) or posting in #Blueprinters.
 |---|------|-------|------|
 | 1 | Editorial review standards: what qualifies as a blueprint, the quality bar, review criteria — final alignment before publishing anything | Michael + editorial | before drafts (Aug 25) |
 | 2 | Align all manifests to the real Zoom app schema (arlo-style `display_information`/`oauth_information`/`features`) + add field-level validation; then verify against the live Marketplace manifests API (create-app roundtrip) — validation is not yet proven end to end | — | this week (~1 hr for schema; API verify needs access) |
-| 3 | Image handling repo ↔ site: confirm structure for image paths and embedding | Michael | in flight (`blueprint-image-convention` branch) |
+| 3 | Image convention: repo half done on `blueprint-image-convention` (relative paths, `hero_image`, validation errors on broken refs, binary-safe secret scan) — **PR open, needs review/merge**. Dev-docs half: implement the `/img/blueprints/<slug>/` path rewrite + metadata fallback-thumbnail generator (contract in [spec](docs/superpowers/specs/2026-08-10-blueprint-image-convention-design.md)) | Michael + site team | this week |
 | 4 | Site rendering polish (dev-docs side): Mermaid text clipping, partner icon 404s, code block readability | Michael | pre-launch |
 | 5 | Decide: similar use case across different products — one blueprint or separate? Raised in channel, unresolved | Michael + editorial | editorial call |
 | 6 | Add the fake-credentials-must-be-placeholders rule to CONTRIBUTING (see gotcha above) | — | ~5 min |
