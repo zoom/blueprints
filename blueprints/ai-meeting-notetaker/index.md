@@ -13,7 +13,7 @@ difficulty: "intermediate"
 estimated_time: "2-4 hours"
 author: "Jen Brissman"
 status: "draft"
-updated: 2026-08-05
+updated: 2026-08-11
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://www.youtube.com/watch?v=4N-g5TgGRz0"
 tags: ["notetaker", "transcription", "real-time", "no-bot", "action-items"]
@@ -27,50 +27,32 @@ deploy:
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
 ---
 
-## Problem Statement
+This blueprint puts AI note-taking inside the meeting — no bot participant, no post-call wait.
 
-Meeting notes are a tax on attention. Someone scribbles while half-listening. Key decisions slip through. Action items get assigned but not captured. And when the meeting ends, the scramble begins: "What did we actually agree on?"
+Traditional meeting assistants join as bots. A third-party name appears in your roster. Attendees notice. For internal meetings, it's a distraction. For customer calls, it can feel invasive. And even the best post-call summaries arrive too late — by the time you read the recap, you've already context-switched to the next thing.
 
-Recording helps, but watching a 60-minute replay to find a 30-second decision isn't practical. AI summaries generated after the meeting are better, but they still arrive too late. By the time you read the recap, you've already context-switched to the next thing.
-
-The underlying problem is timing. **Meeting intelligence should arrive while you're still in the meeting** — when you can clarify, correct, and act on it.
-
-This blueprint puts AI note-taking inside the meeting.
-
-**RTMS** streams the live transcript to your backend with sub-second latency. No bot joins the call. No awkward third-party name in the participant list. Your application processes the conversation as it unfolds and surfaces summaries, action items, and key moments in a panel that participants can reference in real time.
+**[RTMS](https://developers.zoom.us/docs/rtms/)** streams the live transcript to your backend with sub-second latency. Your application processes the conversation as it unfolds and surfaces summaries, action items, and key moments in a **[Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/)** panel that participants can reference in real time. The standard transcription notice still appears. The difference is in how it feels: focused on the conversation, not the tooling.
 
 The result: participants stay engaged (no one has to be the designated note-taker), action items are captured as they're spoken, and post-meeting follow-up starts before the meeting ends.
 
-### What You'll Build
+> **Don't want to build it yourself?** Zoom offers [AI Companion](https://zoom.us/ai) with similar note-taking capabilities out of the box.
 
-An AI-powered meeting notetaker that:
+## Features
 
-- Streams live transcripts from Zoom meetings using RTMS
-- Generates rolling summaries as the conversation progresses
-- Extracts action items with owners and deadlines
-- Highlights key moments (decisions, announcements, open questions)
-- Displays everything in a Surface App panel visible to participants
+- **Live transcription** — Stream transcripts from Zoom meetings using RTMS, no bot required
+- **Rolling summaries** — Generate AI summaries as the conversation progresses, not after
+- **Action item extraction** — Capture action items with owners and deadlines as they're spoken
+- **Key moments** — Highlight decisions, announcements, and open questions
+- **In-meeting panel** — Surface everything in a sidebar visible to all participants
 
 <div align="center">
-  <img src="/blueprints/ai-meeting-notetaker/images/notetaker-q-decisions.png" alt="Open Questions and Decisions" width="640" />
-  <img src="/blueprints/ai-meeting-notetaker/images/notetaker-summary.png" alt="AI Meeting Summary" width="640" />
+  <img src="images/notetaker-q-decisions.png" alt="Open Questions and Decisions" width="640" />
+  <img src="images/notetaker-summary.png" alt="AI Meeting Summary" width="640" />
 </div>
 
-### See It In Action
-
-Watch a demo of the meeting notetaker experience:
-
-[![Meeting Notetaker Demo](https://img.youtube.com/vi/4N-g5TgGRz0/maxresdefault.jpg)](https://www.youtube.com/watch?v=4N-g5TgGRz0)
-
----
+**See it in action:** [Demo video](https://www.youtube.com/watch?v=4N-g5TgGRz0)
 
 ## Architecture
-
-### The No-Bot Advantage
-
-Traditional meeting assistants join as participants. A third-party name appears in your roster. Attendees notice. For internal meetings, it's a distraction. For customer calls, it can feel invasive.
-
-This architecture takes a different approach. **RTMS streams the transcript directly from Zoom's infrastructure** — no bot participant, no unfamiliar name, no "who invited that?" moment. The standard transcription notice still appears. The difference is in how it feels: focused on the conversation, not the tooling.
 
 ### Real-Time, Not Post-Call
 

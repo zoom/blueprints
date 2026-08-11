@@ -97,7 +97,7 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
 }
 
 const REQUIRED_SECTIONS = [
-  'Problem Statement', 'Architecture', 'Implementation Guide', 'App Manifest',
+  'Features', 'Architecture', 'Implementation Guide', 'App Manifest',
 ];
 
 // Parse + non-empty check only for now. Field-level checks land during
