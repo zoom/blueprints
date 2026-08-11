@@ -47,8 +47,8 @@ The finished application:
 Arlo ships the sales panels pre-filled with demo data so you can explore the target experience in any meeting. The [Implementation Guide](#implementation-guide) below replaces that demo data with live AI extraction.
 
 <div align="center">
-  <img src="/blueprints/realtime-sales-coach/images/deal-qualification.png" alt="Deal Qualification" width="640" />
-  <img src="/blueprints/realtime-sales-coach/images/competitor-intel.png" alt="Competitor Intel" width="640" />
+  <img src="images/deal-qualification.png" alt="Deal Qualification" width="640" />
+  <img src="images/competitor-intel.png" alt="Competitor Intel" width="640" />
 </div>
 
 Watch a 3-minute demo of the sales coaching experience:
