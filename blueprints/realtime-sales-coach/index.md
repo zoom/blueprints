@@ -27,11 +27,15 @@ deploy:
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
 ---
 
-Give every sales rep a coach that sits inside the meeting. This blueprint builds an in-meeting panel that reads the live transcript and tracks deal qualification, competitor mentions, and commitments while the conversation is happening, so reps respond to objections in the moment and managers coach without watching every call.
+Give every sales rep a coach that sits inside the meeting — no bot participant, no post-call delay.
 
 Most coaching arrives after the call, once a manager has reviewed the recording. By then the prospect has moved on, and the competitor may have already followed up. The value of that feedback decays by the hour.
 
-The build uses **RTMS** (Real-Time Media Streams) to stream the live transcript straight from Zoom's infrastructure, with no bot joining the call, and a **Zoom App** panel that only the seller sees. It's based on [Arlo](https://github.com/zoom/arlo), an open-source meeting assistant with a sales mode. Arlo provides the transcript pipeline, the panel UI, and the AI plumbing; this guide walks through how each piece works, then builds the live sales intelligence on top of them.
+This blueprint builds an in-meeting panel that streams transcripts directly from Zoom's infrastructure using **[RTMS](https://developers.zoom.us/docs/rtms/)** (Real-Time Media Streams), analyzes for qualification signals and competitor mentions with an LLM of your choice, and surfaces coaching cues in a **[Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/)** panel that only the seller sees — while the deal is still on the line. No bot joins the call; the prospect's view doesn't change.
+
+The guide walks through how to build this class of application: the transcript pipeline, the sales intelligence layer, and the in-meeting delivery. [Arlo](https://github.com/zoom/arlo) is the reference implementation — a working open-source meeting assistant you can fork, customize, or use as a pattern to build your own.
+
+> **Don't want to build it yourself?** Zoom offers [AI Companion](https://zoom.us/ai) and [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities out of the box.
 
 ## Features
 
@@ -65,15 +69,15 @@ Traditional meeting assistants join as participants, which means an unfamiliar n
 
 RTMS streams the transcript directly from Zoom's infrastructure, so nothing joins the meeting. The standard transcription notice still appears, but the roster shows only the people in the conversation. The seller sees the coaching panel as a Zoom App sidebar; the prospect's view doesn't change.
 
-### Three Services
+### Three Components
 
-Arlo is an npm-workspaces monorepo with three services plus a MySQL database:
+Any RTMS-based sales coach needs three pieces: something to receive the transcript stream, something to analyze it for sales signals, and something to display the results. How you build each is up to you.
 
-| Service | Stack | Responsibility |
-|---------|-------|----------------|
-| `frontend/` | React 18 + Zoom Apps SDK | The Surface App panel: live transcript, sales workspace, vertical-specific features |
-| `backend/` | Express + Prisma (MySQL) | OAuth (PKCE), REST API, WebSocket broadcast to panels, AI orchestration via OpenRouter |
-| `rtms/` | `@zoom/rtms` SDK | Joins RTMS streams, receives transcript callbacks, hands segments to the backend |
+| Component | Responsibility | Arlo's Implementation |
+|-----------|----------------|----------------------|
+| **Transcript service** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
+| **Backend** | Persist transcripts, orchestrate AI calls, broadcast to clients | Express + Prisma (MySQL) + OpenRouter |
+| **Frontend** | Display transcript, qualification tracker, competitor mentions | React Surface App via Zoom Apps SDK |
 
 ```mermaid
 graph LR
@@ -87,6 +91,8 @@ graph LR
 ```
 
 When RTMS starts in a meeting, Zoom sends a webhook to the backend, which verifies it and forwards it to the RTMS service. The RTMS service opens the media WebSocket to Zoom and receives transcript segments as each phrase is spoken. Segments flow to the backend, which broadcasts them to the seller's panel over its own WebSocket and persists them in the background. End-to-end latency is under a second, which is fast enough to coach with.
+
+> **Adapting this architecture:** The pattern works with any backend stack. The key requirements are: a webhook endpoint Zoom can reach, a WebSocket client for the RTMS stream, an LLM for extraction, and a way to push results to your frontend. Arlo uses Node/Express, but Python/FastAPI, Go, or Ruby would work the same way.
 
 ### The Intelligence Layer
 
@@ -102,9 +108,11 @@ The sales extraction you'll build in the Implementation Guide follows the exact 
 
 ## Implementation Guide
 
-This guide has three parts: how Arlo's transcript pipeline works (the real code, so you can rebuild the pattern in your own stack), how to build the sales intelligence layer on top of it, and a condensed setup section to run the sample.
+This guide has three parts: the transcript pipeline (how to receive and process RTMS streams), the sales intelligence layer (how to extract qualification signals, competitor mentions, and commitments), and a quickstart to run the reference implementation.
 
-### Part 1: How the Transcript Pipeline Works
+The patterns apply regardless of your stack. Code examples are from [Arlo](https://github.com/zoom/arlo), but the concepts transfer to any language or framework.
+
+### Part 1: The Transcript Pipeline
 
 #### Verify and route the webhook
 
@@ -132,6 +140,8 @@ function verifyWebhookSignature(rawBody, timestamp, signature) {
 ```
 
 Two details matter here. The route uses `express.raw()` because the signature is computed over the exact bytes Zoom sent; re-serialized JSON would produce a different signature. And Zoom's `endpoint.url_validation` challenge is handled before signature verification, since validation requests carry no signature.
+
+> **Adapting this pattern:** Every language has HMAC-SHA256 and timing-safe comparison. In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`. The logic is identical.
 
 The backend then forwards verified `rtms_started`/`rtms_stopped` events to the RTMS service over the internal Docker network with an `x-arlo-internal` header, so the RTMS service can trust them without re-verifying reserialized bytes.
 
@@ -176,6 +186,8 @@ async function handleRTMSStarted(payload) {
 ```
 
 Sessions are keyed by `rtms_stream_id`, not `meeting_uuid`, and that choice carries the failover logic: if Zoom's media server fails over, the same meeting arrives with a new stream ID, so the service tears down the old session and joins the new one. A repeated stream ID is a duplicate webhook and gets ignored. The service also handles `meeting.rtms_interrupted` by cleaning up and waiting for Zoom to send a fresh `rtms_started` when reconnection is possible.
+
+> **Adapting this pattern:** Zoom provides the `@zoom/rtms` SDK for Node. For other languages, you'll implement the WebSocket protocol directly — the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format. The session-keying and failover logic remain the same.
 
 #### Normalize and hand off
 
@@ -229,6 +241,8 @@ await prisma.transcriptSegment.upsert({
 });
 ```
 
+> **Adapting this pattern:** The "broadcast first, persist in background" pattern applies universally. Your persistence layer might be Postgres, MongoDB, or a time-series database — the key is not blocking the real-time path on disk I/O.
+
 #### Deliver to the panel
 
 The backend runs a WebSocket server (in [`backend/src/services/websocket.js`](https://github.com/zoom/arlo/blob/main/backend/src/services/websocket.js)) that requires a JWT on every connection; there is no anonymous access. The protocol is small:
@@ -242,9 +256,9 @@ Server → Client: { type: 'meeting.status',     data: { meetingId, status } }
 
 The React panel subscribes on mount and appends segments in `seqNo` order, which is why the pipeline doesn't need a reorder buffer.
 
-### Part 2: Build the Sales Intelligence Layer
+### Part 2: The Sales Intelligence Layer
 
-Arlo's sales panels (`frontend/src/features/sales/`) ship wired to demo data behind a `showDemoData` flag, so the UI is ready but the detection is not. The healthcare vertical shows the live pattern to follow: `SOAPNotesPanel` posts recent transcript to an extraction endpoint on a debounce and merges the structured result into panel state. This section builds the same loop for sales.
+With the transcript pipeline in place, you have a live stream of what's being said. Now extract sales intelligence from it: qualification signals, competitor mentions, and commitments.
 
 #### Add the extraction service
 
@@ -309,6 +323,8 @@ ${JSON.stringify(currentState)}` : ''}`;
 // Add to module.exports
 module.exports = { /* ...existing exports... */ extractSalesSignals };
 ```
+
+> **Adapting this pattern:** This works with any LLM that supports structured output — OpenAI, Anthropic, open-source models via Ollama. For higher reliability, use the provider's native JSON mode or function calling if available. The prompt is the customization point: swap BANT for MEDDIC, SPICED, or your own qualification framework.
 
 #### Expose the route
 
@@ -399,11 +415,15 @@ export default function useSalesSignals(segments, isLive, watchList) {
 
 Then pass live data into the existing components in `InMeetingView` instead of their demo state: `QualificationSignals` takes the qualification map, `CompetitorMentions` takes the mention list, and `CommitmentsPanel` takes the commitments, with `showDemoData` switched off for the sales vertical. Each detected signal carries a `seqNo` when the model can identify one, which is what makes the "jump to transcript" links work.
 
+> **Adapting this pattern:** The frontend can be React, Vue, Svelte, or vanilla JS. The Surface App constraint is that it runs inside the Zoom client via an iframe — standard web tech works, just respect the [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) requirements for authentication and context.
+
 #### Tune the extraction
 
 The system prompt in `extractSalesSignals` is the customization point. To coach against MEDDIC or SPICED instead of BANT, change the criteria list in the prompt and the `QUALIFICATION_CRITERIA` array in `frontend/src/features/sales/QualificationSignals.js`, which also holds the suggested discovery questions per criterion. The competitor watch list is user-editable in the panel and flows through the request body, so battlecard-style responses can key off the `name` field in each mention.
 
-### Part 3: Run the Sample
+### Part 3: Run the Reference Implementation
+
+[Arlo](https://github.com/zoom/arlo) implements everything above as a working application. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
 
 #### One-click deploy
 
@@ -547,10 +567,10 @@ Transcript data may contain sensitive business information. Plan retention polic
 
 ## Related Resources
 
-- [Arlo Repository](https://github.com/zoom/arlo) - Full source code and documentation
-- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) - API reference for Real-Time Media Streams
-- [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) - Building in-meeting experiences
-- [Zoom Developer Forum](https://devforum.zoom.us/) - Community support and discussions
+- [Arlo Repository](https://github.com/zoom/arlo) — Reference implementation (fork or learn from)
+- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) — API reference for Real-Time Media Streams
+- [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) — Building in-meeting experiences
+- [Zoom Developer Forum](https://devforum.zoom.us/) — Community support
 
 ---
 
@@ -562,3 +582,6 @@ This blueprint shows one path: real-time sales coaching delivered through a Surf
 - Route competitor mentions to Slack for immediate team awareness
 - Feed conversation context to an autonomous agent that drafts follow-up emails
 - Build a manager dashboard that shows live deal health across all active calls
+- Adapt for different verticals — see the [AI Meeting Notetaker blueprint](../ai-meeting-notetaker/) for a general-purpose version
+
+RTMS provides the stream. The intelligence layer is yours to build.
