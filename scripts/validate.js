@@ -97,7 +97,7 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
 }
 
 const REQUIRED_SECTIONS = [
-  'Problem Statement', 'Architecture', 'Implementation Guide', 'App Manifest',
+  'Architecture', 'Implementation Guide', 'App Manifest',
 ];
 
 // Parse + non-empty check only for now. Field-level checks land during
@@ -122,6 +122,15 @@ function validateBody(body) {
   for (const section of REQUIRED_SECTIONS) {
     const heading = new RegExp(`^## ${section}\\s*$`, 'm');
     if (!heading.test(body)) errors.push(`missing required section: ## ${section}`);
+  }
+
+  // Blueprints open with outcome-focused intro prose, not a heading.
+  // Strip HTML comments (template guidance) before checking.
+  const stripped = body.replace(/<!--[\s\S]*?-->/g, '').trim();
+  const firstHeading = stripped.search(/^#{1,6} /m);
+  const intro = (firstHeading === -1 ? stripped : stripped.slice(0, firstHeading)).trim();
+  if (!intro) {
+    errors.push('blueprint must open with intro prose (outcomes-first) before the first heading');
   }
   return errors;
 }
