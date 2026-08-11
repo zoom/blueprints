@@ -19,7 +19,7 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
   No JSX/MDX components.
 - **No inline styles on HTML elements.** The site uses MDX which causes
   hydration errors with `style` attributes. Use `width` and `height` attributes
-  for sizing; use `&nbsp;` for spacing between elements.
+  for sizing. Avoid `&nbsp;` between elements (causes nested `<p>` tags).
 - **Outcomes first.** Open with intro prose (no heading) that leads with the
   business outcomes the customer gets, grounded in real use cases, not
   hypotheticals. Problems are context, not the framing.
@@ -28,8 +28,31 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
   config, error handling. Setup/quickstart is a short section at the end.
 - **Grounded in the repo.** Every file path, endpoint, env var, and feature
   claim must match the linked sample code. No invented details.
+- **Images stay with the blueprint.** Put image files in your blueprint's
+  `images/` folder and reference them with **relative** paths — in the body as
+  `![alt](images/foo.png)`, or as the header via the `hero_image:` frontmatter
+  field. The site serves them at `/img/blueprints/<slug>/…`; don't hand-write
+  that path (it 404s in GitHub preview). No `hero_image`? The site generates a
+  thumbnail from your metadata. Validation errors on a ref with no file behind it.
 - **No Agent Skill Export section.** It is auto-generated from your content.
 - **No credentials anywhere.** CI scans for keys and secrets.
+
+## Previewing your blueprint
+
+The site hosts a preview page that renders your local draft exactly as it
+will ship — nothing is pushed or uploaded; your files are read locally in
+the browser:
+
+1. Open [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
+2. Click **Choose blueprint folder…** and select your
+   `blueprints/<your-slug>/` directory
+3. Edit `index.md` locally and save — the preview re-renders automatically
+   (Chrome/Edge; in other browsers, re-select the folder to refresh)
+
+The panel above the preview shows the same frontmatter errors and warnings
+that CI validation and the site build would report, plus any MDX syntax
+errors (e.g. a stray `{` or `<` — markdown that GitHub tolerates but the
+site's MDX compiler rejects).
 
 ## Adding vocabulary
 

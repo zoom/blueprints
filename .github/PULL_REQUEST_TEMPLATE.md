@@ -4,10 +4,29 @@
 
 ## Checklist
 
+See [STYLE_GUIDE.md](../STYLE_GUIDE.md) for detailed guidance.
+
+**Required:**
 - [ ] `npm run validate` passes locally
-- [ ] All four required sections are complete (Problem Statement, Architecture, Implementation Guide, App Manifest)
-- [ ] Architecture section includes a Mermaid diagram
-- [ ] Sample code repo is linked via `github_repo` and includes dependency management
-- [ ] Problem statement is grounded in a real use case, framed around business outcomes
-- [ ] No credentials, API keys, or customer data anywhere in the diff
+- [ ] Required sections complete (Outcome-focused intro, Architecture, Implementation Guide, App Manifest)
 - [ ] `updated` date bumped
+- [ ] No credentials, API keys, or customer data in the diff
+
+**Content quality:**
+- [ ] Intro is outcome-focused (what you'll build and why it matters)
+- [ ] Architecture leads with differentiation (why this approach matters)
+- [ ] Implementation teaches how it's built (not just clone-and-run)
+- [ ] Zoom products link to official docs (RTMS, Zoom Apps, etc.)
+
+**Formatting:**
+- [ ] Mermaid diagram in Architecture section
+- [ ] Images use relative paths (`images/screenshot.png`)
+- [ ] Collapsible `<details>` sections used for verbose config
+- [ ] No MDX issues (no inline styles, use `<div>` not `<p>` for images)
+
+**Assets:**
+- [ ] Sample code repo linked via `github_repo`
+- [ ] `manifest.json` included
+- [ ] Screenshots in `/images/` with relative paths
+- [ ] Demo video linked (if available)
+- [ ] Code links to source repo (avoid duplicating files that drift)
