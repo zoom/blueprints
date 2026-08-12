@@ -10,7 +10,7 @@ difficulty: "beginner"
 estimated_time: "1-2 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-11
+updated: 2026-08-12
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "quickstart", "vtt", "srt", "zoom-meetings"]
@@ -25,13 +25,28 @@ stack: "Node.js · Express · RTMSManager"
 
 Meeting search, quality review, notes, and AI tools all need a reliable transcript. Waiting for a recording adds delay. Building speaker ordering and subtitle files from scratch also slows down the first useful test.
 
-**Zoom Realtime Media Streams (RTMS)** sends transcript text while the meeting is running. This quickstart saves it as VTT, SRT, and plain text. It keeps the timing and speaker information, and it does not add a bot to the meeting.
+[Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) sends transcript text while the meeting is running. This quickstart saves it as [WebVTT](https://www.w3.org/TR/webvtt1/), SubRip (SRT), and plain text. It keeps the timing and speaker information, and it does not add a bot to the meeting.
 
 These files are a starting point. Search them, summarize them, attach them to a support case, or move them to your approved storage system.
 
+## Features
+
+At the end of the quickstart, you should have:
+
+- Receive a live transcript without adding a participant bot.
+- Create one VTT, SRT, and TXT file for the meeting.
+- Preserve speaker labels and relative subtitle timing.
+- Close the RTMS connection and leave readable files when the stream stops.
+
 ## Architecture
 
-Zoom tells your webhook when RTMS starts and stops. The Node.js service connects to RTMS, receives the transcript, puts complete segments in the right order, and writes three file formats into a folder for that meeting.
+### The reusable pattern
+
+Zoom tells your webhook when RTMS starts and stops. A transcript service connects to RTMS, receives timestamped segments, orders them, and writes or forwards them in the formats the next system expects.
+
+### How this sample implements it
+
+The linked [Node.js sample](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js) uses Express and RTMSManager. It appends each transcript event to three local files beneath `recordings/<meeting-uuid>/`. It uses process-wide timing and SRT counters, synchronous file writes, and local disk. Treat it as a learning sample for one meeting at a time, not as a multi-tenant transcript store.
 
 ```mermaid
 flowchart LR
@@ -47,7 +62,9 @@ flowchart LR
 
 ## Implementation Guide
 
-### 1. Install the reference sample
+### Part 1: Build the transcript pipeline
+
+#### 1. Install the reference sample
 
 Use the Node.js version required by the sample.
 
@@ -57,9 +74,11 @@ cd rtms-samples/transcript/save_transcript_js
 npm install
 ```
 
-### 2. Create a Zoom General App
+The same pipeline can write to object storage, a database, a queue, or another transcript format. Keep the meeting identifier, speaker, start time, end time, and text when you replace the local writer.
 
-Create a General App in the Zoom Marketplace and add your public webhook URL.
+#### 2. Create a Zoom General App
+
+Create a General App in the [Zoom App Marketplace](https://marketplace.zoom.us/) and add your public webhook URL.
 
 | Setting | Value |
 | --- | --- |
@@ -69,7 +88,10 @@ Create a General App in the Zoom Marketplace and add your public webhook URL.
 
 Enable RTMS for the account and meeting. Use `manifest.json` as a starting point and verify it in the target Marketplace account.
 
-### 3. Configure the service
+#### 3. Configure the service
+
+<details>
+<summary><strong>Environment variables</strong></summary>
 
 Create the environment file used by the sample.
 
@@ -78,15 +100,20 @@ ZOOM_CLIENT_ID=YOUR_ZOOM_CLIENT_ID
 ZOOM_CLIENT_SECRET=YOUR_ZOOM_CLIENT_SECRET
 ZOOM_SECRET_TOKEN=YOUR_ZOOM_WEBHOOK_SECRET_TOKEN
 PORT=3000
+WEBHOOK_PATH=/webhook
 ```
 
 Keep production values in a managed secret store. Do not place real values in documentation, logs, screenshots, or source control.
 
-### 4. Receive RTMS lifecycle events
+</details>
+
+#### 4. Receive RTMS lifecycle events
 
 Make the webhook available over HTTPS. Check every request and reply quickly. When you receive `meeting.rtms_started`, use the meeting UUID and stream details to connect to RTMS. When you receive `meeting.rtms_stopped`, save any remaining text and close the connection.
 
-### 5. Write transcript formats
+### Part 2: Write usable transcript files
+
+#### 5. Write transcript formats
 
 The sample writes meeting output beneath `recordings/<meeting-uuid>/`. Confirm that:
 
@@ -95,9 +122,21 @@ The sample writes meeting output beneath `recordings/<meeting-uuid>/`. Confirm t
 - Speaker labels are escaped before writing subtitle files.
 - Interrupted connections do not overwrite an existing transcript unexpectedly.
 
-Local files are fine for a quickstart. In production, copy completed text or files to storage that your organization manages and backs up.
+Local files are fine for a quickstart. In production, copy completed text or files to storage that your organization manages and backs up. Replace the process-wide counters with state keyed by meeting and stream before handling concurrent meetings.
 
-### 6. Test a complete meeting
+### Part 3: Run the reference implementation
+
+#### 6. Start the service
+
+Copy `.env.example` to `.env`, set the values, and run:
+
+```bash
+node index.js
+```
+
+Expose port `3000` through an HTTPS tunnel for local development, then use the resulting `/webhook` URL in Marketplace. The sample repository does not include a tested deployment template.
+
+#### 7. Test a complete meeting
 
 Run the service and start RTMS in a test meeting with at least two people speaking. Stop RTMS and open all three output files. Check punctuation, participant names, silence, reconnection, and what happens when a meeting ends unexpectedly.
 
@@ -113,4 +152,27 @@ Run the service and start RTMS in a test meeting with at least two people speaki
 
 [`manifest.json`](manifest.json) is a candidate Zoom General App manifest containing the transcript scope, callback placeholder, and RTMS started/stopped event subscriptions. Replace `YOUR_DOMAIN` with an HTTPS domain controlled by the app owner.
 
+### Scopes
+
+- `meeting:read:meeting_transcript`
+
+### Event subscriptions
+
+- `meeting.rtms_started`
+- `meeting.rtms_stopped`
+
+### Structure
+
+The manifest contains the app identity, transcript scope, OAuth callback placeholder, and the public lifecycle webhook. It does not configure transcript storage or retention; those are application responsibilities.
+
 Before publication, a human app owner must import it into the target Zoom Marketplace account, confirm the permissions and current schema, complete endpoint validation, and test it with an RTMS-enabled meeting. Passing repository validation only proves that the JSON is present and parseable; it is not Marketplace approval.
+
+## Related Resources
+
+- [Zoom RTMS documentation](https://developers.zoom.us/docs/rtms/)
+- [RTMS JavaScript SDK reference](https://zoom.github.io/rtms/js/)
+- [Save transcript sample](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js)
+
+## What Will You Build?
+
+The first goal is three readable files from one test meeting. From there, replace local disk with your approved storage, index the TXT output for search, or pass completed segments to a notes workflow. Keep the transcript writer separate from RTMS ingestion so a format or storage change does not affect the live connection.
