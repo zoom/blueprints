@@ -1,5 +1,5 @@
 ---
-title: "Meeting Agent with Search and Business Tools"
+title: "Connect Live Meeting Transcripts to MCP Tools"
 slug: "transcripts-to-mcp"
 description: >-
   Send a live Zoom Meeting transcript to your own MCP client so an AI agent can
@@ -10,7 +10,7 @@ difficulty: "advanced"
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-11
+updated: 2026-08-12
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
@@ -26,13 +26,29 @@ stack: "Node.js · TypeScript · RTMS · MCP · Chroma · Anthropic"
 
 A transcript can tell you what someone said, but it cannot look up a customer, search a knowledge base, or complete a task. A meeting agent needs a safe way to turn a spoken request into a tool call. Your team still needs to control the tools, permissions, and activity log.
 
-This design combines **Zoom Realtime Media Streams (RTMS)** with the Model Context Protocol (MCP). Live transcript text goes to an MCP client that you host. An AI router decides whether it can answer directly or needs one of the tools you allow. Separate MCP servers provide search and business actions.
+This design combines [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro). Live transcript text goes to an MCP client that you host. An AI router decides whether it can answer directly or needs one of the tools you allow. Separate MCP servers provide search and business actions.
 
 MCP connects the pieces, but it does not give the agent permission to do anything it wants. You choose the tools, sign in to each connected system, check every input, and decide which actions need a person to approve them.
 
+## Features
+
+The first end-to-end build should:
+
+- Turn live transcript text into an MCP request.
+- Discover only the tools configured for that agent.
+- Keep retrieval and business actions behind separate tool contracts.
+- Log the selected tool, checked arguments, permission result, and outcome.
+- Continue receiving transcripts when a model or tool is unavailable.
+
 ## Architecture
 
-The sample runs four TypeScript services and a Chroma database. The RTMS client receives the live transcript and sends useful text to the AI router. The router checks which MCP tools are available, calls one when needed, and returns the result.
+### The reusable pattern
+
+The reusable design has four responsibilities: transcript ingestion, model routing, MCP tool hosting, and downstream authorization. The MCP contract lets you replace a search engine or business API without changing how the agent discovers and calls tools.
+
+### How this sample implements it
+
+The linked [RTMS MCP client sample](https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client) uses TypeScript, [Anthropic](https://docs.anthropic.com/), the MCP TypeScript SDK, and [Chroma](https://docs.trychroma.com/) for vector search. It runs an RTMS client, an LLM router, a retrieval tool server, and a demonstration Zoom OpenAPI tool server as separate processes. Chroma runs as a fifth local service.
 
 The included Zoom OpenAPI tool server is a demo and returns mock data. Replace it with real, authenticated API calls before using customer data.
 
@@ -51,7 +67,9 @@ flowchart LR
 
 ## Implementation Guide
 
-### 1. Install the reference services
+### Part 1: Build the transcript-to-MCP path
+
+#### 1. Install the reference services
 
 Use the Node.js version required by the sample and a local or managed Chroma database.
 
@@ -70,11 +88,11 @@ Install dependencies separately in these directories:
 | `tools-zoom-openapi-server` | Example business API tools | `5001` |
 | Chroma | Vector storage | `8000` |
 
-The source defaults both the client and router to port `3000`. Set the client to `3001` so the processes can run together.
+The source defaults both the client and router to port `3000`. Set the client to `3001` so the processes can run together. Each TypeScript project has its own `package.json`; run `npm install` in each project you plan to start.
 
-### 2. Create the Zoom app
+#### 2. Create the Zoom app
 
-Create a Zoom General App with the RTMS transcript scope. Subscribe its public webhook to the lifecycle events below.
+Create a Zoom General App in the [Zoom App Marketplace](https://marketplace.zoom.us/) with the RTMS transcript scope. Subscribe its public webhook to the lifecycle events below.
 
 | Setting | Value |
 | --- | --- |
@@ -84,7 +102,10 @@ Create a Zoom General App with the RTMS transcript scope. Subscribe its public w
 
 Enable RTMS for the account and test meeting. Import `manifest.json` only as a starting point and verify it in Marketplace.
 
-### 3. Configure each process
+#### 3. Configure each process
+
+<details>
+<summary><strong>Environment variables</strong></summary>
 
 Give each service its own environment file or set of secrets. The linked sample lists the exact variable names. You will need values like these:
 
@@ -100,7 +121,11 @@ PORT=3001
 
 Never copy key-shaped example values from sample files into Blueprint content. Use managed secrets in deployed environments.
 
-### 4. Start the tool layer
+</details>
+
+### Part 2: Add controlled tools
+
+#### 4. Start the tool layer
 
 Start Chroma, ingest a small non-sensitive test collection, then start the retrieval MCP server. Start the business API MCP server with mock operations first.
 
@@ -112,23 +137,37 @@ Before connecting a real business system, add:
 - An allowlist of operations the meeting agent may request.
 - Human approval for actions that change or delete data.
 
-### 5. Start the router and RTMS client
+The sample uses Chroma for semantic storage. You may use another vector database or search service if it can implement the same retrieval tool contract. Keep credentials and tenant filters inside the tool server, not in the model prompt.
+
+#### 5. Start the router and RTMS client
 
 Start the AI router on port `3000`, then start the RTMS client on `3001`. Only the webhook needs to be public over HTTPS. Keep the MCP services on a private network unless you have added strong authentication.
 
 The webhook must check every request and reply quickly. Handle transcripts and tool calls in the background so a slow tool cannot block RTMS.
 
-### 6. Test tool selection
+#### 6. Test tool selection
 
 Start RTMS in a test meeting. Say something that should get a direct answer, something that should search the knowledge base, and something that should suggest a business action. Check that the router picks only the expected tools and rejects invalid inputs.
 
 For each call, record the relevant transcript text, chosen tool, checked inputs, permission result, response time, and outcome. Remove confidential content from logs.
 
-### 7. Replace demonstration tools
+#### 7. Replace demonstration tools
 
 The sample's Zoom OpenAPI tool server is not ready for production. Replace its mock answers with an approved API client and the correct OAuth sign-in flow. Request only the permissions needed by the MCP tools you keep.
 
 You can replace Chroma or Anthropic too. Keep the MCP tool definitions stable so each part can change without forcing you to rebuild everything else.
+
+### Part 3: Run the reference implementation
+
+#### 8. Start the services in order
+
+Start Chroma, the retrieval server, the mock business-tool server, the LLM router, and the RTMS client. The sample README contains the per-directory commands; each Node.js process starts with `npm start`.
+
+Only expose the RTMS client's webhook. Keep the router, MCP servers, and Chroma on a private network. The repository does not include a tested deployment template, service authentication, or production process supervisor for this sample.
+
+#### 9. Verify the boundary
+
+Confirm that retrieval works against test data and that business actions still return mock values. The sample proves transcript routing and MCP tool selection. It does not prove production Zoom API calls, downstream OAuth, human approval, tenant isolation, or durable audit storage.
 
 ### Production considerations
 
@@ -142,4 +181,28 @@ You can replace Chroma or Anthropic too. Keep the MCP tool definitions stable so
 
 [`manifest.json`](manifest.json) is a candidate General App manifest for live transcript access and RTMS lifecycle events. It does not grant permissions to the systems behind the MCP servers; configure those credentials and scopes independently.
 
+### Zoom scope
+
+- `meeting:read:meeting_transcript`
+
+### Event subscriptions
+
+- `meeting.rtms_started`
+- `meeting.rtms_stopped`
+
+### Structure
+
+The Zoom manifest configures transcript ingestion only. MCP server credentials, tool schemas, model access, and downstream scopes belong in the external application and connected systems.
+
 A human app owner must verify the manifest in the target Zoom Marketplace account, replace the callback and webhook domains, confirm the current scope and event names, and review the final permission set. The production owner must also approve every MCP tool contract and downstream authorization model.
+
+## Related Resources
+
+- [Zoom RTMS documentation](https://developers.zoom.us/docs/rtms/)
+- [Model Context Protocol documentation](https://modelcontextprotocol.io/docs/getting-started/intro)
+- [RTMS MCP client sample](https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client)
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
+
+## What Will You Build?
+
+A useful first extension is replacing one mock tool with a read-only operation from a system your team already uses. Keep its authorization and tenant checks inside the tool server. Once that path is reliable, add approval for a narrow write action or replace Chroma with your existing search platform without changing the transcript pipeline.
