@@ -1,0 +1,8 @@
+flowchart LR
+    A[Zoom Meeting] -->|Mixed audio via RTMS| B[Node.js audio bridge]
+    B -->|Resample 48 kHz to 24 kHz PCM| C[OpenAI Realtime session]
+    C -->|Approved MCP tool call| D[Zoom hosted MCP server]
+    D -->|Authorized meeting or document result| C
+    C -->|Text and tool results in reference sample| E[Customer agent UI or workflow]
+    C -.->|Optional synthesized audio| F[Approved meeting audio output adapter]
+    F -.->|Not implemented by reference sample| A
