@@ -16,11 +16,9 @@ github_repo: "https://github.com/zoom/rtms-samples"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom meeting live transcript api"]
 ---
 
-## Problem Statement
-
 Enterprises record meetings and wait — for the recording to process, for the
 transcript to land, for someone to read it. The value of a conversation decays
-by the hour. <!-- Expand: real use-case grounding, business outcome framing. -->
+by the hour. <!-- Expand: lead with the outcome, real use-case grounding. -->
 
 ## Architecture
 
