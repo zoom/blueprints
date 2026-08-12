@@ -22,8 +22,6 @@ license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
 stack: "Node.js · Express · RTMSManager · FFmpeg · Amazon S3"
 ---
 
-## Problem Statement
-
 Some organizations need to keep meeting media in their own storage for retention rules, quality review, media processing, or an existing data platform. Saving recordings on one application server does not scale well and makes files easier to lose. It also makes company-wide access and deletion rules harder to enforce.
 
 [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) sends live audio and video to your backend. The sample saves the stream, uses [FFmpeg](https://ffmpeg.org/documentation.html) to create playable files, and uploads the finished files to [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html). You control the bucket, encryption, access, retention period, and anything that happens to the files later.
@@ -191,7 +189,7 @@ Test short and long meetings, interrupted RTMS sessions, an unavailable S3 endpo
 
 The manifest configures Zoom media access and the lifecycle webhook. S3 bucket, region, IAM, encryption, and retention settings stay in the customer environment.
 
-A human app owner must verify the current Marketplace schema and exact scopes, justify the collection of both media types, validate the webhook, and test account-level RTMS settings. Security and compliance owners must approve the bucket, key, consent, access, and retention policies before any production meeting is archived.
+The app owner must verify the current Marketplace schema and exact scopes, justify the collection of both media types, validate the webhook, and test account-level RTMS settings. Security and compliance owners must approve the bucket, key, consent, access, and retention policies before any production meeting is archived.
 
 ## Related Resources
 
