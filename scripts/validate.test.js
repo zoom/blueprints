@@ -148,7 +148,7 @@ function makeBlueprintDir(files) {
 }
 
 const FULL_BODY = [
-  '## Problem Statement', 'text',
+  'This blueprint describes the outcomes teams can achieve with the solution.',
   '## Architecture', 'text',
   '## Implementation Guide', 'text',
   '## App Manifest', 'text',
@@ -168,12 +168,19 @@ updated: 2026-08-04
 github_repo: https://github.com/zoom/example
 ---`;
 
-test('body with all four required sections passes', () => {
+test('body with intro prose and all three required sections passes', () => {
   assert.deepEqual(validateBody(FULL_BODY), []);
 });
 
+test('body must open with intro prose before the first heading', () => {
+  const headingFirstBody = FULL_BODY.replace(/^.*?\n\n/, '');
+  assert.ok(validateBody(headingFirstBody).includes(
+    'blueprint must open with intro prose (outcomes-first) before the first heading',
+  ));
+});
+
 test('each missing required section is an error', () => {
-  const errors = validateBody('## Problem Statement\n\ntext\n');
+  const errors = validateBody('Outcome-focused intro prose.\n');
   for (const section of ['Architecture', 'Implementation Guide', 'App Manifest']) {
     assert.ok(errors.some((e) => e.includes(section)), `expected error for ${section}`);
   }
