@@ -21,13 +21,11 @@ license_note: "Requires RTMS and a Zoom App configured for the in-meeting experi
 stack: "Zoom Apps SDK · Node.js · RTMS · Customer inference service · HLS"
 ---
 
-## Problem Statement
-
 Fraud and security teams may need to spot suspicious audio or video while an important meeting is still happening. A review after the meeting may come too late to stop an impersonation attempt or a harmful instruction.
 
-This blueprint sends [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio and video to a detection service that you choose. You can use a commercial API or host your own model from [Hugging Face](https://huggingface.co/docs/inference-endpoints/). A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) shows the result to an authorized person in the meeting.
+This blueprint sends [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio and video to a detection service that you choose. You can use a commercial API or host your own model from [Hugging Face](https://huggingface.co/docs/inference-endpoints/). A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) shows the result to an authorized reviewer in the meeting.
 
-Deepfake detection is not certain. A high score is not proof that someone is trying to deceive you. Results can change with the language, microphone, camera, connection quality, lighting, person, or type of attack. Use the result as one clue in a human review. Do not let it make serious decisions by itself.
+Deepfake detection is not certain. A high score is not proof that someone is trying to deceive you. Results can change with the language, microphone, camera, connection quality, lighting, participant, or type of attack. Use the result as one signal in a documented fraud-review process. Do not use the score as an automatic decision.
 
 ## Features
 
@@ -37,7 +35,7 @@ The review experience needs to:
 - Send only that participant's configured audio and video windows to inference.
 - Show video and audio results separately with model and service status.
 - Distinguish an unavailable model from a low-confidence result.
-- Keep a person responsible for the final decision.
+- Keep final decisions within the approved fraud-review policy.
 
 ## Architecture
 
@@ -176,7 +174,7 @@ The sample repository does not include the inference service, a tested one-click
 
 #### 8. Test under realistic conditions
 
-Create a test set that people have agreed you can use. Include normal participants, approved synthetic media, different devices and languages, poor lighting, weak connections, and compressed media. Measure how often the model is wrong at your proposed threshold. Also test slow responses and service outages.
+Create an approved test set. Include normal participants, approved synthetic media, different devices and languages, poor lighting, weak connections, and compressed media. Measure how often the model is wrong at your proposed threshold. Also test slow responses and service outages.
 
 Choose the production threshold from those test results and your organization's risk policy. Do not choose it from this document or from one successful demo.
 
@@ -205,9 +203,9 @@ Choose the production threshold from those test results and your organization's 
 
 ### Zoom Apps configuration
 
-Enable the SDK capabilities used by the frontend and allow the app domain plus `https://appssdk.zoom.us/`. The manifest is a starting point; Marketplace capability and domain settings still require manual verification.
+Enable the SDK capabilities used by the frontend and allow the app domain plus `https://appssdk.zoom.us/`. The manifest is a starting point; Marketplace capability and domain settings require separate verification.
 
-A human app owner must verify the current Marketplace schema, exact scopes, in-client APIs, redirect and webhook URLs, and domain allowlist. Qualified reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before publication or production deployment.
+The app owner must verify the current Marketplace schema, exact scopes, in-client APIs, redirect and webhook URLs, and domain allowlist. Security, privacy, legal, and AI-risk reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before publication or production deployment.
 
 ## Related Resources
 
@@ -218,4 +216,4 @@ A human app owner must verify the current Marketplace schema, exact scopes, in-c
 
 ## What Will You Build?
 
-Keep the first deployment to one selected participant and informational results visible only to an authorized reviewer. You can replace either model independently, send results to a security case system, or add an audit record that captures the model version and reviewed media window. Keep the human decision and escalation policy outside the score calculation.
+Keep the first deployment to one selected participant and informational results visible only to an authorized reviewer. You can replace either model independently, send results to a security case system, or add an audit record that captures the model version and reviewed media window. Keep escalation and final action outside the score calculation.
