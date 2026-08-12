@@ -1,19 +1,19 @@
 ---
-title: "Real-Time Sales Coach in Zoom Meetings"
+title: "Real-Time Sales Coach in Meetings"
 slug: "realtime-sales-coach"
 description: >-
   Build a real-time sales coaching panel that lives inside Zoom meetings.
   Stream transcripts with RTMS, analyze for qualification signals and competitor
-  mentions, and surface AI coaching cues while the deal is still on the line.
-  No bot participant. No post-call delay.
+  mentions, and surface AI coaching cues while the deal is still on the line,
+  with no bot in the meeting and no post-call delay.
 products: ["rtms", "zoom-apps"]
 verticals: ["sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 difficulty: "intermediate"
-estimated_time: "2-4 hours"
+estimated_time: "4-6 hours"
 author: "Jen Brissman"
 status: "draft"
-updated: 2026-08-05
+updated: 2026-08-11
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://www.youtube.com/watch?v=LKpZAe5_A8o"
 tags: ["sales", "coaching", "real-time", "no-bot"]
@@ -21,42 +21,39 @@ seo_title: "How to build a real-time sales coaching app on Zoom"
 seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant app", "rtms sales call intelligence", "build sales assistant zoom api"]
 partners: ["anthropic", "openai"]
 license_required: false
-stack: "Node · Express · React · Postgres"
+stack: "Node · Express · React · MySQL"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
 ---
 
-## Problem Statement
+Give every sales rep a coach that sits inside the meeting — no bot participant, no post-call delay.
 
-Sales coaching happens after the call. Managers review recordings, flag missed opportunities, and share feedback in CRM notes or 1:1s. By the time a rep hears "you didn't ask about budget," the prospect has moved on. The competitor may have already followed up.
+Most coaching arrives after the call, once a manager has reviewed the recording. By then the prospect has moved on, and the competitor may have already followed up. The value of that feedback decays by the hour.
 
-Revenue intelligence platforms help by analyzing recorded calls and surfacing patterns. But the insight still arrives too late. The value of a conversation decays by the hour. A coaching moment that could have saved the deal becomes a lesson for next time.
+This blueprint builds an in-meeting panel that streams transcripts directly from Zoom's infrastructure using **[RTMS](https://developers.zoom.us/docs/rtms/)** (Real-Time Media Streams), analyzes for qualification signals and competitor mentions with an LLM of your choice, and surfaces coaching cues in a **[Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/)** panel that only the seller sees — while the deal is still on the line. No bot joins the call; the prospect's view doesn't change.
 
-The underlying problem is timing. Reps need coaching during the call, not after it. The moment a prospect raises an objection is exactly when a seller needs the right response. The moment a competitor gets mentioned is when context matters most.
+The guide walks through how to build this class of application: the transcript pipeline, the sales intelligence layer, and the in-meeting delivery. [Arlo](https://github.com/zoom/arlo) is the reference implementation — a working open-source meeting assistant you can fork, customize, or use as a pattern to build your own.
 
-This blueprint puts coaching inside the meeting.
+> **Don't want to build it yourself?** Zoom offers [AI Companion](https://zoom.us/ai) and [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities out of the box.
 
-**RTMS** streams the live transcript to your backend with sub-second latency. No bot joins the call. No recording delay. Your application analyzes the conversation as it unfolds and pushes coaching cues directly into an in-meeting panel that only the seller sees.
+## Features
 
-The result: reps respond to objections with confidence, qualification signals get tracked automatically, and managers coach without watching every call.
+The finished application:
 
-### What You'll Build
+- Streams live meeting transcripts over RTMS, with no bot participant in the roster
+- Tracks deal qualification (budget, authority, need, timeline) with a live score, detected signals, and suggested discovery questions
+- Watches a configurable competitor list and logs each mention with sentiment
+- Captures commitments and next steps as they're spoken
+- Alerts the rep to filler-word streaks in real time
+- Generates summaries, action items, and transcript Q&A from the same stream
 
-A real-time sales coaching application that:
-
-- Streams live transcripts from Zoom meetings using RTMS
-- Analyzes conversation for qualification signals (budget, authority, need, timeline)
-- Detects competitor mentions and surfaces relevant battlecards
-- Tracks commitments and next steps as they're spoken
-- Displays coaching cues in a Surface App panel visible only to the seller
+Arlo ships the sales panels pre-filled with demo data so you can explore the target experience in any meeting. The [Implementation Guide](#implementation-guide) below replaces that demo data with live AI extraction.
 
 <div align="center">
-  <img src="/blueprints/realtime-sales-coach/images/deal-qualification.png" alt="Deal Qualification" width="640" />
-  <img src="/blueprints/realtime-sales-coach/images/competitor-intel.png" alt="Competitor Intel" width="640" />
+  <img src="images/deal-qualification.png" alt="Deal Qualification" width="640" />
+  <img src="images/competitor-intel.png" alt="Competitor Intel" width="640" />
 </div>
-
-### See It In Action
 
 Watch a 3-minute demo of the sales coaching experience:
 
@@ -68,334 +65,501 @@ Watch a 3-minute demo of the sales coaching experience:
 
 ### The No-Bot Advantage
 
-Traditional meeting assistants join as participants. A third-party name appears in your roster. Attendees notice. On a sales call, that changes the dynamic.
+Traditional meeting assistants join as participants, which means an unfamiliar name in the roster and a "who invited that?" moment at the top of the call. On a sales call, that changes the dynamic.
 
-This architecture takes a different approach. **RTMS streams the transcript directly from Zoom's infrastructure** — no bot participant, no unfamiliar name, no "who invited that?" moment. The standard transcription notice still appears. The difference is in how it feels: focused on the conversation, not the tooling.
+RTMS streams the transcript directly from Zoom's infrastructure, so nothing joins the meeting. The standard transcription notice still appears, but the roster shows only the people in the conversation. The seller sees the coaching panel as a Zoom App sidebar; the prospect's view doesn't change.
 
-### Real-Time, Not Post-Call
+### Three Components
 
-RTMS delivers transcript segments over WebSocket with sub-second latency. Your backend receives each phrase as it's spoken — typically within 300-500ms. That's fast enough for real-time coaching.
+Any RTMS-based sales coach needs three pieces: something to receive the transcript stream, something to analyze it for sales signals, and something to display the results. How you build each is up to you.
+
+| Component | Responsibility | Arlo's Implementation |
+|-----------|----------------|----------------------|
+| **Transcript service** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
+| **Backend** | Persist transcripts, orchestrate AI calls, broadcast to clients | Express + Prisma (MySQL) + OpenRouter |
+| **Frontend** | Display transcript, qualification tracker, competitor mentions | React Surface App via Zoom Apps SDK |
 
 ```mermaid
 graph LR
-    A[Zoom Meeting] -->|RTMS stream| B[Your Server]
-    B -->|Transcript context| C[LLM]
-    C -->|Coaching cues| B
-    B -->|Store| D[(Database)]
-    B -->|WebSocket| E[In-Meeting Panel]
+    Z[Zoom Meeting] -->|1. webhook| B[Backend]
+    B -->|2. forward| R[RTMS Service]
+    Z -->|3. media WS| R
+    R -->|4. segments| B
+    B -->|5. WS broadcast| P[Seller's Panel]
+    B --> D[(MySQL)]
+    B <--> L[OpenRouter LLM]
 ```
 
-**Arlo runs as a Zoom Surface App.** The seller sees a sidebar panel. The prospect sees nothing different.
+When RTMS starts in a meeting, Zoom sends a webhook to the backend, which verifies it and forwards it to the RTMS service. The RTMS service opens the media WebSocket to Zoom and receives transcript segments as each phrase is spoken. Segments flow to the backend, which broadcasts them to the seller's panel over its own WebSocket and persists them in the background. End-to-end latency is under a second, which is fast enough to coach with.
+
+> **Adapting this architecture:** The pattern works with any backend stack. The key requirements are: a webhook endpoint Zoom can reach, a WebSocket client for the RTMS stream, an LLM for extraction, and a way to push results to your frontend. Arlo uses Node/Express, but Python/FastAPI, Go, or Ruby would work the same way.
 
 ### The Intelligence Layer
 
-Your backend is the orchestration point — and it's yours to customize. Swap LLM providers. Add CRM integrations. Route competitor mentions to Slack. The RTMS stream is the input; what you do with it is up to you.
+The backend is the orchestration point, and it's yours to customize: swap LLM providers, add CRM integrations, or route competitor mentions to Slack. Arlo calls models through [OpenRouter](https://openrouter.ai/) (free models work without an API key; premium models like Claude or GPT-4o need one), and all AI features follow the same shape:
 
-The core flow:
+1. **Collect** recent transcript context from the live segment stream
+2. **Extract** with a structured-output prompt that returns JSON
+3. **Deliver** the parsed result to the panel
 
-1. **Ingest** — Receive RTMS transcript segments, buffer for out-of-order delivery, persist to Postgres
-2. **Analyze** — Build prompts with conversation context, call your LLM of choice, parse for signals
-3. **Deliver** — Push coaching cues to the frontend over WebSocket in real time
-
-### Component Walkthrough
-
-**RTMS Transcript Stream**
-
-When a meeting starts and the user enables Arlo, the Zoom client calls `startRTMS` through the Zoom Apps SDK. This triggers a webhook to your backend with connection details. Your backend then opens a WebSocket to receive transcript segments.
-
-Each segment includes:
-- Speaker ID and display name
-- Transcript text
-- Start and end timestamps (milliseconds)
-- Sequence number for ordering
-
-**Backend Processing (Node/Express)**
-
-The backend maintains a WebSocket connection to RTMS for each active meeting. As segments arrive, it:
-
-- Buffers segments for 2-3 seconds to handle out-of-order delivery
-- Normalizes speaker labels
-- Persists to Postgres for post-meeting retrieval
-- Broadcasts to connected frontend clients
-
-**AI Orchestration**
-
-The sales coaching logic lives in the Intelligence Layer. When enough conversation context accumulates (or on explicit request), the backend:
-
-- Builds a prompt with recent transcript context
-- Calls an LLM (OpenRouter, Anthropic, or OpenAI)
-- Parses the response for qualification signals, competitor mentions, and coaching cues
-- Pushes results to the frontend via WebSocket
-
-**In-Meeting Surface App (React)**
-
-The frontend is a React application embedded in the Zoom client via the Zoom Apps SDK. It connects to the backend over WebSocket and renders:
-
-- Live transcript with speaker labels
-- Qualification tracker (BANT signals)
-- Competitor mention alerts
-- Commitment and next-step tracking
-- AI-generated coaching suggestions
-
-The panel updates in real time as the conversation progresses.
+The sales extraction you'll build in the Implementation Guide follows the exact pattern Arlo's healthcare vertical already uses for live SOAP-note extraction.
 
 ---
 
 ## Implementation Guide
 
-This guide walks through setting up Arlo's sales coaching functionality locally. By the end, you'll have a working in-meeting sales coach connected to live Zoom meetings.
+This guide has three parts: the transcript pipeline (how to receive and process RTMS streams), the sales intelligence layer (how to extract qualification signals, competitor mentions, and commitments), and a quickstart to run the reference implementation.
 
-### One-Click Deploy
+The patterns apply regardless of your stack. Code examples are from [Arlo](https://github.com/zoom/arlo), but the concepts transfer to any language or framework.
 
-Want to skip local setup? Deploy the full stack to the cloud with one click:
+### Part 1: The Transcript Pipeline
 
-| Platform | What You Get |
+#### Verify and route the webhook
+
+When a user starts transcription, Zoom sends `meeting.rtms_started` to the backend's webhook endpoint. Before anything else, the backend proves the request came from Zoom: an HMAC-SHA256 signature over `v0:{timestamp}:{rawBody}` using your app's webhook secret token, with a five-minute replay window and a timing-safe comparison. From [`backend/src/routes/rtms.js`](https://github.com/zoom/arlo/blob/main/backend/src/routes/rtms.js):
+
+```javascript
+function verifyWebhookSignature(rawBody, timestamp, signature) {
+  const secret = config.zoomWebhookToken;
+  if (!signature || !timestamp) return false;
+
+  // Reject if timestamp is more than 5 minutes old (replay protection)
+  const now = Math.floor(Date.now() / 1000);
+  const reqTimestamp = parseInt(timestamp, 10);
+  if (isNaN(reqTimestamp) || Math.abs(now - reqTimestamp) > 300) return false;
+
+  const message = `v0:${timestamp}:${rawBody.toString('utf8')}`;
+  const expectedSignature = 'v0=' + crypto
+    .createHmac('sha256', secret)
+    .update(message)
+    .digest('hex');
+
+  if (signature.length !== expectedSignature.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+}
+```
+
+Two details matter here. The route uses `express.raw()` because the signature is computed over the exact bytes Zoom sent; re-serialized JSON would produce a different signature. And Zoom's `endpoint.url_validation` challenge is handled before signature verification, since validation requests carry no signature.
+
+> **Adapting this pattern:** Every language has HMAC-SHA256 and timing-safe comparison. In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`. The logic is identical.
+
+The backend then forwards verified `rtms_started`/`rtms_stopped` events to the RTMS service over the internal Docker network with an `x-arlo-internal` header, so the RTMS service can trust them without re-verifying reserialized bytes.
+
+#### Join the stream
+
+The RTMS service creates one `@zoom/rtms` client per stream and registers its transcript handler before joining. From [`rtms/src/index.js`](https://github.com/zoom/arlo/blob/main/rtms/src/index.js):
+
+```javascript
+const rtmsModule = require('@zoom/rtms');
+const rtms = rtmsModule.default;
+
+async function handleRTMSStarted(payload) {
+  const { meeting_uuid, rtms_stream_id, server_urls } = payload;
+
+  // Same stream ID again means a duplicate webhook: ignore it
+  if (activeSessions.has(rtms_stream_id)) return;
+
+  const client = new rtms.Client();
+
+  // Register handlers BEFORE joining
+  client.onTranscriptData((data, size, timestamp, metadata) => {
+    const text = data.toString('utf-8');
+    handleTranscript(meeting_uuid, {
+      text,
+      timestamp,                  // microseconds, Zoom-provided
+      userId: metadata?.userId,
+      userName: metadata?.userName,
+    }).catch(err => console.error('Error handling transcript:', err));
+  });
+
+  client.onLeave(() => activeSessions.delete(rtms_stream_id));
+
+  activeSessions.set(rtms_stream_id, {
+    client,
+    meetingUuid: meeting_uuid,
+    seqCounter: 0,              // per-session transcript sequence numbers
+    startTime: new Date(),
+  });
+
+  client.join({ meeting_uuid, rtms_stream_id, server_urls });
+}
+```
+
+Sessions are keyed by `rtms_stream_id`, not `meeting_uuid`, and that choice carries the failover logic: if Zoom's media server fails over, the same meeting arrives with a new stream ID, so the service tears down the old session and joins the new one. A repeated stream ID is a duplicate webhook and gets ignored. The service also handles `meeting.rtms_interrupted` by cleaning up and waiting for Zoom to send a fresh `rtms_started` when reconnection is possible.
+
+> **Adapting this pattern:** Zoom provides the `@zoom/rtms` SDK for Node. For other languages, you'll implement the WebSocket protocol directly — the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format. The session-keying and failover logic remain the same.
+
+#### Normalize and hand off
+
+Each transcript callback becomes a segment with a per-session sequence number and millisecond timestamps (Zoom sends microseconds):
+
+```javascript
+async function handleTranscript(meetingId, transcript) {
+  const { text, timestamp, userId, userName } = transcript;
+  const session = findSessionByMeetingUuid(meetingId)?.session;
+  const seqNo = session ? ++session.seqCounter : Date.now();
+  const tStartMs = typeof timestamp === 'number' ? Math.floor(timestamp / 1000) : Date.now();
+
+  const segment = {
+    speakerId: userId ? String(userId) : 'unknown',
+    speakerLabel: userName || (userId ? `Speaker ${userId}` : 'Speaker'),
+    text: text || '',
+    tStartMs,
+    tEndMs: tStartMs,
+    seqNo,
+  };
+
+  await broadcastSegment(meetingId, segment);  // POST to backend /api/rtms/broadcast
+}
+```
+
+#### Broadcast first, persist in the background
+
+The backend prioritizes latency: it pushes each segment to connected panels immediately and saves to the database asynchronously. Ordering and duplicates are handled by the sequence number rather than buffering. The `TranscriptSegment` table has a unique constraint on `(meetingId, seqNo)`, and writes are upserts, so retries and duplicate deliveries are idempotent:
+
+```javascript
+router.post('/broadcast', async (req, res) => {
+  const { meetingId, segment } = req.body;
+
+  // Broadcast to WebSocket clients immediately
+  const sentCount = broadcastTranscriptSegment(meetingId, segment);
+
+  // Save in the background; don't block the response
+  saveTranscriptSegment(meetingId, segment).catch(err => {
+    console.error('Failed to save transcript segment:', err.message);
+  });
+
+  res.status(200).json({ received: true, broadcast: sentCount });
+});
+
+// Inside saveTranscriptSegment: idempotent write keyed by sequence number
+await prisma.transcriptSegment.upsert({
+  where: { meetingId_seqNo: { meetingId: dbMeetingId, seqNo: BigInt(segment.seqNo) } },
+  create: { meetingId: dbMeetingId, speakerId: speaker?.id, tStartMs, tEndMs,
+            seqNo: BigInt(segment.seqNo), text: segment.text || '' },
+  update: { text: segment.text || '', tEndMs },
+});
+```
+
+> **Adapting this pattern:** The "broadcast first, persist in background" pattern applies universally. Your persistence layer might be Postgres, MongoDB, or a time-series database — the key is not blocking the real-time path on disk I/O.
+
+#### Deliver to the panel
+
+The backend runs a WebSocket server (in [`backend/src/services/websocket.js`](https://github.com/zoom/arlo/blob/main/backend/src/services/websocket.js)) that requires a JWT on every connection; there is no anonymous access. The protocol is small:
+
+```
+Connection:      ws://host/ws?meeting_id={uuid}&token={jwt}
+Client → Server: { type: 'subscribe', meetingId }
+Server → Client: { type: 'transcript.segment', data: { meetingId, segment } }
+Server → Client: { type: 'meeting.status',     data: { meetingId, status } }
+```
+
+The React panel subscribes on mount and appends segments in `seqNo` order, which is why the pipeline doesn't need a reorder buffer.
+
+### Part 2: The Sales Intelligence Layer
+
+With the transcript pipeline in place, you have a live stream of what's being said. Now extract sales intelligence from it: qualification signals, competitor mentions, and commitments.
+
+#### Add the extraction service
+
+Add a `extractSalesSignals` function to [`backend/src/services/openrouter.js`](https://github.com/zoom/arlo/blob/main/backend/src/services/openrouter.js), following the house pattern (`callOpenRouter`, strip code fences, parse JSON with a safe fallback):
+
+```javascript
+/**
+ * Extract sales signals from a live sales-call transcript
+ * @param {string} transcript - Recent transcript text
+ * @param {object} currentState - Current qualification state (for incremental updates)
+ * @param {string[]} watchList - Competitor names to watch for
+ * @returns {Promise<object>} Qualification, competitor, and commitment signals
+ */
+async function extractSalesSignals(transcript, currentState = {}, watchList = []) {
+  const systemPrompt = `You are a real-time sales coaching assistant analyzing a live sales call.
+Extract three kinds of signals from the transcript.
+
+1. Qualification (budget, authority, need, timeline). For each criterion:
+   - status: "confirmed" | "unclear" | "missing" | "unknown"
+   - signals: array of { "text": "the relevant quote", "seqNo": number or null }
+2. Competitor mentions. Watch list: ${JSON.stringify(watchList)}.
+   Also detect competitors not on the list. For each mention:
+   { "name": "competitor", "text": "the quote", "sentiment": "positive|negative|neutral|mixed" }
+3. Commitments and next steps, from either side:
+   { "text": "what was committed", "owner": "who said it", "due": "timeframe or null" }
+
+Format your response as JSON:
+{
+  "qualification": { "budget": {...}, "authority": {...}, "need": {...}, "timeline": {...} },
+  "competitors": [...],
+  "commitments": [...]
+}
+Only report signals actually present in the transcript. Only output valid JSON, no markdown.`;
+
+  const prompt = `Recent transcript:
+
+${transcript}
+
+${Object.keys(currentState).length ? `Current qualification state (update, don't regress confirmed criteria):
+${JSON.stringify(currentState)}` : ''}`;
+
+  try {
+    const response = await callOpenRouter(prompt, systemPrompt, { maxTokens: 1536 });
+    const cleaned = response.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+    try {
+      const parsed = JSON.parse(cleaned);
+      return {
+        qualification: parsed.qualification || {},
+        competitors: Array.isArray(parsed.competitors) ? parsed.competitors : [],
+        commitments: Array.isArray(parsed.commitments) ? parsed.commitments : [],
+      };
+    } catch {
+      console.warn('⚠️ Could not parse sales signals JSON');
+      return { qualification: {}, competitors: [], commitments: [] };
+    }
+  } catch (error) {
+    console.error('❌ Sales signal extraction failed:', error.message);
+    throw error;
+  }
+}
+
+// Add to module.exports
+module.exports = { /* ...existing exports... */ extractSalesSignals };
+```
+
+> **Adapting this pattern:** This works with any LLM that supports structured output — OpenAI, Anthropic, open-source models via Ollama. For higher reliability, use the provider's native JSON mode or function calling if available. The prompt is the customization point: swap BANT for MEDDIC, SPICED, or your own qualification framework.
+
+#### Expose the route
+
+Add the endpoint to [`backend/src/routes/ai.js`](https://github.com/zoom/arlo/blob/main/backend/src/routes/ai.js), mirroring the existing `/extract-soap` route:
+
+```javascript
+const { extractSalesSignals } = require('../services/openrouter');
+
+/**
+ * POST /api/ai/sales-signals
+ * Extract qualification, competitor, and commitment signals from live transcript
+ */
+router.post('/sales-signals', optionalAuth, async (req, res) => {
+  const { transcript, currentState, watchList } = req.body;
+
+  if (!config.aiEnabled) {
+    return res.status(503).json({ error: 'AI features are disabled' });
+  }
+  if (!transcript || typeof transcript !== 'string' || transcript.trim().length < 50) {
+    return res.status(400).json({ error: 'transcript is required (min 50 chars)' });
+  }
+
+  try {
+    const signals = await extractSalesSignals(
+      transcript.trim(),
+      currentState || {},
+      Array.isArray(watchList) ? watchList : []
+    );
+    res.json(signals);
+  } catch (error) {
+    console.error('❌ Sales signal extraction error:', error.message);
+    res.status(500).json({ error: 'Sales signal extraction failed' });
+  }
+});
+```
+
+#### Wire the panels
+
+On the frontend, extract the live loop into a hook and feed the three sales panels from it. The debounce matters: you want analysis roughly every 30 seconds of new conversation, not on every segment.
+
+```javascript
+// frontend/src/features/sales/useSalesSignals.js
+import { useState, useEffect, useRef, useCallback } from 'react';
+
+const ANALYZE_DEBOUNCE_MS = 30000;
+
+export default function useSalesSignals(segments, isLive, watchList) {
+  const [signals, setSignals] = useState({ qualification: {}, competitors: [], commitments: [] });
+  const lastProcessedCount = useRef(0);
+
+  const analyze = useCallback(async () => {
+    if (!segments?.length || segments.length === lastProcessedCount.current) return;
+
+    const transcript = segments
+      .slice(-100)  // recent context is enough; the prompt carries prior state
+      .map(s => `[${s.speakerLabel}]: ${s.text}`)
+      .join('\n');
+
+    try {
+      const res = await fetch('/api/ai/sales-signals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ transcript, currentState: signals.qualification, watchList }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setSignals(prev => ({
+        qualification: { ...prev.qualification, ...data.qualification },
+        competitors: mergeMentions(prev.competitors, data.competitors),
+        commitments: dedupeByText(prev.commitments, data.commitments),
+      }));
+      lastProcessedCount.current = segments.length;
+    } catch (err) {
+      console.error('Sales signal fetch failed:', err);
+    }
+  }, [segments, signals.qualification, watchList]);
+
+  useEffect(() => {
+    if (!isLive || segments.length === 0) return;
+    const timer = setTimeout(analyze, ANALYZE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [segments.length, isLive, analyze]);
+
+  return signals;
+}
+```
+
+Then pass live data into the existing components in `InMeetingView` instead of their demo state: `QualificationSignals` takes the qualification map, `CompetitorMentions` takes the mention list, and `CommitmentsPanel` takes the commitments, with `showDemoData` switched off for the sales vertical. Each detected signal carries a `seqNo` when the model can identify one, which is what makes the "jump to transcript" links work.
+
+> **Adapting this pattern:** The frontend can be React, Vue, Svelte, or vanilla JS. The Surface App constraint is that it runs inside the Zoom client via an iframe — standard web tech works, just respect the [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) requirements for authentication and context.
+
+#### Tune the extraction
+
+The system prompt in `extractSalesSignals` is the customization point. To coach against MEDDIC or SPICED instead of BANT, change the criteria list in the prompt and the `QUALIFICATION_CRITERIA` array in `frontend/src/features/sales/QualificationSignals.js`, which also holds the suggested discovery questions per criterion. The competitor watch list is user-editable in the panel and flows through the request body, so battlecard-style responses can key off the `name` field in each mention.
+
+### Part 3: Run the Reference Implementation
+
+[Arlo](https://github.com/zoom/arlo) implements everything above as a working application. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
+
+#### One-click deploy
+
+| Platform | What you get |
 |----------|--------------|
-| [**Deploy to Render**](https://render.com/deploy?repo=https://github.com/zoom/arlo) | Backend, Frontend, RTMS service, Postgres database |
-| [**Deploy to Railway**](https://railway.app/new?repo=https://github.com/zoom/arlo) | Backend, Frontend, RTMS service, Postgres database |
+| [Deploy to Render](https://render.com/deploy?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, managed database |
+| [Deploy to Railway](https://railway.app/new?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, managed database |
 
-Both platforms offer free tiers. You'll need to create an account if you don't have one.
+Both platforms offer free tiers. After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/) (next section), add `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN` to the environment, and point your app's OAuth redirect URL at the deployed backend.
 
-After deploying, you'll need to:
-1. Create a Zoom App in the [Marketplace](https://marketplace.zoom.us/)
-2. Add your `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN` to the environment variables
-3. Update your Zoom App's OAuth redirect URL to point to your deployed backend
-
-Both platforms auto-provision the database and wire up the services. Secrets are generated automatically.
-
-### Local Development
-
-If you prefer to run locally (recommended for development and customization):
-
-### Prerequisites
-
-Before starting, ensure you have:
+#### Local setup
 
 | Requirement | Purpose |
 |-------------|---------|
-| [Node.js 20+](https://nodejs.org/) | Runtime for backend services |
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs Postgres and all services |
-| [ngrok](https://ngrok.com/) | Exposes local server for Zoom webhooks |
-| [Zoom Account](https://marketplace.zoom.us/) | To create and configure your Zoom App |
-| RTMS Access | [Request access](https://www.zoom.com/en/realtime-media-streams/#form) if you don't have it |
+| [Node.js 20+](https://nodejs.org/) | Runtime for all three services |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs MySQL, Redis, and the services |
+| [ngrok](https://ngrok.com/) | Public HTTPS URL for Zoom webhooks and the app |
+| [Zoom account](https://marketplace.zoom.us/) | To create and configure your Zoom App |
+| RTMS access | [Request access](https://www.zoom.com/en/realtime-media-streams/#form) if you don't have it |
 
-### Step 1: Clone and Configure
+1. **Clone and configure.**
 
-Clone the Arlo repository:
+   ```bash
+   git clone https://github.com/zoom/arlo.git
+   cd arlo
+   cp .env.example .env
+   ```
 
-```bash
-git clone https://github.com/zoom/arlo.git
-cd arlo
-```
+2. **Start ngrok** and note your URL. A [free static domain](https://dashboard.ngrok.com/domains) saves reconfiguring on every restart.
 
-Copy the environment template:
+   ```bash
+   ngrok http 3000 --domain=your-subdomain.ngrok-free.app
+   ```
 
-```bash
-cp .env.example .env
-```
+3. **Create your Zoom App.** In the [Marketplace](https://marketplace.zoom.us/), go to **Develop** > **Build App** > **General App**. Then configure:
+   - **OAuth Redirect URL:** `https://YOUR-NGROK-URL/api/auth/callback`
+   - **Scopes:** `meeting:read:meeting`; optionally `user:read` and `meeting:write:open_app`
+   - **Zoom App SDK:** add the SDK APIs, then enable **RTMS** > **Transcripts**
+   - **Surface:** Home URL `https://YOUR-NGROK-URL`; add `appssdk.zoom.us` to the domain allow list
+   - **Event Subscriptions:** endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`; copy the **Secret Token**
 
-### Step 2: Set Up ngrok
+4. **Fill in `.env`.** From the Marketplace: `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN` (the Event Subscriptions secret token, not the client secret). Set `PUBLIC_URL` to your ngrok URL, then generate the two security keys:
 
-Start ngrok to create a public URL for Zoom webhooks:
+   ```bash
+   # SESSION_SECRET and TOKEN_ENCRYPTION_KEY (run once each)
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
 
-```bash
-ngrok http 3000 --domain=your-subdomain.ngrok-free.app
-```
+   An `OPENROUTER_API_KEY` is optional; free models work without one at lower rate limits.
 
-If you don't have a static domain, get one free at [ngrok dashboard](https://dashboard.ngrok.com/domains). Static domains prevent reconfiguration every time ngrok restarts.
+5. **Start everything and test.**
 
-Keep this terminal running and note your URL.
+   ```bash
+   docker-compose up --build
+   ```
 
-### Step 3: Create Your Zoom App
-
-1. Go to [Zoom Marketplace](https://marketplace.zoom.us/) and sign in
-2. Click **Develop** > **Build App**
-3. Select **General App** and name it (e.g., "Sales Coach")
-4. Copy your **Client ID** and **Client Secret**
-
-<details>
-<summary><strong>Step 4: Configure Environment Variables</strong></summary>
-
-Edit `.env` with your values:
-
-```bash
-# From Zoom Marketplace
-ZOOM_CLIENT_ID=your_client_id
-ZOOM_CLIENT_SECRET=your_client_secret
-
-# Your ngrok URL
-PUBLIC_URL=https://your-subdomain.ngrok-free.app
-
-# Generate these (run the commands, paste the output)
-SESSION_SECRET=       # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-REDIS_ENCRYPTION_KEY= # node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
-```
-
-</details>
-
-<details>
-<summary><strong>Step 5: Configure Zoom App Settings</strong></summary>
-
-In the Zoom Marketplace, configure your app:
-
-**Basic Information:**
-- OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`
-- OAuth Allow List: `https://YOUR-NGROK-URL`
-
-**Scopes:**
-- `meeting:read` (read meeting details)
-- `user:read` (read user profile)
-
-**Zoom App SDK:**
-- Click **Add APIs** and enable required capabilities
-- Enable **RTMS > Transcripts**
-
-**Surface:**
-- Home URL: `https://YOUR-NGROK-URL`
-- Domain Allow List: `https://YOUR-NGROK-URL`
-
-**Event Subscriptions:**
-- Event notification endpoint: `https://YOUR-NGROK-URL/api/rtms/webhook`
-- Events: `meeting.rtms_started`, `meeting.rtms_stopped`
-
-</details>
-
-### Step 6: Start the Application
-
-```bash
-docker-compose up --build
-```
-
-Wait for all services to start:
-- Postgres database (port 5432)
-- Backend API (port 3000)
-- Frontend (port 3001)
-- RTMS service (port 3002)
-
-### Step 7: Test in a Meeting
-
-1. Start or join a Zoom meeting
-2. Click **Apps** in the meeting toolbar
-3. Find and open your app
-4. Select the **Sales** vertical when prompted
-5. Click **Start Arlo** to begin transcription
-6. Watch the qualification tracker update as you discuss budget, timeline, and decision-makers
-
-### Selecting the Sales Vertical
-
-Arlo supports multiple verticals (Healthcare, Legal, Sales, Support, Notes). Each vertical customizes the UI and AI prompts for its domain.
-
-To switch to Sales mode:
-
-1. Open Arlo in a meeting
-2. Click the **Settings** icon
-3. Select **Sales** from the vertical picker
-4. The interface updates to show qualification tracking, competitor detection, and sales-specific coaching
-
-### Customizing Coaching Prompts
-
-The sales coaching prompts live in the backend. You can customize them for your sales methodology (BANT, MEDDIC, SPICED, etc.).
-
-Key files to modify:
-
-| File | Purpose |
-|------|---------|
-| `backend/prompts/sales-qualification.js` | Defines what signals to detect |
-| `backend/prompts/competitor-analysis.js` | Configures competitor battlecard triggers |
-| `backend/prompts/next-steps.js` | Shapes how action items are extracted |
-
-The prompts receive recent transcript context and return structured JSON that the frontend renders.
+   Services come up on MySQL 3306, backend 3000, frontend 3001, RTMS 3002 (internal only). Then start a Zoom meeting, open **Apps** in the toolbar, open your app, pick the **Sales** vertical, and start transcription. Arlo supports five verticals (Notes, Healthcare, Legal, Sales, Support); switch anytime from Settings. Demo data is on by default so the panels are full immediately; turn it off in Settings once your live extraction from Part 2 is wired in.
 
 ---
 
 ## App Manifest
 
-The `manifest.json` in this directory defines a Zoom App with in-meeting panel capabilities and RTMS transcription access. Use it as a starting point for your own sales coaching application.
+The [`manifest.json`](./manifest.json) in this directory follows the Zoom App manifest schema and pre-configures a sales coaching app: OAuth scopes, Surface App capabilities, RTMS transcript access, and event subscriptions. Upload it when creating your app (manifest support is in beta) to skip most of the manual Marketplace configuration, replacing the placeholder URLs first.
 
-### Required Scopes
+### Scopes
 
-| Scope | Purpose |
-|-------|---------|
-| `meeting:read` | Access meeting metadata (ID, host, participants) |
-| `user:read` | Read authenticated user's profile |
-| `zoomapp:inmeeting` | Render the Surface App panel inside meetings |
+| Scope | Required | Purpose |
+|-------|----------|---------|
+| `zoomapp:inmeeting` | Yes | Render the panel inside meetings |
+| `meeting:read:meeting` | Yes | Meeting metadata and the upcoming-meetings list |
+| `user:read` | Optional | Profile info; without it, Arlo decodes the user from the access token |
+| `meeting:write:open_app` | Optional | Auto-open the app when a meeting starts |
 
 ### RTMS Configuration
 
-RTMS access is configured separately from OAuth scopes. In your Zoom App settings:
-
-1. Navigate to **Features** > **Zoom App SDK**
-2. Enable **Real-Time Media Streams**
-3. Select **Transcripts** (audio streaming is also available but not required for this blueprint)
+RTMS access is a Zoom App SDK feature, configured separately from OAuth scopes: in your app settings, go to **Features** > **Zoom App SDK**, enable **Real-Time Media Streams**, and select **Transcripts**. Audio and video streams are also available but not needed for this blueprint. RTMS requires access approval from Zoom.
 
 ### Event Subscriptions
 
-The app subscribes to two webhook events:
-
-| Event | When It Fires |
+| Event | When it fires |
 |-------|---------------|
-| `meeting.rtms_started` | RTMS transcription begins in a meeting |
-| `meeting.rtms_stopped` | RTMS transcription ends |
+| `meeting.rtms_started` | Transcription begins; payload carries the stream ID and media server URLs |
+| `meeting.rtms_stopped` | Transcription ends |
 
-Your webhook endpoint receives these events and manages the WebSocket connections accordingly.
+The webhook endpoint is `/api/rtms/webhook` on the backend, which verifies the HMAC signature (Part 1) before acting on either event.
 
-### Manifest Structure
+### Structure
+
+The manifest follows Zoom's real schema. The relevant sections, trimmed:
 
 ```json
 {
-  "name": "Sales Coach",
-  "version": "1.0.0",
-  "appType": "generalApp",
-  "scopes": ["meeting:read", "user:read"],
-  "surfaces": {
-    "inMeeting": {
-      "main": {
-        "defaultWindowSize": { "width": 400, "height": 600 }
-      }
+  "display_information": {
+    "display_name": "Sales Coach",
+    "description": "Real-time sales coaching powered by RTMS transcription"
+  },
+  "oauth_information": {
+    "usage": "USER_OPERATION",
+    "development_redirect_uri": "https://YOUR-NGROK-URL/api/auth/callback",
+    "scopes": [
+      { "scope": "zoomapp:inmeeting", "optional": false },
+      { "scope": "meeting:read:meeting", "optional": false },
+      { "scope": "user:read", "optional": true }
+    ]
+  },
+  "features": {
+    "products": ["ZOOM_MEETING"],
+    "in_client_feature": {
+      "zoom_app_api": { "enable": true, "zoom_app_apis": ["getMeetingContext", "getMeetingUUID", "..."] }
+    },
+    "event_subscription": {
+      "enable": true,
+      "events": ["meeting.rtms_started", "meeting.rtms_stopped"]
     }
-  },
-  "rtms": {
-    "transcripts": true
-  },
-  "webhooks": {
-    "events": ["meeting.rtms_started", "meeting.rtms_stopped"],
-    "endpoint": "https://your-domain.com/api/rtms/webhook"
   }
 }
 ```
 
-This is a simplified representation. See the full manifest in [`manifest.json`](./manifest.json) or the complete Zoom App manifest in the [Arlo repository](https://github.com/zoom/arlo/blob/main/zoom-app-manifest.json).
+See the full [`manifest.json`](./manifest.json) here, or Arlo's own [`zoom-app-manifest.json`](https://github.com/zoom/arlo/blob/main/zoom-app-manifest.json) for the complete SDK API list.
 
 ---
 
 <details>
 <summary><strong>Production Considerations</strong></summary>
 
-Arlo is a reference implementation designed for learning and prototyping. Before deploying to production, consider:
+Arlo is a reference implementation designed for learning and prototyping. Before deploying to production:
 
 | Area | Development | Production |
 |------|-------------|------------|
 | **Credentials** | `.env` file | Secrets manager (AWS, Vault, Azure) |
-| **Token Storage** | Postgres with AES | Add encryption at rest |
-| **Sessions** | In-memory | Redis or database-backed |
-| **WebSockets** | Single instance | Redis pub/sub for horizontal scaling |
+| **Token storage** | AES-256-GCM in MySQL (built in) | Same, plus key rotation policy |
+| **PKCE + sessions** | In-memory store | Redis; the in-memory store doesn't survive restarts or scale to replicas |
+| **WebSockets** | Single instance | Set `REDIS_URL` to enable pub/sub broadcast across instances |
 | **HTTPS** | ngrok tunnel | Load balancer with TLS termination |
 
-**Scaling WebSocket Connections**
-
-Each active meeting maintains a WebSocket connection for RTMS streaming. For high-volume deployments:
-
-- Use Redis pub/sub to broadcast transcript segments across multiple backend instances
-- Implement connection affinity or sticky sessions at the load balancer
-- Monitor connection counts and implement graceful degradation
-
-**Data Retention**
-
-Transcript data may contain sensitive business information. Consider:
-
-- Retention policies aligned with your compliance requirements
-- User controls for deleting meeting data
-- Encryption for data at rest and in transit
+Transcript data may contain sensitive business information. Plan retention policies aligned with your compliance requirements, user controls for deleting meeting data, and encryption at rest. Arlo already gates transcript logging behind `LOG_LEVEL=debug`, enforces per-user row ownership on every meeting query, and keeps the RTMS service off the public network; keep those properties as you customize.
 
 </details>
 
@@ -403,10 +567,10 @@ Transcript data may contain sensitive business information. Consider:
 
 ## Related Resources
 
-- [Arlo Repository](https://github.com/zoom/arlo) - Full source code and documentation
-- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) - API reference for Real-Time Media Streams
-- [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) - Building in-meeting experiences
-- [Zoom Developer Forum](https://devforum.zoom.us/) - Community support and discussions
+- [Arlo Repository](https://github.com/zoom/arlo) — Reference implementation (fork or learn from)
+- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) — API reference for Real-Time Media Streams
+- [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) — Building in-meeting experiences
+- [Zoom Developer Forum](https://devforum.zoom.us/) — Community support
 
 ---
 
@@ -418,5 +582,6 @@ This blueprint shows one path: real-time sales coaching delivered through a Surf
 - Route competitor mentions to Slack for immediate team awareness
 - Feed conversation context to an autonomous agent that drafts follow-up emails
 - Build a manager dashboard that shows live deal health across all active calls
+- Adapt for different verticals — see the [AI Meeting Notetaker blueprint](../ai-meeting-notetaker/) for a general-purpose version
 
-RTMS provides the stream. The Intelligence Layer belongs to you.
+RTMS provides the stream. The intelligence layer is yours to build.

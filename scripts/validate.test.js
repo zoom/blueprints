@@ -47,6 +47,13 @@ test('slug mismatch with directory is an error', () => {
   assert.ok(errors.some((e) => e.includes('does not match')));
 });
 
+test('reserved site-route slugs are rejected', () => {
+  for (const dirSlug of ['preview', 'preview-frame', 'collections']) {
+    const { errors } = validateFrontmatter({ ...VALID, slug: dirSlug }, dirSlug, TAXONOMY);
+    assert.ok(errors.some((e) => e.includes('reserved')), `expected reserved error for ${dirSlug}`);
+  }
+});
+
 test('invalid enum values are errors', () => {
   let res = validateFrontmatter({ ...VALID, difficulty: 'expert' }, 'test-blueprint', TAXONOMY);
   assert.ok(res.errors.some((e) => e.includes('difficulty')));
@@ -127,7 +134,7 @@ const os = require('node:os');
 const pathForFixtures = require('node:path');
 
 const {
-  validateBody, validateManifest, scanCredentials, validateBlueprintDir,
+  validateBody, validateManifest, scanCredentials, validateImages, validateBlueprintDir,
 } = require('./validate.js');
 
 function makeBlueprintDir(files) {
@@ -141,7 +148,7 @@ function makeBlueprintDir(files) {
 }
 
 const FULL_BODY = [
-  '## Problem Statement', 'text',
+  'This blueprint describes the outcomes teams can achieve with the solution.',
   '## Architecture', 'text',
   '## Implementation Guide', 'text',
   '## App Manifest', 'text',
@@ -161,12 +168,19 @@ updated: 2026-08-04
 github_repo: https://github.com/zoom/example
 ---`;
 
-test('body with all four required sections passes', () => {
+test('body with intro prose and all three required sections passes', () => {
   assert.deepEqual(validateBody(FULL_BODY), []);
 });
 
+test('body must open with intro prose before the first heading', () => {
+  const headingFirstBody = FULL_BODY.replace(/^.*?\n\n/, '');
+  assert.ok(validateBody(headingFirstBody).includes(
+    'blueprint must open with intro prose (outcomes-first) before the first heading',
+  ));
+});
+
 test('each missing required section is an error', () => {
-  const errors = validateBody('## Problem Statement\n\ntext\n');
+  const errors = validateBody('Outcome-focused intro prose.\n');
   for (const section of ['Architecture', 'Implementation Guide', 'App Manifest']) {
     assert.ok(errors.some((e) => e.includes(section)), `expected error for ${section}`);
   }
@@ -249,4 +263,73 @@ test('missing index.md still surfaces manifest and credential errors', () => {
   assert.ok(errors.some((e) => e.includes('missing index.md')));
   assert.ok(errors.some((e) => e.includes('missing manifest.json')));
   assert.ok(errors.some((e) => e.includes('possible credential')));
+});
+
+// Writes an images/ subdir with the given files into an existing blueprint dir.
+function addImages(dir, names) {
+  const imagesDir = pathForFixtures.join(dir, 'images');
+  fsForFixtures.mkdirSync(imagesDir, { recursive: true });
+  for (const name of names) {
+    fsForFixtures.writeFileSync(pathForFixtures.join(imagesDir, name), 'x');
+  }
+}
+
+test('existing hero_image and body image refs pass', () => {
+  const dir = makeBlueprintDir({});
+  addImages(dir, ['hero.png', 'panel.png']);
+  const body = 'text\n\n![Coaching panel](images/panel.png)\n';
+  assert.deepEqual(validateImages(dir, { hero_image: 'images/hero.png' }, body), []);
+});
+
+test('hero_image set but file missing is an error', () => {
+  const dir = makeBlueprintDir({});
+  const errors = validateImages(dir, { hero_image: 'images/nope.png' }, '');
+  assert.ok(errors.some((e) => e.includes('hero_image') && e.includes('not found')));
+});
+
+test('absent hero_image is not an error (fallback thumbnail covers it)', () => {
+  const dir = makeBlueprintDir({});
+  assert.deepEqual(validateImages(dir, {}, 'no images here'), []);
+});
+
+test('body image pointing at a missing file is an error', () => {
+  const dir = makeBlueprintDir({});
+  const errors = validateImages(dir, {}, '![alt](images/ghost.png)');
+  assert.ok(errors.some((e) => e.includes('ghost.png') && e.includes('not found')));
+});
+
+test('image refs inside HTML comments are ignored', () => {
+  const dir = makeBlueprintDir({});
+  const body = '<!-- example: ![alt](images/does-not-exist.png) -->\nreal text';
+  assert.deepEqual(validateImages(dir, {}, body), []);
+});
+
+test('remote and site-absolute image refs are not checked on disk', () => {
+  const dir = makeBlueprintDir({});
+  const body = '![a](https://example.com/x.png)\n![b](/img/blueprints/other/y.png)\n';
+  assert.deepEqual(validateImages(dir, { hero_image: 'https://cdn.example.com/h.png' }, body), []);
+});
+
+test('image ref escaping the blueprint dir is an error', () => {
+  const dir = makeBlueprintDir({});
+  const errors = validateImages(dir, { hero_image: '../secrets/leak.png' }, '');
+  assert.ok(errors.some((e) => e.includes('escapes')));
+});
+
+test('credential scan skips binary/image files', () => {
+  const dir = makeBlueprintDir({ 'logo.png': `binary ${FAKE_AWS_KEY} bytes` });
+  assert.deepEqual(scanCredentials(dir), []);
+});
+
+test('validateBlueprintDir errors on a broken hero_image ref', () => {
+  const heroFM = VALID_FM_YAML.replace('github_repo: https://github.com/zoom/example',
+    'github_repo: https://github.com/zoom/example\nhero_image: images/missing.png');
+  const dir = makeBlueprintDir({
+    'index.md': `${heroFM}\n\n${FULL_BODY}\n`,
+    'manifest.json': '{ "name": "test-app" }',
+  });
+  const { errors } = validateBlueprintDir(dir, {
+    products: new Set(['rtms']), verticals: new Set(['healthcare']), solution_types: new Set(),
+  });
+  assert.ok(errors.some((e) => e.includes('hero_image') && e.includes('not found')));
 });

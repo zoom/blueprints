@@ -26,6 +26,16 @@ source; the site builds from it).
 | `collections/index.json` | Vertical collections shown on the site |
 | `scripts/validate.js` | Quality gate — run `npm run validate` |
 
+## Previewing a draft
+
+Writing a Blueprint? See it rendered exactly as it will ship — without
+pushing anything — at
+[developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/).
+Point it at your local `blueprints/<slug>/` folder; files are read by your
+browser and never uploaded. The page also surfaces the frontmatter and MDX
+errors that validation and the site build would catch. Details in
+[CONTRIBUTING.md](CONTRIBUTING.md#previewing-your-blueprint).
+
 ## Contributing
 
 Currently team-only (Zoom Developer Advocacy). See [CONTRIBUTING.md](CONTRIBUTING.md).
