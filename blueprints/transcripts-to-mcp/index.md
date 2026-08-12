@@ -22,13 +22,11 @@ license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
 stack: "Node.js · TypeScript · RTMS · MCP · Chroma · Anthropic"
 ---
 
-## Problem Statement
-
 A transcript can tell you what someone said, but it cannot look up a customer, search a knowledge base, or complete a task. A meeting agent needs a safe way to turn a spoken request into a tool call. Your team still needs to control the tools, permissions, and activity log.
 
 This design combines [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro). Live transcript text goes to an MCP client that you host. An AI router decides whether it can answer directly or needs one of the tools you allow. Separate MCP servers provide search and business actions.
 
-MCP connects the pieces, but it does not give the agent permission to do anything it wants. You choose the tools, sign in to each connected system, check every input, and decide which actions need a person to approve them.
+MCP connects the pieces, but it does not give the agent permission to do anything it wants. You choose the tools, sign in to each connected system, check every input, and route sensitive actions through your approval workflow.
 
 ## Features
 
@@ -135,7 +133,7 @@ Before connecting a real business system, add:
 - Input validation for every tool argument.
 - Timeouts, safe retries, and protection against running the same action twice.
 - An allowlist of operations the meeting agent may request.
-- Human approval for actions that change or delete data.
+- The customer's approval workflow for actions that change or delete data.
 
 The sample uses Chroma for semantic storage. You may use another vector database or search service if it can implement the same retrieval tool contract. Keep credentials and tenant filters inside the tool server, not in the model prompt.
 
@@ -167,7 +165,7 @@ Only expose the RTMS client's webhook. Keep the router, MCP servers, and Chroma 
 
 #### 9. Verify the boundary
 
-Confirm that retrieval works against test data and that business actions still return mock values. The sample proves transcript routing and MCP tool selection. It does not prove production Zoom API calls, downstream OAuth, human approval, tenant isolation, or durable audit storage.
+Confirm that retrieval works against test data and that business actions still return mock values. The sample proves transcript routing and MCP tool selection. It does not prove production Zoom API calls, downstream OAuth, write-action approval, tenant isolation, or durable audit storage.
 
 ### Production considerations
 
@@ -194,7 +192,7 @@ Confirm that retrieval works against test data and that business actions still r
 
 The Zoom manifest configures transcript ingestion only. MCP server credentials, tool schemas, model access, and downstream scopes belong in the external application and connected systems.
 
-A human app owner must verify the manifest in the target Zoom Marketplace account, replace the callback and webhook domains, confirm the current scope and event names, and review the final permission set. The production owner must also approve every MCP tool contract and downstream authorization model.
+The app owner must verify the manifest in the target Zoom Marketplace account, replace the callback and webhook domains, confirm the current scope and event names, and review the final permission set. The production owner must also approve every MCP tool contract and downstream authorization model.
 
 ## Related Resources
 
