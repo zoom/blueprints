@@ -5,8 +5,9 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
 ## Workflow
 
 1. Copy `blueprints/_template/` to `blueprints/<your-slug>/` (lowercase, hyphenated)
-2. Fill in every required frontmatter field and the four required sections:
-   **Problem Statement**, **Architecture**, **Implementation Guide**, **App Manifest**
+2. Fill in every required frontmatter field, the outcome-focused intro prose
+   (before any heading), and the three required sections:
+   **Architecture**, **Implementation Guide**, **App Manifest**
 3. Keep sample code in its own repo; link it via `github_repo`
 4. Validate locally: `npm install && npm run validate blueprints/<your-slug>`
 5. Open a PR — CI runs the same validation; peer review per the team schedule
@@ -16,10 +17,17 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
 
 - **Markdown only.** GitHub-flavored markdown; Mermaid fences for diagrams.
   No JSX/MDX components.
-- **Customer-perspective framing.** Problem statements describe business
-  outcomes, grounded in real use cases — no hypotheticals.
-- **Followable without external docs.** Implementation guides include real
-  code with imports, config, and error handling.
+- **No inline styles on HTML elements.** The site uses MDX which causes
+  hydration errors with `style` attributes. Use `width` and `height` attributes
+  for sizing. Avoid `&nbsp;` between elements (causes nested `<p>` tags).
+- **Outcomes first.** Open with intro prose (no heading) that leads with the
+  business outcomes the customer gets, grounded in real use cases, not
+  hypotheticals. Problems are context, not the framing.
+- **Teach the build, not the clone.** Implementation guides explain how the
+  app is built and how to rebuild one like it, with real code — imports,
+  config, error handling. Setup/quickstart is a short section at the end.
+- **Grounded in the repo.** Every file path, endpoint, env var, and feature
+  claim must match the linked sample code. No invented details.
 - **Images stay with the blueprint.** Put image files in your blueprint's
   `images/` folder and reference them with **relative** paths — in the body as
   `![alt](images/foo.png)`, or as the header via the `hero_image:` frontmatter
@@ -53,7 +61,7 @@ New product, vertical, solution type, or partner? Add an `{ "id", "label" }` ent
 
 ## Timeline (V1)
 
-- Aug 18 — outlines (problem statement + architecture sketch)
+- Aug 18 — outlines (intro + architecture sketch)
 - Aug 25–Sep 5 — drafts, peer review pairs
 - Sep 8–12 — final submissions
 - Sep 29 — soft launch
