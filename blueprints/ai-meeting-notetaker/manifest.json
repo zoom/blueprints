@@ -1,0 +1,84 @@
+{
+  "$schema": "https://marketplace.zoom.us/schemas/zoom-app-manifest.json",
+  "name": "Meeting Notetaker",
+  "version": "1.0.0",
+  "description": "AI-powered meeting assistant with live transcription, summaries, and action items",
+  "appType": "generalApp",
+
+  "display_information": {
+    "short_name": "Notetaker",
+    "long_description": "An AI meeting assistant that captures live transcripts, generates rolling summaries, extracts action items, and highlights key moments — all in real time during your Zoom meetings. Built on RTMS for sub-second latency without a bot participant.",
+    "category": "Productivity",
+    "support_url": "https://github.com/zoom/arlo/issues",
+    "documentation_url": "https://github.com/zoom/arlo#readme",
+    "privacy_policy_url": "https://your-domain.com/privacy"
+  },
+
+  "oauth_information": {
+    "redirect_uri": "https://your-domain.com/api/auth/callback",
+    "scopes": [
+      {
+        "scope": "meeting:read",
+        "description": "Access meeting metadata including meeting ID, host, and participant information"
+      },
+      {
+        "scope": "user:read",
+        "description": "Read authenticated user profile for personalization"
+      }
+    ]
+  },
+
+  "features": {
+    "zoom_app_sdk": {
+      "enabled": true,
+      "capabilities": [
+        "getMeetingContext",
+        "getMeetingUUID",
+        "getUserContext",
+        "authorize",
+        "onAuthorized",
+        "callZoomApi",
+        "showNotification"
+      ],
+      "rtms": {
+        "transcripts": true,
+        "audio": false,
+        "video": false
+      }
+    },
+    "surfaces": {
+      "in_meeting": {
+        "main": {
+          "default_window_size": {
+            "width": 400,
+            "height": 600
+          }
+        }
+      }
+    },
+    "webhooks": {
+      "event_subscriptions": [
+        {
+          "event": "meeting.rtms_started",
+          "description": "Triggered when RTMS transcription begins in a meeting"
+        },
+        {
+          "event": "meeting.rtms_stopped",
+          "description": "Triggered when RTMS transcription ends"
+        }
+      ],
+      "endpoint_url": "https://your-domain.com/api/rtms/webhook"
+    }
+  },
+
+  "domain_allowlist": [
+    "https://your-domain.com",
+    "wss://your-domain.com",
+    "https://appssdk.zoom.us"
+  ],
+
+  "requirements": {
+    "rtms_access": true,
+    "zoom_apps_sdk": "0.16.0"
+  }
+}
