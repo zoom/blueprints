@@ -2,8 +2,8 @@
 title: "Capture Live Zoom Meeting Transcripts"
 slug: "meeting-transcript-quickstart"
 description: >-
-  Capture a live Zoom Meeting transcript with RTMS and save it as VTT, SRT,
-  and plain text for search, analysis, or storage.
+  Build a live transcript pipeline for Zoom Meetings. Capture RTMS transcript
+  segments and save VTT, SRT, and plain-text files for search or storage.
 products: ["rtms"]
 verticals: ["enterprise"]
 difficulty: "beginner"
@@ -29,7 +29,7 @@ These files are a starting point. Search them, summarize them, attach them to a 
 
 ## Features
 
-At the end of the quickstart, you should have:
+At the end of the quickstart, you should be able to:
 
 - Receive a live transcript without adding a participant bot.
 - Create one VTT, SRT, and TXT file for the meeting.
@@ -42,9 +42,9 @@ At the end of the quickstart, you should have:
 
 Zoom tells your webhook when RTMS starts and stops. A transcript service connects to RTMS, receives timestamped segments, orders them, and writes or forwards them in the formats the next system expects.
 
-### How this sample implements it
+### How the reference implementation handles it
 
-The linked [Node.js sample](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js) uses Express and RTMSManager. It appends each transcript event to three local files beneath `recordings/<meeting-uuid>/`. It uses process-wide timing and SRT counters, synchronous file writes, and local disk. Treat it as a learning sample for one meeting at a time, not as a multi-tenant transcript store.
+The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js) uses Express and RTMSManager. It appends each transcript event to three local files beneath `recordings/<meeting-uuid>/`. It uses process-wide timing and SRT counters, synchronous file writes, and local disk. Treat it as a learning implementation for one meeting at a time, not as a multi-tenant transcript store.
 
 ```mermaid
 flowchart LR
@@ -62,9 +62,9 @@ flowchart LR
 
 ### Part 1: Build the transcript pipeline
 
-#### 1. Install the reference sample
+#### 1. Install the reference implementation
 
-Use the Node.js version required by the sample.
+Use the Node.js version required by the reference implementation.
 
 ```bash
 git clone https://github.com/zoom/rtms-samples.git
@@ -91,7 +91,7 @@ Enable RTMS for the account and meeting. Use `manifest.json` as a starting point
 <details>
 <summary><strong>Environment variables</strong></summary>
 
-Create the environment file used by the sample.
+Create the environment file used by the reference implementation.
 
 ```dotenv
 ZOOM_CLIENT_ID=YOUR_ZOOM_CLIENT_ID
@@ -113,7 +113,7 @@ Make the webhook available over HTTPS. Check every request and reply quickly. Wh
 
 #### 5. Write transcript formats
 
-The sample writes meeting output beneath `recordings/<meeting-uuid>/`. Confirm that:
+The reference implementation writes meeting output beneath `recordings/<meeting-uuid>/`. Confirm that:
 
 - VTT and SRT cues have monotonic timestamps.
 - Final transcript segments are not duplicated.
@@ -132,7 +132,7 @@ Copy `.env.example` to `.env`, set the values, and run:
 node index.js
 ```
 
-Expose port `3000` through an HTTPS tunnel for local development, then use the resulting `/webhook` URL in Marketplace. The sample repository does not include a tested deployment template.
+Expose port `3000` through an HTTPS tunnel for local development, then use the resulting `/webhook` URL in Marketplace. The linked repository does not include a tested deployment template.
 
 #### 7. Test a complete meeting
 
@@ -148,7 +148,7 @@ Run the service and start RTMS in a test meeting with at least two people speaki
 
 ## App Manifest
 
-[`manifest.json`](manifest.json) is a candidate Zoom General App manifest containing the transcript scope, callback placeholder, and RTMS started/stopped event subscriptions. Replace `YOUR_DOMAIN` with an HTTPS domain controlled by the app owner.
+The [`manifest.json`](manifest.json) in this directory is a candidate Zoom General App manifest and pre-configures live transcript capture: transcript scope, an OAuth callback placeholder, and RTMS lifecycle subscriptions. Import it when creating the app, replacing `YOUR_DOMAIN` with an HTTPS domain controlled by the app owner.
 
 ### Scopes
 
@@ -169,8 +169,15 @@ Before publication, the app owner must import it into the target Zoom Marketplac
 
 - [Zoom RTMS documentation](https://developers.zoom.us/docs/rtms/)
 - [RTMS JavaScript SDK reference](https://zoom.github.io/rtms/js/)
-- [Save transcript sample](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js)
+- [Save-transcript reference implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js)
 
 ## What Will You Build?
 
-The first goal is three readable files from one test meeting. From there, replace local disk with your approved storage, index the TXT output for search, or pass completed segments to a notes workflow. Keep the transcript writer separate from RTMS ingestion so a format or storage change does not affect the live connection.
+This Blueprint shows one path: RTMS transcript events written to VTT, SRT, and TXT files on local disk. The same architecture supports many variations:
+
+- Write completed files to object storage.
+- Index plain text for meeting search.
+- Send completed segments to a notes workflow.
+- Add another transcript format without changing RTMS ingestion.
+
+RTMS provides timestamped transcript segments. The storage and downstream workflow are yours to build.
