@@ -2,8 +2,8 @@
 title: "Connect Zoom Meeting Audio to an OpenAI Realtime Agent"
 slug: "openai-meeting-voice-agent"
 description: >-
-  Send live Zoom Meeting audio to the OpenAI Realtime API and let the agent use
-  approved Zoom MCP tools to answer useful questions.
+  Build a listening agent for Zoom Meetings with the OpenAI Realtime API. Stream
+  RTMS audio, allow approved Zoom MCP tools, and return text and tool results.
 products: ["rtms", "mcp"]
 verticals: ["agents", "enterprise"]
 difficulty: "advanced"
@@ -24,9 +24,9 @@ stack: "Node.js · RTMS · OpenAI Realtime API · Zoom MCP"
 
 Teams want meeting agents that understand a spoken request right away. They may also need the agent to find useful meeting information without waiting for a recording. Voice feels natural during a conversation, but the agent must respond quickly, handle interruptions, respect permissions, and clearly tell people when it is listening.
 
-This blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The sample changes the audio into the format OpenAI expects, sends it to the realtime model, and lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/).
+This Blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The reference implementation changes the audio into the format OpenAI expects, sends it to the realtime model, and lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/).
 
-The current sample listens to speech and returns text and tool results. It cannot play the assistant's voice back into the Zoom Meeting. A two-way voice agent still needs an approved way to join or speak in the meeting. Until then, the sample remains a listening demo.
+The current implementation listens to speech and returns text and tool results. It cannot play the assistant's voice back into the Zoom Meeting. A two-way voice agent still needs an approved way to join or speak in the meeting. Until then, this remains a listening implementation.
 
 ## Features
 
@@ -46,11 +46,11 @@ It does not send text to a user interface or play assistant audio into the meeti
 
 Your backend receives mixed meeting audio through RTMS, converts it to the model's required format, and keeps one model session associated with each meeting stream. The model may call a small set of tools using a user-authorized token. A separate response adapter decides where text or approved actions appear.
 
-### How this sample implements it
+### How the reference implementation handles it
 
-The linked [Node.js sample](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api) uses RTMSManager and a server-to-server WebSocket connection to OpenAI. Its default model is [`gpt-realtime-2`](https://developers.openai.com/api/docs/models/gpt-realtime-2), with text-only output and optional input transcription. It registers the Zoom MCP server as a remote tool and writes results to the server console.
+The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api) uses RTMSManager and a server-to-server WebSocket connection to OpenAI. Its default model is [`gpt-realtime-2`](https://developers.openai.com/api/docs/models/gpt-realtime-2), with text-only output and optional input transcription. It registers the Zoom MCP server as a remote tool and writes results to the server console.
 
-The model supports audio output, but the sample requests text and has no path for assistant audio to enter the Zoom Meeting. Treat spoken output as separate work that needs a supported Zoom design and architecture review.
+The model supports audio output, but the reference implementation requests text and has no path for assistant audio to enter the Zoom Meeting. Treat spoken output as separate work that needs a supported Zoom design and architecture review.
 
 ```mermaid
 flowchart LR
@@ -58,10 +58,10 @@ flowchart LR
     B -->|Resample 48 kHz to 24 kHz PCM| C[OpenAI Realtime session]
     C -->|Approved MCP tool call| D[Zoom hosted MCP server]
     D -->|Authorized meeting or document result| C
-    C -->|Text and tool results| E[Server console in reference sample]
+    C -->|Text and tool results| E[Server console in reference implementation]
     E -.->|Customer extension| G[Agent UI or workflow]
     C -.->|Optional synthesized audio| F[Approved meeting audio output adapter]
-    F -.->|Not implemented by reference sample| A
+    F -.->|Not implemented by reference implementation| A
 ```
 
 ## Implementation Guide
@@ -72,7 +72,7 @@ flowchart LR
 
 Start with voice input, text output, and tool calls. Test those parts before adding spoken replies. Do not describe the app as a two-way voice agent until an approved audio-output path works in a real meeting.
 
-Use the Node.js version required by the sample.
+Use the Node.js version required by the reference implementation.
 
 ```bash
 git clone https://github.com/zoom/rtms-samples.git
@@ -128,7 +128,7 @@ Set a maximum queue size. If the service falls behind, drop old audio instead of
 
 #### 5. Configure turns and response modalities
 
-The sample uses server-side voice detection with a 600 ms silence duration, 300 ms prefix padding, and text-only output. Treat those values as sample settings. Test them with the languages, microphones, overlap, and room noise expected in your meetings.
+The reference implementation uses server-side voice detection with a 600 ms silence duration, 300 ms prefix padding, and text-only output. Treat those values as reference settings. Test them with the languages, microphones, overlap, and room noise expected in your meetings.
 
 Make it clear when the agent is listening, and give participants a simple way to stop it.
 
@@ -138,13 +138,13 @@ For a later spoken-answer test, turn on audio output in OpenAI and capture the r
 
 Connect to Zoom's hosted MCP server only after the user signs in and gives permission. Enable as few tools as possible. Route content creation and lasting changes through the customer's approval workflow.
 
-The sample defaults MCP approval to `never` and only logs approval requests; it does not include an approval UI. Keep automatic execution only for tools you are willing to run without another prompt. Put write tools behind an approval flow before production.
+The reference implementation defaults MCP approval to `never` and only logs approval requests; it does not include an approval UI. Keep automatic execution only for tools you are willing to run without another prompt. Put write tools behind an approval flow before production.
 
 Do not blindly trust tool descriptions, inputs, or results. Check IDs and permissions, set timeouts, and remove sensitive information from logs.
 
 #### 7. Design the response experience
 
-The sample logs text and tool results. Add a response adapter if the customer needs a dashboard, CRM, automation, or separate Zoom App. If the agent must speak in the meeting, choose the design with Zoom product and security owners. Decide how the agent appears, how it tells people what it is, how it avoids echo, how people interrupt it, what it can do, and what happens when it fails.
+The reference implementation logs text and tool results. Add a response adapter if the customer needs a dashboard, CRM, automation, or separate Zoom App. If the agent must speak in the meeting, choose the design with Zoom product and security owners. Decide how the agent appears, how it tells people what it is, how it avoids echo, how people interrupt it, what it can do, and what happens when it fails.
 
 Do not call the agent complete by using an undocumented or unsupported audio trick.
 
@@ -174,7 +174,7 @@ Test people talking over each other, silence, interruptions, different accents, 
 
 ## App Manifest
 
-[`manifest.json`](manifest.json) is a candidate manifest for RTMS audio, selected Zoom MCP scopes, OAuth redirect, and RTMS lifecycle subscriptions. Remove unused scopes before import and replace `YOUR_DOMAIN`.
+The [`manifest.json`](manifest.json) in this directory is a candidate Zoom General App manifest and pre-configures a listening agent: RTMS audio scope, selected Zoom MCP scopes, an OAuth callback placeholder, and RTMS lifecycle subscriptions. Import it when creating the app, removing unused scopes and replacing `YOUR_DOMAIN` first.
 
 ### RTMS scope
 
@@ -182,14 +182,14 @@ Test people talking over each other, silence, interruptions, different accents, 
 
 ### Optional MCP scopes
 
-The manifest lists the granular scopes used by the sample's full default tool allowlist. Remove scopes for tools you disable. Read-only meeting, recording, and Zoom Docs scopes should stay separate from `docs:write:import`.
+The manifest lists the granular scopes used by the reference implementation's full default tool allowlist. Remove scopes for tools you disable. Read-only meeting, recording, and Zoom Docs scopes should stay separate from `docs:write:import`.
 
 ### Event subscriptions
 
 - `meeting.rtms_started`
 - `meeting.rtms_stopped`
 
-The app owner must verify the current Zoom Marketplace schema, the app type and OAuth flow, each granular scope, endpoint validation, and the hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model and data controls. Any mechanism intended to deliver synthesized audio into a Zoom Meeting requires Zoom architecture approval because that path is not implemented by the linked sample.
+The app owner must verify the current Zoom Marketplace schema, the app type and OAuth flow, each granular scope, endpoint validation, and the hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model and data controls. Any mechanism intended to deliver synthesized audio into a Zoom Meeting requires Zoom architecture approval because that path is not implemented by the linked reference implementation.
 
 ## Related Resources
 
@@ -197,8 +197,16 @@ The app owner must verify the current Zoom Marketplace schema, the app type and 
 - [OpenAI Realtime guide](https://developers.openai.com/api/docs/guides/realtime)
 - [GPT-Realtime-2 model reference](https://developers.openai.com/api/docs/models/gpt-realtime-2)
 - [Zoom MCP Server documentation](https://developers.zoom.us/docs/mcp/zoom-mcp-server/)
-- [Meeting-audio sample](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api)
+- [Meeting-audio reference implementation](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api)
 
 ## What Will You Build?
 
-A sensible first milestone is one read-only Zoom MCP query from live meeting speech, with the text result shown in a controlled destination. Add a narrow write tool only after approval works. Add spoken output only after you have a supported Zoom audio path, participant controls, interruption handling, and echo management.
+This Blueprint shows one path: mixed meeting audio sent to OpenAI Realtime, with text and tool results logged on the backend. The same architecture supports many variations:
+
+- Show text results in a Zoom App or dashboard.
+- Restrict the agent to read-only Zoom MCP tools.
+- Add a narrow write action behind an approval workflow.
+- Replace the model or response destination.
+- Add spoken output after selecting a supported Zoom audio path.
+
+RTMS provides the live audio. The agent behavior, tool policy, and response experience are yours to build.
