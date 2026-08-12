@@ -22,8 +22,6 @@ license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
 stack: "Node.js · Express · RTMSManager · OpenAI or Anthropic"
 ---
 
-## Problem Statement
-
 Teams often need answers during a meeting, not after the recording has been processed. A support lead may want help answering an objection. An operations team may want to spot a risk while the people in the meeting can still explain it. A post-meeting transcript arrives too late for either case.
 
 [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) sends live transcript text to your backend without adding a bot to the participant list. You choose the AI provider, write the prompt, decide how much conversation to include, and choose where the answer goes. This blueprint includes examples for [OpenAI](https://developers.openai.com/api/docs/) and [Anthropic](https://docs.anthropic.com/), but the design is not tied to either provider.
@@ -168,7 +166,7 @@ The repository does not include a tested deployment template for these two sampl
 - Define consent, retention, deletion, and data-residency behavior before production use.
 - Redact sensitive fields before provider calls when the use case permits it.
 - Track end-to-end latency, model error rates, token usage, and dropped transcript segments.
-- Treat model output as untrusted. Ask a person to confirm important actions.
+- Treat model output as untrusted. Route high-impact actions through the customer's approval workflow.
 
 ## App Manifest
 
@@ -187,7 +185,7 @@ The repository does not include a tested deployment template for these two sampl
 
 The manifest contains the app name, description, transcript scope, OAuth callback placeholder, and a webhook endpoint with both lifecycle events. Provider credentials do not belong in the Zoom manifest.
 
-Marketplace schema and account policy can change. A human app owner must import the manifest in the target account, confirm the exact scope names and event subscriptions, review the requested permissions, and complete Marketplace validation before this blueprint moves beyond draft.
+Marketplace schema and account policy can change. The app owner must import the manifest in the target account, confirm the exact scope names and event subscriptions, review the requested permissions, and complete Marketplace validation before this blueprint moves beyond draft.
 
 ## Related Resources
 
