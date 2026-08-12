@@ -21,8 +21,6 @@ license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
 stack: "Node.js · Express · RTMSManager"
 ---
 
-## Problem Statement
-
 Meeting search, quality review, notes, and AI tools all need a reliable transcript. Waiting for a recording adds delay. Building speaker ordering and subtitle files from scratch also slows down the first useful test.
 
 [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) sends transcript text while the meeting is running. This quickstart saves it as [WebVTT](https://www.w3.org/TR/webvtt1/), SubRip (SRT), and plain text. It keeps the timing and speaker information, and it does not add a bot to the meeting.
@@ -165,7 +163,7 @@ Run the service and start RTMS in a test meeting with at least two people speaki
 
 The manifest contains the app identity, transcript scope, OAuth callback placeholder, and the public lifecycle webhook. It does not configure transcript storage or retention; those are application responsibilities.
 
-Before publication, a human app owner must import it into the target Zoom Marketplace account, confirm the permissions and current schema, complete endpoint validation, and test it with an RTMS-enabled meeting. Passing repository validation only proves that the JSON is present and parseable; it is not Marketplace approval.
+Before publication, the app owner must import it into the target Zoom Marketplace account, confirm the permissions and current schema, complete endpoint validation, and test it with an RTMS-enabled meeting. Passing repository validation only proves that the JSON is present and parseable; it is not Marketplace approval.
 
 ## Related Resources
 
