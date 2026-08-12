@@ -1,0 +1,17 @@
+{
+  "name": "live-transcript-llm",
+  "description": "Send live Zoom Meeting transcript segments to a configured LLM.",
+  "scopes": [
+    "meeting:read:meeting_transcript"
+  ],
+  "redirect_url": "https://YOUR_DOMAIN.example.com/auth/callback",
+  "event_subscriptions": [
+    {
+      "endpoint_url": "https://YOUR_DOMAIN.example.com/webhook",
+      "events": [
+        "meeting.rtms_started",
+        "meeting.rtms_stopped"
+      ]
+    }
+  ]
+}

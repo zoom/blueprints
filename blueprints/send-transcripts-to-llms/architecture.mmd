@@ -1,0 +1,7 @@
+flowchart LR
+    A[Zoom Meeting] -->|Live transcript via RTMS| B[Node.js RTMS service]
+    B -->|Final transcript segments| C[Context and prompt builder]
+    C -->|Provider request| D{Configured LLM}
+    D -->|OpenAI response| E[Customer destination]
+    D -->|Anthropic response| E
+    E -->|CRM, dashboard, automation, or app| F[Meeting workflow]
