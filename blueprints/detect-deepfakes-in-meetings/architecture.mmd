@@ -1,6 +1,7 @@
 flowchart LR
-    A[Zoom Meeting] -->|Start and stop RTMS| B[In-meeting Zoom App]
-    A -->|Participant video and meeting audio| C[RTMS media service]
+    B[In-meeting Zoom App] -->|startRTMS and stopRTMS| A[Zoom Meeting]
+    A -->|Selected video and multi-stream audio| C[RTMS media service]
+    B <-->|Selection, status, and results| C
     C -->|Bounded audio and video clips| D[Customer inference adapter]
     D -->|Commercial API| E[Selected detection service]
     D -->|Private endpoint| F[Customer-hosted model]
