@@ -1,0 +1,6 @@
+flowchart LR
+    A[Zoom Meeting] -->|RTMS audio and video| B[Node.js media receiver]
+    B -->|Temporary stream files| C[FFmpeg processor]
+    C -->|Playable media artifacts| D[S3 uploader]
+    D -->|Encrypted object upload| E[Customer Amazon S3 bucket]
+    E -->|Lifecycle, analytics, or review| F[Customer-controlled workflows]
