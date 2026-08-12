@@ -1,0 +1,9 @@
+flowchart LR
+    A[Zoom Meeting] -->|RTMS transcript stream| B[Node.js transcript receiver]
+    B -->|Final segments and timestamps| C[Transcript formatter]
+    C -->|WebVTT| D[VTT file]
+    C -->|SubRip| E[SRT file]
+    C -->|Readable transcript| F[TXT file]
+    D --> G[Customer storage or processing]
+    E --> G
+    F --> G
