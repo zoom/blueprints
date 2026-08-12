@@ -22,8 +22,6 @@ license_note: "Requires RTMS for Zoom Meetings and access to the selected OpenAI
 stack: "Node.js · RTMS · OpenAI Realtime API · Zoom MCP"
 ---
 
-## Problem Statement
-
 Teams want meeting agents that understand a spoken request right away. They may also need the agent to find useful meeting information without waiting for a recording. Voice feels natural during a conversation, but the agent must respond quickly, handle interruptions, respect permissions, and clearly tell people when it is listening.
 
 This blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The sample changes the audio into the format OpenAI expects, sends it to the realtime model, and lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/).
@@ -138,7 +136,7 @@ For a later spoken-answer test, turn on audio output in OpenAI and capture the r
 
 #### 6. Restrict MCP tools
 
-Connect to Zoom's hosted MCP server only after the user signs in and gives permission. Enable as few tools as possible. Ask for confirmation before creating content or making a lasting change.
+Connect to Zoom's hosted MCP server only after the user signs in and gives permission. Enable as few tools as possible. Route content creation and lasting changes through the customer's approval workflow.
 
 The sample defaults MCP approval to `never` and only logs approval requests; it does not include an approval UI. Keep automatic execution only for tools you are willing to run without another prompt. Put write tools behind an approval flow before production.
 
@@ -172,7 +170,7 @@ Test people talking over each other, silence, interruptions, different accents, 
 - Review provider retention, regional processing, safety controls, and contractual terms.
 - Keep tool permissions separate from prompts. A prompt is not permission.
 - Add rate, duration, and spend limits per meeting and tenant.
-- Ask people to review the prompts, voice, participant notice, and escalation steps.
+- Review the prompts, voice, participant notice, and escalation steps with the product and security owners before rollout.
 
 ## App Manifest
 
@@ -191,7 +189,7 @@ The manifest lists the granular scopes used by the sample's full default tool al
 - `meeting.rtms_started`
 - `meeting.rtms_stopped`
 
-A human app owner must verify the current Zoom Marketplace schema, the app type and OAuth flow, each granular scope, endpoint validation, and the hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model and data controls. A Zoom architecture owner must approve any mechanism intended to deliver synthesized audio into a Zoom Meeting because that path is not implemented by the linked sample.
+The app owner must verify the current Zoom Marketplace schema, the app type and OAuth flow, each granular scope, endpoint validation, and the hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model and data controls. Any mechanism intended to deliver synthesized audio into a Zoom Meeting requires Zoom architecture approval because that path is not implemented by the linked sample.
 
 ## Related Resources
 
