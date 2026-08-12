@@ -2,8 +2,8 @@
 title: "Archive Zoom Meeting Audio and Video"
 slug: "archive-meeting-media-to-s3"
 description: >-
-  Capture live Zoom Meeting audio and video with RTMS, prepare the files with
-  FFmpeg, and save them in an Amazon S3 bucket you control.
+  Build a customer-controlled archive for Zoom Meeting audio and video. Capture
+  media with RTMS, package it with FFmpeg, and store the files in Amazon S3.
 products: ["rtms"]
 verticals: ["enterprise", "finance"]
 difficulty: "advanced"
@@ -24,7 +24,7 @@ stack: "Node.js · Express · RTMSManager · FFmpeg · Amazon S3"
 
 Some organizations need to keep meeting media in their own storage for retention rules, quality review, media processing, or an existing data platform. Saving recordings on one application server does not scale well and makes files easier to lose. It also makes company-wide access and deletion rules harder to enforce.
 
-[Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) sends live audio and video to your backend. The sample saves the stream, uses [FFmpeg](https://ffmpeg.org/documentation.html) to create playable files, and uploads the finished files to [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html). You control the bucket, encryption, access, retention period, and anything that happens to the files later.
+[Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) sends live audio and video to your backend. The reference implementation saves the stream, uses [FFmpeg](https://ffmpeg.org/documentation.html) to create playable files, and uploads the finished files to [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html). You control the bucket, encryption, access, retention period, and anything that happens to the files later.
 
 Archive only the meetings and media your use case requires. Tell participants, get any required consent, and follow your organization's approval process.
 
@@ -44,11 +44,11 @@ A successful archive run should:
 
 Zoom calls your webhook when RTMS starts. A media worker receives audio and video, writes bounded temporary artifacts, packages them into playable formats, uploads them to durable object storage, and records whether the upload completed before cleaning up local files.
 
-### How this sample implements it
+### How the reference implementation handles it
 
-The linked [Node.js sample](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js) uses Express, RTMSManager, FFmpeg, and the AWS SDK. It captures mixed 16 kHz mono audio and a single active H.264 video stream at 25 frames per second. After `meeting.rtms_stopped`, it waits two seconds, converts and muxes the local media, then uploads allowed file types with `PutObject`.
+The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js) uses Express, RTMSManager, FFmpeg, and the AWS SDK. It captures mixed 16 kHz mono audio and a single active H.264 video stream at 25 frames per second. After `meeting.rtms_stopped`, it waits two seconds, converts and muxes the local media, then uploads allowed file types with `PutObject`.
 
-The sample reads each file into memory, uses static AWS credentials from environment variables, and leaves local files in place. It does not implement multipart upload, a durable job queue, upload recovery after a restart, automatic cleanup, or per-object encryption settings.
+The reference implementation reads each file into memory, uses static AWS credentials from environment variables, and leaves local files in place. It does not implement multipart upload, a durable job queue, upload recovery after a restart, automatic cleanup, or per-object encryption settings.
 
 ```mermaid
 flowchart LR
@@ -65,7 +65,7 @@ flowchart LR
 
 #### 1. Prepare the runtime
 
-Install the Node.js version required by the sample and install FFmpeg. Make sure the server has enough encrypted temporary storage for your longest expected meeting.
+Install the Node.js version required by the reference implementation and install FFmpeg. Make sure the server has enough encrypted temporary storage for your longest expected meeting.
 
 ```bash
 git clone https://github.com/zoom/rtms-samples.git
@@ -84,7 +84,7 @@ Create a dedicated bucket or prefix for RTMS media. Configure:
 - Lifecycle expiration or archival tiers matching the retention policy.
 - Access logging and alerts for policy changes.
 
-The reference sample uses AWS credentials from environment variables. For production, adapt `S3StorageHelper.js` to use the credential provider approved by your platform, such as an IAM role or workload identity. Use access keys only for a limited local test, and never commit them.
+The reference implementation uses AWS credentials from environment variables. For production, adapt `S3StorageHelper.js` to use the credential provider approved by your platform, such as an IAM role or workload identity. Use access keys only for a limited local test, and never commit them.
 
 #### 3. Create the Zoom app
 
@@ -125,7 +125,7 @@ Use a private temporary folder and set a maximum size. You can use the meeting U
 
 Check the webhook request and reply quickly. Open the RTMS connections in the background. Save audio and video separately, handle heartbeats and reconnects, and close each file before running FFmpeg.
 
-The reference sample uploads objects under a structure similar to:
+The reference implementation uploads objects under a structure similar to:
 
 ```text
 rtms/<meeting-uuid>/<stream-id>/<filename>
@@ -137,9 +137,9 @@ Pass FFmpeg a fixed list of arguments. Do not build a shell command from meeting
 
 #### 6. Upload and recover
 
-The sample uploads WAV, MP4, VTT, SRT, and TXT files and sets a content type for each. It relies on the bucket's default encryption and does not delete local files. Confirm the object exists before adding cleanup. A retry must never delete a file that has not been stored safely.
+The reference implementation uploads WAV, MP4, VTT, SRT, and TXT files and sets a content type for each. It relies on the bucket's default encryption and does not delete local files. Confirm the object exists before adding cleanup. A retry must never delete a file that has not been stored safely.
 
-For large files, replace the sample's whole-file `PutObject` path with streaming or multipart upload. Add a durable queue and clean up multipart uploads that never finish.
+For large files, replace the reference implementation's whole-file `PutObject` path with streaming or multipart upload. Add a durable queue and clean up multipart uploads that never finish.
 
 ### Part 3: Run the reference implementation
 
@@ -151,7 +151,7 @@ Copy `.env.example` to `.env`, set the Zoom and AWS values, and run:
 node index.js
 ```
 
-Expose the configured webhook path over HTTPS. The repository does not include a tested CloudFormation, Terraform, or one-click deployment template for this sample. Your deployment must provide FFmpeg, persistent temporary storage, a public webhook domain, AWS identity, and restart handling.
+Expose the configured webhook path over HTTPS. The repository does not include a tested CloudFormation, Terraform, or one-click deployment template for this reference implementation. Your deployment must provide FFmpeg, persistent temporary storage, a public webhook domain, AWS identity, and restart handling.
 
 #### 8. Verify the archive workflow
 
@@ -173,7 +173,7 @@ Test short and long meetings, interrupted RTMS sessions, an unavailable S3 endpo
 
 ## App Manifest
 
-[`manifest.json`](manifest.json) is a candidate General App manifest requesting RTMS audio and video access and subscribing to the RTMS lifecycle events. Replace `YOUR_DOMAIN` before import.
+The [`manifest.json`](manifest.json) in this directory is a candidate Zoom General App manifest and pre-configures the media archive: audio and video scopes, an OAuth callback placeholder, and RTMS lifecycle subscriptions. Import it when creating the app, replacing `YOUR_DOMAIN` first.
 
 ### Scopes
 
@@ -196,8 +196,15 @@ The app owner must verify the current Marketplace schema and exact scopes, justi
 - [Zoom RTMS documentation](https://developers.zoom.us/docs/rtms/)
 - [Amazon S3 User Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
 - [FFmpeg documentation](https://ffmpeg.org/documentation.html)
-- [Archive-to-S3 sample](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js)
+- [Archive-to-S3 reference implementation](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js)
 
 ## What Will You Build?
 
-Use a private test bucket and one short meeting for the first run. Once upload and recovery behave as expected, connect object creation to your catalog, review, or analytics workflow. You can replace S3 with another durable object store if it supports the same upload, encryption, access-control, retention, and verification responsibilities.
+This Blueprint shows one path: mixed audio and active-speaker video packaged by FFmpeg and uploaded to Amazon S3. The same architecture supports many variations:
+
+- Connect object creation to a catalog, review, or analytics workflow.
+- Replace Amazon S3 with another durable object store.
+- Add a durable queue and multipart upload for large files.
+- Archive only the media types required by the use case.
+
+RTMS provides the live media. The storage, retention, and processing workflow are yours to build.
