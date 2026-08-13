@@ -6,10 +6,11 @@ description: >-
   to OpenAI or Anthropic and returns useful answers while the meeting is active.
 products: ["rtms"]
 verticals: ["enterprise", "agents"]
+difficulty: "intermediate"
 estimated_time: "2-4 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-08-13
 github_repo: "https://github.com/zoom/rtms-samples"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "llm", "real-time", "zoom-meetings"]
@@ -27,14 +28,9 @@ Build a live analysis path that turns meeting speech into useful answers while t
 
 The transcript is only the starting point. Change the prompt, send the answer to a CRM, start an automation, or show recommendations in your own app.
 
-**What you'll need:**
+## Features
 
-- Transcript access through [RTMS](https://developers.zoom.us/docs/rtms/)
-- A backend that can receive webhooks and maintain one session per RTMS stream
-- An OpenAI or Anthropic account, or another approved model provider
-- A destination for the results, such as a dashboard, CRM, or automation
-
-**Features:**
+Use this checklist to confirm the full path works:
 
 - Receive live transcript segments without adding a meeting participant.
 - Keep Zoom and model-provider credentials on the backend.
@@ -42,8 +38,6 @@ The transcript is only the starting point. Change the prompt, send the answer to
 - Preserve Claude conversation history when that behavior is wanted and bound it before production use.
 - Keep model errors from interrupting the RTMS stream.
 - Route the answer to a destination the customer controls.
-
-Follow along as we walk through the architecture.
 
 ## Architecture
 
@@ -57,6 +51,8 @@ Keep provider credentials on the server. Never expose them in a browser or commi
 
 The linked [RTMS reference implementations](https://github.com/zoom/rtms-samples) use Node.js, Express, and RTMSManager. Both call the provider for each incoming transcript event and write the answer to the server console. The OpenAI path sends one segment without history. The Anthropic path appends every user segment and assistant response to a process-wide `chatHistory` array with no size limit. Neither path delivers answers to a CRM, dashboard, automation, or frontend.
 
+This Blueprint was checked against reference revision [`5c39fca`](https://github.com/zoom/rtms-samples/commit/5c39fca2ed97d75bcbdb318cf246a037835f7d37). Recheck the linked source if the default branch changes.
+
 ```mermaid
 flowchart LR
     A[Zoom Meeting] -->|Live transcript via RTMS| B[Node.js RTMS service]
@@ -65,19 +61,6 @@ flowchart LR
     D -->|OpenAI or Anthropic response| E[Server console in reference implementation]
     E -.->|Customer extension| F[CRM, dashboard, automation, or app]
 ```
-
-### Agent integration map
-
-Check what your application already provides before adding components:
-
-| Required capability | Reuse when present | Add when missing |
-| --- | --- | --- |
-| Webhook endpoint | Existing public API route | HTTPS endpoint for RTMS lifecycle events |
-| Signature verification | Existing Zoom webhook middleware | Raw-body HMAC verification and replay protection |
-| RTMS session manager | Existing stream registry | State keyed by `rtms_stream_id` |
-| Transcript context | Existing conversation store | Bounded per-meeting segment buffer |
-| Model client | Existing approved AI provider | OpenAI, Anthropic, or equivalent adapter |
-| Result delivery | Existing CRM, queue, or UI integration | Destination adapter with retry and idempotency |
 
 ## Implementation Guide
 
@@ -92,7 +75,24 @@ The RTMS repository contains two equivalent starting points:
 | OpenAI | [`transcript/send_transcript_to_openai_js`](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_openai_js) |
 | Anthropic | [`transcript/send_transcript_to_claude_js`](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_claude_js) |
 
-Both implementations register the provider call on RTMSManager's `transcript` event. See [`send_transcript_to_openai_js/index.js`](https://github.com/zoom/rtms-samples/blob/main/transcript/send_transcript_to_openai_js/index.js) for the Node.js implementation. A different language or framework still needs the same lifecycle event, transcript handler, provider boundary, and failure isolation.
+Both implementations register the provider call on RTMSManager's `transcript` event. This source-backed excerpt comes from [`send_transcript_to_openai_js/index.js`](https://github.com/zoom/rtms-samples/blob/5c39fca2ed97d75bcbdb318cf246a037835f7d37/transcript/send_transcript_to_openai_js/index.js):
+
+```javascript
+import { chatWithTranscript } from './chatWithOpenAI.js';
+
+RTMSManager.on('transcript', async ({ text, userName }) => {
+  console.log(`[TRANSCRIPT] ${userName}: ${text}`);
+
+  try {
+    const response = await chatWithTranscript(text);
+    console.log('[OpenAI Response]:', response);
+  } catch (err) {
+    console.error('[OpenAI Error] Failed to get response');
+  }
+});
+```
+
+The `try`/`catch` keeps a provider failure inside the event handler. A different language or framework still needs the same lifecycle event, transcript handler, provider boundary, and failure isolation.
 
 #### 2. Create a Zoom General App
 
@@ -110,30 +110,6 @@ Enable RTMS for the account and for the meeting used in the test. Import `manife
 
 Check that every webhook request really came from Zoom and reply to it right away. Start the RTMS connection after sending the reply. Never make Zoom wait while you call the AI provider. Reject requests with an invalid signature or secret token.
 
-Keep signature verification concrete because it protects the entry point:
-
-```javascript
-import crypto from 'node:crypto';
-
-function verifyZoomWebhook(rawBody, timestamp, signature, secret) {
-  const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - Number(timestamp)) > 300) return false;
-
-  const message = `v0:${timestamp}:${rawBody.toString('utf8')}`;
-  const expected = `v0=${crypto
-    .createHmac('sha256', secret)
-    .update(message)
-    .digest('hex')}`;
-
-  const received = Buffer.from(signature);
-  const computed = Buffer.from(expected);
-  return received.length === computed.length &&
-    crypto.timingSafeEqual(received, computed);
-}
-```
-
-Use the raw request bytes, handle endpoint validation separately, and compare signatures with a timing-safe function.
-
 #### 4. Receive transcript segments
 
 Configure RTMSManager to receive transcripts. Both paths pass the `text` field directly to the model call without speaker or timestamp metadata. OpenAI sends only that segment. Anthropic adds it to process-wide conversation history before making the request.
@@ -141,18 +117,6 @@ Configure RTMSManager to receive transcripts. Both paths pass the `text` field d
 Before using this pattern for meeting-wide analysis, decide which transcript events are final enough for your use case. Add the speaker name and timestamp when they help, and prevent duplicate or still-changing segments from starting repeated requests.
 
 Limit the context by time, number of turns, or tokens. Without a limit, every request gets slower and more expensive as the meeting continues. Summarize older discussion when the agent needs a longer memory.
-
-**Input:** RTMS transcript event with stream ID, speaker, timestamp, and text
-
-**Output:** Normalized transcript segment stored in the correct meeting context
-
-**Invariants:**
-
-- Key state by `rtms_stream_id`, not by a process-wide array
-- Deduplicate repeated events before calling a model
-- Preserve speaker and timing metadata needed by the use case
-- Bound context by time, turns, tokens, or a combination of them
-- Remove session state when RTMS stops or the connection closes
 
 ### Part 2: Add the analysis layer
 
@@ -164,32 +128,9 @@ Give the model a clear task and ask for a predictable response format. Retry tem
 
 Do not send sensitive meeting content to a provider until the customer has approved the provider, region, retention policy, and data-processing terms.
 
-**Input:** Bounded transcript context, task instructions, and current workflow state
-
-**Output:** Validated provider-neutral result for the selected destination
-
-**Invariants:**
-
-- Model, timeout, output limit, and retry policy come from configuration
-- Provider-specific response parsing stays behind an adapter
-- Invalid or incomplete output does not interrupt RTMS ingestion
-- Retries apply only to temporary failures and remain bounded
-- High-impact actions require an explicit application policy outside the prompt
-
 #### 6. Add the customer destination
 
 The reference implementation prints the answer to the server console. Replace that log statement with an adapter for your destination. The linked repository does not include a database, queue, CRM client, or frontend. Add only the components your workflow needs, and keep the model integration independent from the destination.
-
-**Input:** Validated analysis result plus meeting and request identifiers
-
-**Output:** Result delivered to a dashboard, CRM, queue, automation, or application
-
-**Invariants:**
-
-- A destination failure does not close the RTMS session
-- Delivery retries are idempotent
-- Logs exclude credentials and unnecessary transcript content
-- Authorization is checked again before any lasting external action
 
 ### Part 3: Run the reference implementation
 
@@ -261,20 +202,21 @@ The manifest contains the app name, description, transcript scope, OAuth callbac
 
 Marketplace schema and account policy can change. The app owner must import the manifest in the target account, confirm the exact scope names and event subscriptions, review the requested permissions, and complete Marketplace validation before this Blueprint moves beyond draft.
 
-## Acceptance Criteria
-
-- [ ] A valid Zoom webhook starts one RTMS session, while invalid or stale signatures are rejected.
-- [ ] Transcript state is isolated by stream and removed when the stream ends.
-- [ ] Duplicate segments do not create duplicate model requests or destination actions.
-- [ ] Model context stays within the configured time, turn, or token limit.
-- [ ] Provider timeouts and malformed responses do not interrupt transcript ingestion.
-- [ ] The configured destination receives a validated result with meeting context.
-- [ ] Zoom and provider credentials stay on the backend and out of logs.
-- [ ] Data handling, retention, and provider use match the customer's approved policy.
-
 ## Related Resources
 
 - [Zoom RTMS documentation](https://developers.zoom.us/docs/rtms/)
 - [RTMS JavaScript SDK reference](https://zoom.github.io/rtms/js/)
 - [OpenAI reference implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_openai_js)
 - [Anthropic reference implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_claude_js)
+
+## What Will You Build?
+
+This Blueprint shows one path: live transcript segments sent to OpenAI or Anthropic, with responses written to the server console. The same architecture supports many variations:
+
+- Flag support risks in a dashboard while the meeting is active.
+- Draft structured CRM notes from bounded transcript context.
+- Route an approved action to an automation.
+- Replace the provider without changing RTMS ingestion.
+- Deliver answers to a Zoom App or another customer-owned interface.
+
+RTMS provides the live transcript. The prompt, model, and destination are yours to build.
