@@ -9,7 +9,7 @@ verticals: ["enterprise", "finance"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-08-13
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
@@ -26,29 +26,15 @@ This Blueprint sends [Zoom Realtime Media Streams (RTMS)](https://developers.zoo
 
 Deepfake detection is not certain. A high score is not proof that someone is trying to deceive you. Results can change with the language, microphone, camera, connection quality, lighting, participant, or type of attack. Use the result as one signal in a documented fraud-review process. Do not use the score as an automatic decision.
 
-**What you'll need:**
+## Features
 
-- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio and video access
-- A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) for the in-meeting review experience
-- A commercial detection service or customer-hosted audio and video models
-- FFmpeg and temporary media storage on the backend
-- An approved review, notice, retention, and escalation policy
+The review experience needs to:
 
-**Features:**
-
-- Allow an authorized Zoom App user to choose the participant to review.
+- Let a Zoom App user choose the participant to review.
 - Send only that participant's configured audio and video windows to inference.
 - Show video and audio results separately with model and service status.
 - Distinguish an unavailable model from a low-confidence result.
 - Keep final decisions within the approved fraud-review policy.
-
-Follow along as we walk through the architecture.
-
-## Features
-
-The in-meeting Zoom App shows the selected participant, separate audio and
-video service states, and the latest normalized inference result.
-
 
 ## Architecture
 
@@ -61,6 +47,8 @@ A Zoom App starts RTMS from inside the meeting. The backend receives selected me
 The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js) uses the [Zoom Apps SDK](https://appssdk.zoom.us/), Express, Socket.IO, RTMSManager, FFmpeg, and HLS. It requests one participant's individual video stream, receives multi-stream audio, and filters the audio packets to the same selected RTMS user ID.
 
 By default, the reference implementation cuts video into two-second clips at five frames per second and audio into four-second PCM windows. It expects a separate inference service. The linked README names `Naman712/Deep-fake-detection` for video and `MelodyMachine/Deepfake-audio-detection-V2` for audio as examples. The customer owns the model or commercial service, hosting, credentials, evaluation, threshold, and data policy. Neither model service is included in this Blueprint repository.
+
+This Blueprint was checked against reference revision [`5c39fca`](https://github.com/zoom/rtms-samples/commit/5c39fca2ed97d75bcbdb318cf246a037835f7d37). Recheck the linked source if the default branch changes.
 
 ```mermaid
 flowchart LR
@@ -75,20 +63,6 @@ flowchart LR
     D -->|Risk signal and model metadata| C
     C -->|Status and review cues| B
 ```
-
-### Agent integration map
-
-Check what your application already provides before adding components:
-
-| Required capability | Reuse when present | Add when missing |
-| --- | --- | --- |
-| Zoom App shell | Existing in-meeting application | Apps SDK configuration and review panel |
-| Reviewer authorization | Existing roles and policy engine | Explicit permission check before participant selection |
-| Webhook verification | Existing Zoom middleware | Raw-body HMAC verification and replay protection |
-| RTMS media service | Existing stream receiver | Selected video and filtered audio capture |
-| Clip processor | Existing media workers | Bounded FFmpeg audio and video jobs |
-| Inference adapter | Existing model gateway | Provider-neutral classify and health contracts |
-| Audit trail | Existing security case system | Model, media window, result, and reviewer record |
 
 ## Implementation Guide
 
@@ -133,19 +107,6 @@ Keep the API credential on the server and use HTTPS. Limit the request size and 
 
 The endpoint contract stays the same whether the adapter calls a commercial service, a managed inference endpoint, or a model in your own environment. Do not copy the reference model names into production without evaluating them on approved data from the intended meeting conditions.
 
-**Input:** Bounded audio or video clip plus non-identifying media metadata
-
-**Output:** Normalized result with service status, model identity, scores, threshold, decision, and timestamp
-
-**Invariants:**
-
-- Service failure is distinct from a low-risk or low-confidence result
-- Scores are finite values in the documented range
-- Provider-specific fields stay inside the adapter
-- Model name and version are recorded when the provider exposes them
-- Thresholds come from an approved evaluation, not the provider default
-- A model result never becomes an automatic accusation or access decision
-
 ### Part 2: Connect Zoom media to the reviewer
 
 #### 3. Create the Zoom app
@@ -160,43 +121,31 @@ Create a General App in the [Zoom App Marketplace](https://marketplace.zoom.us/)
 
 Use `manifest.json` as a starting point for the scopes and events. You still need to configure and check the Zoom App APIs and allowed domains in Marketplace.
 
-Verify RTMS lifecycle webhooks over the raw request body, enforce a replay window, and use a timing-safe comparison.
-
-```javascript
-import crypto from 'node:crypto';
-
-function verifyZoomWebhook(rawBody, timestamp, signature, secret) {
-  if (Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp)) > 300) return false;
-  const message = `v0:${timestamp}:${rawBody.toString('utf8')}`;
-  const expected = `v0=${crypto.createHmac('sha256', secret).update(message).digest('hex')}`;
-  const received = Buffer.from(signature);
-  const computed = Buffer.from(expected);
-  return received.length === computed.length && crypto.timingSafeEqual(received, computed);
-}
-```
-
-Handle Zoom endpoint validation separately. The Zoom App must also call `config()` before other Apps SDK methods and list every capability it uses.
-
 #### 4. Bound and classify media
 
 Send short clips instead of an endless stream. Process audio and video separately so one can keep working if the other fails. Limit how many requests run at once, and drop old work when the result would arrive too late to help.
 
-[`deepfakeClient.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/stream_audio_and_video_deepfake_detection_js/deepfakeClient.js) selects either the service or local CLI path, normalizes the provider response, applies the configured threshold, and returns model metadata with the decision. The audio client follows the same boundary with its own clip duration and threshold. This separation keeps provider-specific parsing inside the inference adapter and allows either model to change without changing RTMS ingestion or the Zoom App.
+[`deepfakeClient.js`](https://github.com/zoom/rtms-samples/blob/5c39fca2ed97d75bcbdb318cf246a037835f7d37/zoom_apps/stream_audio_and_video_deepfake_detection_js/deepfakeClient.js) selects either the service or local CLI path, normalizes the provider response, applies the configured threshold, and returns model metadata with the decision. The audio client follows the same boundary with its own clip duration and threshold. This separation lets the customer replace either model without changing RTMS ingestion or the Zoom App.
+
+```javascript
+const scores = normalizeScores(rawResult);
+const decision = buildDecision(scores, this.threshold);
+
+return {
+  mode: this.mode,
+  vendorName: this.vendorName,
+  modelName: this.modelName,
+  threshold: this.threshold,
+  scores,
+  ...decision,
+  timestamp: Date.now(),
+  metadata
+};
+```
+
+This source-backed excerpt is the normalized application result, not the raw response required from every provider. Keep provider-specific parsing inside the inference adapter.
 
 Check that every response has the expected fields and valid scores. Show which model ran, which part of the meeting it checked, how confident it was, and whether the service is healthy. Never turn a score directly into an accusation.
-
-**Input:** Authorized participant selection and timestamped RTMS media frames
-
-**Output:** Bounded audio and video clips associated with one review window
-
-**Invariants:**
-
-- Reviewer authorization is checked before media selection begins
-- Video and audio processing fail independently
-- Clips have explicit duration, size, and concurrency limits
-- Old queued clips are dropped when their result would arrive too late
-- Temporary media follows the approved encryption and deletion policy
-- Participant names and email addresses are excluded unless required and approved
 
 ### Part 3: Run the reference implementation
 
@@ -274,21 +223,21 @@ Enable the SDK capabilities used by the frontend and allow the app domain plus `
 
 The app owner must verify the current Marketplace schema, exact scopes, in-client APIs, redirect and webhook URLs, and domain allowlist. Security, privacy, legal, and AI-risk reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before publication or production deployment.
 
-## Acceptance Criteria
-
-- [ ] Only an authorized reviewer can start a participant review.
-- [ ] Invalid or stale RTMS lifecycle webhooks are rejected.
-- [ ] The selected video stream and matching participant audio produce bounded clips.
-- [ ] Audio and video results identify the service and model and remain separate.
-- [ ] An inference outage is displayed differently from a low-risk result.
-- [ ] Invalid scores or malformed provider responses are rejected by the adapter.
-- [ ] No model score automatically accuses a participant or changes meeting access.
-- [ ] Temporary clips and audit records follow the approved retention and deletion policy.
-- [ ] The chosen model, threshold, meeting conditions, and known error rates are documented from an approved evaluation.
-
 ## Related Resources
 
 - [Zoom RTMS documentation](https://developers.zoom.us/docs/rtms/)
 - [Zoom Apps SDK reference](https://appssdk.zoom.us/)
 - [Deepfake review reference implementation](https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js)
 - [Hugging Face Inference Endpoints](https://huggingface.co/docs/inference-endpoints/)
+
+## What Will You Build?
+
+This Blueprint shows one path: selected participant media sent to customer-owned inference, with review cues displayed in a Zoom App. The same architecture supports many variations:
+
+- Replace the video and audio models independently.
+- Use a commercial service, managed endpoint, or private model host.
+- Send risk signals to a security case system.
+- Add audit records with the model version and reviewed media window.
+- Adjust media windows for the evaluated meeting conditions.
+
+RTMS provides the selected media. The inference, thresholds, and review workflow are yours to build.
