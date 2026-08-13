@@ -11,8 +11,8 @@ verticals: ["agents", "enterprise"]
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-03
-github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
+updated: 2026-08-13
+github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
 seo_title: "Send Zoom Meeting Transcripts to MCP Servers"
@@ -27,16 +27,9 @@ Build a two-service meeting agent that turns live Zoom Meeting transcripts into 
 
 The router combines fixed security rules with a deployment-specific task prompt. It discovers tools from the MCP servers declared through the environment and exposes only each server's configured allowlist to the selected model. The included configuration lets current meeting speech trigger searches for relevant Zoom meetings, recording resources, meeting assets, or Zoom Docs without exposing the router publicly or giving the model unrestricted tool access.
 
-**What you'll need:**
+## Features
 
-- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) transcript access
-- A backend that can receive Zoom webhooks and maintain RTMS signaling and transcript WebSockets
-- A [Zoom General App](https://developers.zoom.us/docs/integrations/) with RTMS lifecycle events and transcript access
-- An access token for each configured MCP server, including a Zoom user OAuth token with the granular scopes required by the included [Zoom MCP tools](https://developers.zoom.us/docs/mcp/servers/)
-- An API key and tool-capable model from [Anthropic](https://platform.claude.com/docs/en/about-claude/models/overview), [OpenAI](https://platform.openai.com/docs/models), or [OpenRouter](https://openrouter.ai/docs/quickstart)
-- Node.js 22 or Docker for the reference implementation
-
-**Features:**
+The reference implementation can:
 
 - Authenticate Zoom webhook deliveries and reject stale requests.
 - Keep transcript state isolated by RTMS stream.
@@ -51,16 +44,6 @@ The router combines fixed security rules with a deployment-specific task prompt.
 - Enable `LOG_CONTENT` during local testing to inspect transcript and model-response text in the service logs.
 
 If you prefer built-in meeting assistance, [Zoom AI Companion](https://zoom.us/ai) offers related meeting search and assistance capabilities.
-
-Follow along as we walk through the architecture.
-
-## Features
-
-The reference implementation reports RTMS transcript batching, environment-configured MCP server discovery, allowlisted tool calls, and responses through structured service logs. The screenshot shows a transcript asking for Zoom's stock price and the model response returned through the router with local content logging enabled.
-
-![RTMS transcript request and model response in structured service logs](images/request-response-to-llm.png)
-
-Content logging is disabled by default because transcripts and model responses may contain sensitive meeting data.
 
 ## Architecture
 
@@ -82,6 +65,8 @@ The [reference implementation](https://github.com/zoom/rtms-samples/tree/main/rt
 | Tool policy | Intersect each server's discovered tools with its configured allowlist and namespace the result | `mcpServers.ts` |
 | Audit logging | Record request IDs, outcomes, durations, and safe error codes | Structured JSON logs in both services |
 
+This Blueprint was checked against reference revision [`5c39fca`](https://github.com/zoom/rtms-samples/commit/5c39fca2ed97d75bcbdb318cf246a037835f7d37). Recheck the linked source if the default branch changes.
+
 ```mermaid
 flowchart LR
     A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
@@ -94,59 +79,55 @@ flowchart LR
     C -->|Text response| B
 ```
 
-The router returns the model's text response to the RTMS client. With `LOG_CONTENT=false`, the client records only the request outcome. Set `LOG_CONTENT=true` in both services during local testing to print transcript and response text. Add an output adapter if the response needs to appear in a UI, API, CRM, or persistent store.
-
-**What you can replace:** The included provider adapters support Anthropic, OpenAI, and OpenRouter. Another provider can be added behind the same tool-use contract. The RTMS client and private router can also be implemented in another backend stack. Keep the authentication, stream isolation, input limits, tool allowlist, and audit boundaries intact.
-
-### Agent integration map
-
-Check which boundaries already exist before adding another service:
-
-| Required capability | Reuse when present | Add when missing |
-| --- | --- | --- |
-| Webhook endpoint | Existing public API route | HTTPS route for RTMS lifecycle events |
-| Signature verification | Existing Zoom webhook middleware | Raw-body HMAC verification and replay window |
-| RTMS connection manager | Existing signaling and media socket layer | Transcript-only RTMS client keyed by `rtms_stream_id` |
-| Transcript batching | Existing bounded stream buffer | Per-stream timer and character cap |
-| Internal service authentication | Existing service identity or mesh policy | Bearer token and HTTPS enforcement |
-| Model client | Existing tool-capable AI provider | Anthropic, OpenAI, or OpenRouter adapter with timeouts and retries |
-| Prompt policy | Existing agent behavior and security policy | Fixed security rules plus a deployment-specific task prompt |
-| MCP client registry | Existing Streamable HTTP clients | Environment-defined server connections and `tools/list` discovery |
-| Tool authorization | Existing agent policy layer | Per-server tool allowlists and namespacing |
-| Response delivery | Existing UI, workflow, or API destination | Adapter for the returned assistant text |
-| Audit trail | Existing security event store | Redacted request, tool, duration, and outcome records |
-
 ## Implementation Guide
 
 Build the webhook and RTMS path first. Add the private router and controlled MCP tools next. Keep setup commands at the end so the implementation boundaries remain clear.
 
 ### Part 1: Build the transcript pipeline
 
-#### 1. Authenticate lifecycle webhooks
+The RTMS client buffers at most two adjacent transcript messages before calling the router's `ask-llm` tool. This source-backed excerpt comes from [`mcp_client/src/index.ts`](https://github.com/zoom/rtms-samples/blob/5c39fca2ed97d75bcbdb318cf246a037835f7d37/rtms_mcp_client/zoom-rtms-mcp-client/mcp_client/src/index.ts):
 
-Zoom sends `meeting.rtms_started` and `meeting.rtms_stopped` to the public webhook. Preserve the exact request bytes, enforce a five-minute replay window, and compare the HMAC signature in constant time. Return `200` before opening RTMS or calling another service.
+```typescript
+const combined = `${buffer1} ${newTranscript}`.trim();
 
-```javascript
-function verifyZoomWebhook(rawBody, timestamp, signature, secret) {
-  const timestampSeconds = Number(timestamp);
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  if (!Number.isFinite(timestampSeconds) || Math.abs(nowSeconds - timestampSeconds) > 300) return false;
-
-  const expected = `v0=${crypto
-    .createHmac('sha256', secret)
-    .update(`v0:${timestamp}:${rawBody.toString('utf8')}`)
-    .digest('hex')}`;
-
-  const receivedBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expected);
-  return receivedBuffer.length === expectedBuffer.length &&
-    crypto.timingSafeEqual(receivedBuffer, expectedBuffer);
+try {
+  const response = await mcpClient!.callTool({
+    name: 'ask-llm',
+    arguments: { message: combined }
+  });
+  console.log('LLM response:', response);
+} catch (err) {
+  console.error('Tool call failed:', err);
 }
 ```
 
-The source-backed implementation is in [`webhookSecurity.ts`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_client/zoom-rtms-mcp-client/mcp_client/src/webhookSecurity.ts). It verifies the signature and timestamp but does not restrict events to a configured Zoom account. Add account-level authorization when one deployment must accept events for only a defined set of accounts.
+The caught error prevents this call from terminating the media message handler. A production design should also bound queued work and record enough context to retry safely.
 
-**Other languages:** Use a constant-time comparison such as `hmac.compare_digest` in Python or `crypto/subtle.ConstantTimeCompare` in Go.
+The reference runs these processes:
+
+| Service | Purpose | Suggested local port |
+| --- | --- | --- |
+| `zoom-rtms-mcp-client/mcp_client` | RTMS webhook and transcript ingress | `3001` |
+| `llm-router-server` | LLM reasoning and tool routing | `3000` |
+| `tools-chroma-server` | Retrieval tools | `5000` |
+| `tools-zoom-openapi-server` | Example business API tools | `5001` |
+| Chroma | Vector storage | `8000` |
+
+The source defaults both the client and router to port `3000`. The run section sets the client to `3001` so both processes can run together.
+
+#### 2. Create the Zoom app
+
+Create a Zoom General App in the [Zoom App Marketplace](https://marketplace.zoom.us/) with the RTMS transcript scope. Subscribe its public webhook to the lifecycle events below.
+
+| Setting | Value |
+| --- | --- |
+| Scope | `meeting:read:meeting_transcript` |
+| Events | `meeting.rtms_started`, `meeting.rtms_stopped` |
+| Webhook URL | `https://YOUR_DOMAIN.example.com/webhook` |
+
+Enable RTMS for the account and test meeting. Import `manifest.json` only as a starting point and verify it in Marketplace.
+
+### Part 2: Add controlled tools
 
 #### 2. Maintain one RTMS state object per stream
 
@@ -154,17 +135,7 @@ The reference implementation uses raw secure WebSockets for the RTMS signaling a
 
 **Input:** Authenticated `meeting.rtms_started` payload with `meeting_uuid`, `rtms_stream_id`, and `server_urls`
 
-**Output:** Active signaling and transcript sockets registered under `rtms_stream_id`
-
-**Invariants:**
-
-- Ignore a start event when the same `rtms_stream_id` already exists.
-- Generate the RTMS handshake signature from the client ID, meeting UUID, and stream ID.
-- Respond to message type `12` with message type `13` on both sockets.
-- Close both sockets, cancel retry timers, and remove state when RTMS stops.
-- Do not disable TLS certificate validation.
-
-The client retries a duplicate signaling request up to three times with exponential delays starting at 1,500 milliseconds. It does not reconnect after every unexpected signaling or media socket closure. Add that recovery policy before relying on unattended long-running sessions.
+#### 4. Start the tool layer
 
 See the RTMS socket handling in [`mcp_client/src/index.ts`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_client/zoom-rtms-mcp-client/mcp_client/src/index.ts).
 
@@ -174,17 +145,19 @@ See the RTMS socket handling in [`mcp_client/src/index.ts`](https://github.com/z
 
 **Input:** Non-empty transcript text associated with an `rtms_stream_id`
 
-**Output:** One trimmed transcript batch sent to the router when the timer expires or the batch reaches its cap
+#### 5. Start the router and RTMS client
 
-**Invariants:**
+Start the AI router on port `3000`, then start the RTMS client on `3001`. Only the webhook needs to be public over HTTPS. Keep the MCP services on a private network unless you have added strong authentication.
 
-- Keep a separate timer and text buffer for every stream.
-- Ignore empty transcript messages.
-- Remove a batch before awaiting the router so new text can enter a new batch.
-- Discard pending text and clear its timer when the stream stops.
-- Never send more than `TRANSCRIPT_BATCH_MAX_CHARACTERS` in one request.
+The webhook must check every request and reply quickly. Handle transcripts and tool calls in the background so a slow tool cannot block RTMS.
 
-The reference batcher trims text beyond the character cap instead of carrying the overflow into the next batch. It also discards a pending batch when RTMS stops. Change those policies if the destination requires complete transcripts.
+#### 6. Test tool selection
+
+Start RTMS in a test meeting. Say something that should get a direct answer, something that should search the knowledge base, and something that should suggest a business action. Check that the router picks only the expected tools and rejects invalid inputs.
+
+For each call, record the relevant transcript text, chosen tool, checked inputs, permission result, response time, and outcome. Remove confidential content from logs.
+
+#### 7. Replace demonstration tools
 
 ### Part 2: Add controlled model and tool access
 
@@ -376,7 +349,7 @@ npm run build
 npm start
 ```
 
-Route `https://YOUR_DOMAIN/webhook` to port `3000`. Do not expose port `3100` publicly.
+Start Chroma, the retrieval server, the mock business-tool server, the LLM router, and the RTMS client. The linked README contains the per-directory commands; each Node.js process starts with `npm start`.
 
 </details>
 
@@ -473,27 +446,6 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 
 </details>
 
-## Acceptance Criteria
-
-- [ ] Invalid signatures and webhook timestamps older than five minutes are rejected.
-- [ ] Duplicate `rtms_stream_id` start events do not create another connection.
-- [ ] Signaling and media heartbeats receive the required response.
-- [ ] Transcript batches remain isolated by stream and never exceed 12,000 characters.
-- [ ] A missing or incorrect internal bearer token is rejected.
-- [ ] An MCP request without a valid initialized session is rejected.
-- [ ] Invalid MCP server JSON, duplicate IDs, non-HTTPS URLs, missing tokens, and empty allowlists stop startup.
-- [ ] `AI_PROVIDER` selects Anthropic, OpenAI, or OpenRouter and requires only that provider's key and model.
-- [ ] `AI_TASK_PROMPT` is appended without removing the fixed security rules.
-- [ ] A task prompt longer than 4,000 characters stops startup.
-- [ ] The selected model receives only tools that are both discovered and allowlisted.
-- [ ] Model-facing tool names include the server namespace and route to the corresponding upstream server.
-- [ ] No more than three tools execute for one transcript request with the default configuration.
-- [ ] With `LOG_CONTENT=false`, transcript text and model responses are absent from audit logs.
-- [ ] Tool arguments, tool results, meeting IDs, stream IDs, account IDs, and credentials are always absent from audit logs.
-- [ ] Provider and MCP failures return sanitized errors without closing the RTMS stream.
-- [ ] Transcript and model-response content appears in logs only when `LOG_CONTENT=true`.
-- [ ] Both services close connections and stop on `SIGINT` and `SIGTERM`.
-
 ## Related Resources
 
 - [RTMS MCP reference implementation](https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client)
@@ -501,6 +453,14 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 - [Zoom MCP server documentation](https://developers.zoom.us/docs/mcp/servers/)
 - [Model Context Protocol specification](https://modelcontextprotocol.io/docs/getting-started/intro)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
-- [Anthropic tool-use documentation](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
-- [OpenAI function-calling documentation](https://platform.openai.com/docs/guides/function-calling)
-- [OpenRouter tool-calling documentation](https://openrouter.ai/docs/guides/features/tool-calling)
+
+## What Will You Build?
+
+This Blueprint shows one path: live transcripts routed through Anthropic to retrieval and business tools exposed over MCP. The same architecture supports many variations:
+
+- Replace one mock tool with a read-only operation from a business system.
+- Replace Chroma with an existing search platform.
+- Add a narrow write action behind an approval workflow.
+- Use another model without changing the MCP tool contracts.
+
+RTMS provides the live transcript. The MCP tool contracts and downstream authorization are yours to build.
