@@ -25,6 +25,7 @@ source; the site builds from it).
 | `taxonomy.json` | Vocabulary for `products`, `verticals`, `solution_types` |
 | `collections/index.json` | Vertical collections shown on the site |
 | `scripts/validate.js` | Quality gate — run `npm run validate` |
+| `scripts/validate-zoom-manifest.js` | validate manifest — run `npm run validate-zoom-manifest -- your-blueprint` |
 
 ## Previewing a draft
 
