@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Checkout PR
         uses: actions/checkout@v6
+<<<<<<< HEAD
         with:
           fetch-depth: 0
 
@@ -28,10 +29,20 @@ jobs:
         run: npm install
 
       - name: Validate changed Zoom manifests
+=======
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate Zoom manifest
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
         env:
           ZOOM_ACCOUNT_ID: ${{ secrets.ZOOM_ACCOUNT_ID }}
           ZOOM_CLIENT_ID: ${{ secrets.ZOOM_CLIENT_ID }}
           ZOOM_CLIENT_SECRET: ${{ secrets.ZOOM_CLIENT_SECRET }}
+<<<<<<< HEAD
         run: |
           set -euo pipefail
 
@@ -73,3 +84,6 @@ jobs:
           fi
 
           echo "✅ All changed Zoom manifests are valid."
+=======
+        run: node scripts/validate-zoom-manifest.js
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)

@@ -83,6 +83,7 @@ Expected:
   }
 
   try {
+<<<<<<< HEAD
     const manifestFile = JSON.parse(rawManifest);
 
     if (
@@ -90,6 +91,15 @@ Expected:
       typeof manifestFile !== "object" ||
       Array.isArray(manifestFile) ||
       Object.keys(manifestFile).length === 0
+=======
+    const manifest = JSON.parse(rawManifest);
+
+    if (
+      !manifest ||
+      typeof manifest !== "object" ||
+      Array.isArray(manifest) ||
+      Object.keys(manifest).length === 0
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
     ) {
       fail(
         "Manifest file parsed successfully but contains no manifest data."
@@ -100,7 +110,11 @@ Expected:
       `✓ JSON parsed successfully: ${manifestPath}`
     );
 
+<<<<<<< HEAD
     return manifestFile;
+=======
+    return manifest;
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
   } catch (error) {
     fail(
       `Manifest contains invalid JSON: ${error.message}`
@@ -108,6 +122,7 @@ Expected:
   }
 }
 
+<<<<<<< HEAD
 function normalizeManifestPayload(manifestFile) {
   if (
     manifestFile.manifest &&
@@ -130,6 +145,8 @@ function normalizeManifestPayload(manifestFile) {
   };
 }
 
+=======
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
 async function getZoomAccessToken() {
   requireEnv(
     "ZOOM_ACCOUNT_ID",
@@ -186,9 +203,13 @@ async function getZoomAccessToken() {
   }
 
   if (!response.ok) {
+<<<<<<< HEAD
     console.error(
       JSON.stringify(data, null, 2)
     );
+=======
+    console.error(data);
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
 
     fail(
       `Unable to obtain Zoom access token (HTTP ${response.status})`
@@ -210,10 +231,18 @@ async function getZoomAccessToken() {
 
 async function validateManifest(
   accessToken,
+<<<<<<< HEAD
   manifestFile
 ) {
   const requestBody =
     normalizeManifestPayload(manifestFile);
+=======
+  manifest
+) {
+  const requestBody = {
+    manifest,
+  };
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
 
   console.log(
     "→ Sending manifest to Zoom validation API..."
@@ -303,12 +332,21 @@ async function main() {
     "-----------------------"
   );
 
+<<<<<<< HEAD
   const blueprintName =
     process.argv[2];
 
   const manifestPath =
     getManifestPath();
 
+=======
+  const manifestPath =
+    getManifestPath();
+
+  const blueprintName =
+    process.argv[2];
+
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
   console.log(
     `Blueprint: ${blueprintName}`
   );
@@ -317,7 +355,11 @@ async function main() {
     `Manifest: ${manifestPath}\n`
   );
 
+<<<<<<< HEAD
   const manifestFile =
+=======
+  const manifest =
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
     loadManifest(manifestPath);
 
   const accessToken =
@@ -326,7 +368,11 @@ async function main() {
   const result =
     await validateManifest(
       accessToken,
+<<<<<<< HEAD
       manifestFile
+=======
+      manifest
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
     );
 
   if (result.ok !== true) {

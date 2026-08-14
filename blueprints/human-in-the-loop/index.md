@@ -44,6 +44,7 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 ## Architecture
 
 
+<<<<<<< HEAD
 <div align="center">
   <img src="images/ai-powered-workplace.png" alt="AI-powered Workplace" width="640" />
 
@@ -733,6 +734,9 @@ Observe → Recommend → Approve → Execute
 
 The model can interpret context and prepare work, but application code still controls when an action becomes executable and which Zoom capability is allowed to perform it.
 
+=======
+![alt](/blueprints/human-in-the-loop/images/ai-powered-workplace.png) 
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
 
 
 

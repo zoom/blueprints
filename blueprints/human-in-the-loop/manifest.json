@@ -415,7 +415,7 @@
 }
 =======
         "display_information": {
-            "display_name": "your-app-name",
+            "display_name": "Zoom Workplace Chatbot",
             "discover_type": "LISTED",
             "install_type": "APP_DIRECTORY"
         },
@@ -710,5 +710,9 @@
             }
         }
     }
+<<<<<<< HEAD
 }
 >>>>>>> 5595fe4 (draft human-in-loop)
+=======
+}
+>>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
