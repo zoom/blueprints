@@ -83,13 +83,13 @@ Expected:
   }
 
   try {
-    const manifest = JSON.parse(rawManifest);
+    const manifestFile = JSON.parse(rawManifest);
 
     if (
-      !manifest ||
-      typeof manifest !== "object" ||
-      Array.isArray(manifest) ||
-      Object.keys(manifest).length === 0
+      !manifestFile ||
+      typeof manifestFile !== "object" ||
+      Array.isArray(manifestFile) ||
+      Object.keys(manifestFile).length === 0
     ) {
       fail(
         "Manifest file parsed successfully but contains no manifest data."
@@ -100,12 +100,34 @@ Expected:
       `✓ JSON parsed successfully: ${manifestPath}`
     );
 
-    return manifest;
+    return manifestFile;
   } catch (error) {
     fail(
       `Manifest contains invalid JSON: ${error.message}`
     );
   }
+}
+
+function normalizeManifestPayload(manifestFile) {
+  if (
+    manifestFile.manifest &&
+    typeof manifestFile.manifest === "object" &&
+    !Array.isArray(manifestFile.manifest)
+  ) {
+    console.log(
+      "✓ Manifest already contains top-level manifest wrapper"
+    );
+
+    return manifestFile;
+  }
+
+  console.log(
+    "✓ Adding top-level manifest wrapper for validation"
+  );
+
+  return {
+    manifest: manifestFile,
+  };
 }
 
 async function getZoomAccessToken() {
@@ -164,7 +186,9 @@ async function getZoomAccessToken() {
   }
 
   if (!response.ok) {
-    console.error(data);
+    console.error(
+      JSON.stringify(data, null, 2)
+    );
 
     fail(
       `Unable to obtain Zoom access token (HTTP ${response.status})`
@@ -186,11 +210,10 @@ async function getZoomAccessToken() {
 
 async function validateManifest(
   accessToken,
-  manifest
+  manifestFile
 ) {
-  const requestBody = {
-    manifest,
-  };
+  const requestBody =
+    normalizeManifestPayload(manifestFile);
 
   console.log(
     "→ Sending manifest to Zoom validation API..."
@@ -280,11 +303,11 @@ async function main() {
     "-----------------------"
   );
 
-  const manifestPath =
-    getManifestPath();
-
   const blueprintName =
     process.argv[2];
+
+  const manifestPath =
+    getManifestPath();
 
   console.log(
     `Blueprint: ${blueprintName}`
@@ -294,7 +317,7 @@ async function main() {
     `Manifest: ${manifestPath}\n`
   );
 
-  const manifest =
+  const manifestFile =
     loadManifest(manifestPath);
 
   const accessToken =
@@ -303,7 +326,7 @@ async function main() {
   const result =
     await validateManifest(
       accessToken,
-      manifest
+      manifestFile
     );
 
   if (result.ok !== true) {
