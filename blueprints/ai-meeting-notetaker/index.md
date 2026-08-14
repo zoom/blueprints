@@ -5,7 +5,6 @@ description: >-
   Build an AI-powered meeting assistant that lives inside Zoom meetings.
   Stream transcripts with RTMS, generate live summaries and action items,
   and give participants instant recall of what was discussed.
-  No bot participant. No post-call wait.
 products: ["rtms", "zoom-apps"]
 verticals: ["enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
@@ -13,10 +12,10 @@ difficulty: "intermediate"
 estimated_time: "4-6 hours"
 author: "Jen Brissman"
 status: "draft"
-updated: 2026-08-11
+updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://www.youtube.com/watch?v=4N-g5TgGRz0"
-tags: ["notetaker", "transcription", "real-time", "no-bot", "action-items"]
+tags: ["notetaker", "transcription", "real-time", "action-items"]
 seo_title: "How to build a Zoom notetaker / meeting bot"
 seo_keywords: ["zoom meeting notetaker", "zoom meeting bot", "rtms meeting assistant", "build zoom transcription app", "ai meeting notes zoom"]
 partners: ["anthropic", "openai"]
@@ -27,23 +26,28 @@ deploy:
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
 ---
 
-Put AI note-taking inside the meeting — no bot participant, no post-call wait.
+A meeting notetaker streams live transcripts from RTMS, passes them to an LLM, and displays rolling summaries, action items, and key moments in a panel visible to participants. Notes update while the meeting is still happening.
 
-Traditional meeting assistants join as bots. An unfamiliar name appears in your roster. Attendees notice. For internal meetings, it's a distraction. For customer calls, it can feel invasive. And even the best post-call summaries arrive too late — by the time you read the recap, you've already context-switched to the next thing.
+Most meeting notes happen after the call. Someone reviews the recording, writes up a summary, shares it the next day. By then everyone has moved on. A real-time notetaker captures decisions and action items while people can still correct them.
 
-This blueprint builds a meeting notetaker that streams transcripts directly from Zoom's infrastructure using **[RTMS](https://developers.zoom.us/docs/rtms/)** (Real-Time Media Streams), analyzes the conversation with an LLM of your choice, and surfaces summaries, action items, and key moments in a **[Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/)** panel — all while the meeting is still happening. The standard transcription notice appears, but no bot joins the roster.
+**What you'll need:**
 
-The guide walks through how to build this class of application: the transcript pipeline, the AI extraction layer, and the in-meeting delivery. [Arlo](https://github.com/zoom/arlo) is the reference implementation — a working open-source meeting assistant you can fork, customize, or use as a pattern to build your own.
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer))
+- A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
+- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the notes panel in-meeting
+- An LLM for extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
-> **Don't want to build it yourself?** Zoom offers [AI Companion](https://zoom.us/ai) with similar note-taking capabilities out of the box.
+**Features:**
 
-## Features
+- **Live transcription**: Stream transcripts from Zoom meetings using RTMS
+- **Rolling summaries**: Generate summaries as the conversation progresses, not after
+- **Action item extraction**: Capture action items with owners and deadlines as they're spoken
+- **Key moments**: Highlight decisions, announcements, and open questions
+- **In-meeting panel**: Surface everything in a sidebar visible to all participants
 
-- **Live transcription** — Stream transcripts from Zoom meetings using RTMS, no bot required
-- **Rolling summaries** — Generate AI summaries as the conversation progresses, not after
-- **Action item extraction** — Capture action items with owners and deadlines as they're spoken
-- **Key moments** — Highlight decisions, announcements, and open questions
-- **In-meeting panel** — Surface everything in a sidebar visible to all participants
+If you'd rather buy than build, Zoom offers [AI Companion](https://zoom.us/ai) with similar note-taking capabilities.
+
+Follow along as we walk through the architecture.
 
 <div align="center">
   <img src="images/notetaker-q-decisions.png" alt="Open Questions and Decisions" width="640" />
@@ -54,17 +58,13 @@ The guide walks through how to build this class of application: the transcript p
 
 ## Architecture
 
-### Real-Time, Not Post-Call
+RTMS delivers transcript segments over WebSocket with sub-second latency. Your backend receives each phrase as it's spoken, typically within 300-500ms. That's fast enough for live summaries and action item extraction while participants can still act on them.
 
-RTMS delivers transcript segments over WebSocket with sub-second latency. Your backend receives each phrase as it's spoken — typically within 300-500ms. That's fast enough for live summaries and action item extraction while participants can still act on them.
+### Components
 
-### Three Components
-
-Any RTMS-based notetaker needs three pieces: something to receive the transcript stream, something to analyze it, and something to display the results. How you build each is up to you.
-
-| Component | Responsibility | Arlo's Implementation |
-|-----------|----------------|----------------------|
-| **Transcript service** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
+| Component | Responsibility | Our stack (yours may differ) |
+|-----------|----------------|------------------------------|
+| **Transcript access** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
 | **Backend** | Persist transcripts, orchestrate AI calls, broadcast to clients | Express + Prisma (MySQL) + OpenRouter |
 | **Frontend** | Display transcript, summaries, action items in real time | React Surface App via Zoom Apps SDK |
 
@@ -81,17 +81,15 @@ graph LR
 
 When RTMS starts in a meeting, Zoom sends a webhook with stream credentials. Your backend verifies it, joins the stream, and receives transcript segments as each phrase is spoken. Segments flow through your AI layer for extraction, then broadcast to the in-meeting panel. End-to-end latency is under a second.
 
-> **Adapting this architecture:** The pattern works with any backend stack. The key requirements are: a webhook endpoint Zoom can reach, a WebSocket client for the RTMS stream, an LLM for extraction, and a way to push results to your frontend. Arlo uses Node/Express, but Python/FastAPI, Go, or Ruby would work the same way.
+**Our stack vs. your options:** We use Node/Express, but Python/FastAPI, Go, or Ruby work the same way. The requirements are a webhook endpoint Zoom can reach, a WebSocket client for RTMS, an LLM, and a way to push updates to the frontend.
 
-### The Intelligence Layer
+### How extraction works
 
-The backend is the orchestration point — and it's yours to customize. Swap LLM providers. Add calendar integrations. Push action items to your task manager. The RTMS stream is the input; what you do with it is up to you.
+The backend collects recent transcript context, sends it to an LLM with a structured-output prompt, parses the JSON response, and pushes the result to the panel. We use [OpenRouter](https://openrouter.ai/) (free models work without an API key; Claude or GPT-4o need one). All extraction features follow the same pattern:
 
-The core flow for any meeting intelligence feature:
-
-1. **Collect** — Accumulate recent transcript context (last N segments or last M minutes)
-2. **Extract** — Send to an LLM with a structured-output prompt that returns JSON
-3. **Deliver** — Push the parsed result to connected clients over WebSocket
+1. **Collect**: Accumulate recent transcript context (last N segments or last M minutes)
+2. **Extract**: Send to an LLM with a structured-output prompt that returns JSON
+3. **Deliver**: Push the parsed result to connected clients over WebSocket
 
 ---
 
@@ -101,7 +99,7 @@ This guide has three parts: the transcript pipeline (how to receive and process 
 
 The patterns apply regardless of your stack. Code examples are from [Arlo](https://github.com/zoom/arlo), but the concepts transfer to any language or framework.
 
-### Part 1: The Transcript Pipeline
+### Part 1: Building the Transcript Pipeline
 
 #### Verify the webhook
 
@@ -123,9 +121,9 @@ function verifyWebhookSignature(rawBody, timestamp, signature, secret) {
 }
 ```
 
-Two implementation details matter: use the raw request body (don't re-serialize JSON — the signature is over the exact bytes Zoom sent), and handle Zoom's `endpoint.url_validation` challenge separately since validation requests carry no signature.
+Two implementation details matter: use the raw request body (don't re-serialize JSON; the signature is over the exact bytes Zoom sent), and handle Zoom's `endpoint.url_validation` challenge separately since validation requests carry no signature.
 
-> **Adapting this pattern:** Every language has HMAC-SHA256 and timing-safe comparison. In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`. The logic is identical.
+**Other languages:** In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`.
 
 #### Join the stream
 
@@ -159,9 +157,9 @@ async function handleRTMSStarted(payload) {
 }
 ```
 
-Sessions are keyed by `rtms_stream_id`, not `meeting_uuid`. If Zoom's media server fails over, the same meeting arrives with a new stream ID — tear down the old session and join the new one. A repeated stream ID is a duplicate webhook; ignore it.
+Sessions are keyed by `rtms_stream_id`, not `meeting_uuid`. If Zoom's media server fails over, the same meeting arrives with a new stream ID. Tear down the old session and join the new one. A repeated stream ID is a duplicate webhook; ignore it.
 
-> **Adapting this pattern:** Zoom provides the `@zoom/rtms` SDK for Node. For other languages, you'll implement the WebSocket protocol directly — the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format. The session-keying and failover logic remain the same.
+**Other languages:** The `@zoom/rtms` SDK is Node-only. For other languages, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
 
 #### Normalize and broadcast
 
@@ -188,17 +186,17 @@ async function handleTranscript(meetingId, transcript) {
 }
 ```
 
-Prioritize latency: push segments to connected panels immediately, persist asynchronously. Handle ordering and duplicates via the sequence number — an upsert keyed on `(meetingId, seqNo)` makes retries idempotent.
+Prioritize latency: push segments to connected panels immediately, persist asynchronously. Handle ordering and duplicates via the sequence number. An upsert keyed on `(meetingId, seqNo)` makes retries idempotent.
 
-> **Adapting this pattern:** The "broadcast first, persist in background" pattern applies universally. Your persistence layer might be Postgres, MongoDB, or a time-series database — the key is not blocking the real-time path on disk I/O.
+**Other databases:** Works with Postgres, MongoDB, or a time-series database. The key is not blocking the real-time path on disk I/O.
 
-### Part 2: The Intelligence Layer
+### Part 2: Building the Intelligence Layer
 
 With the transcript pipeline in place, you have a live stream of what's being said. Now extract meeting intelligence from it.
 
 #### The extraction loop
 
-Meeting notes extraction runs on a debounce — you don't want to call the LLM on every segment, but you do want updates frequently enough to feel live. A 30-second interval works well: frequent enough to capture decisions as they happen, sparse enough to keep costs reasonable.
+Meeting notes extraction runs on a debounce. You don't want to call the LLM on every segment, but you do want updates frequently enough to feel live. A 30-second interval works well: frequent enough to capture decisions as they happen, sparse enough to keep costs reasonable.
 
 ```javascript
 // Pseudocode for the extraction loop
@@ -220,7 +218,7 @@ function startExtractionLoop(meetingId) {
 }
 ```
 
-> **Adapting this pattern:** The interval is a tuning parameter. Shorter intervals (15s) feel more responsive but cost more. Longer intervals (60s) reduce costs but lag behind the conversation. For action items specifically, you might trigger extraction when you detect phrases like "I'll" or "let's" rather than on a fixed interval.
+**Tuning:** Shorter intervals (15s) feel more responsive but cost more. Longer intervals (60s) reduce costs but lag behind the conversation. For action items, you might trigger extraction when you detect phrases like "I'll" or "let's" rather than on a fixed interval.
 
 #### Extract meeting notes
 
@@ -258,9 +256,9 @@ The prompt structure matters:
 - **User prompt** provides the transcript context
 - **Output parsing** strips code fences and handles malformed responses gracefully
 
-> **Adapting this pattern:** This works with any LLM that supports structured output — OpenAI, Anthropic, open-source models via Ollama. For higher reliability, use the provider's native JSON mode or function calling if available. The prompt itself is the customization point: adjust for your meeting types (standups, all-hands, 1:1s).
+**Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling. The prompt is the customization point. Adjust for your meeting types (standups, all-hands, 1:1s).
 
-#### Wire it to the frontend
+#### Frontend connection
 
 The frontend subscribes to a WebSocket and renders updates as they arrive. The protocol is simple:
 
@@ -300,9 +298,9 @@ function useMeetingNotes(meetingId) {
 
 Dedupe action items by task text to avoid duplicates when the same item is mentioned twice. Key moments dedupe by text similarity.
 
-> **Adapting this pattern:** The frontend can be React, Vue, Svelte, or vanilla JS. The Surface App constraint is that it runs inside the Zoom client via an iframe — standard web tech works, just respect the [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) requirements for authentication and context.
+**Other frameworks:** Works with Vue, Svelte, or vanilla JS. The Surface App runs inside the Zoom client via iframe; standard web tech applies.
 
-#### Tuning the prompts
+#### Customizing prompts
 
 The extraction prompt is your main customization point. Different meeting types benefit from different prompts:
 
@@ -313,11 +311,11 @@ The extraction prompt is your main customization point. Different meeting types 
 | **1:1s** | Track feedback given, career discussion points, follow-ups |
 | **Brainstorms** | Cluster ideas by theme; note which got energy vs. dropped |
 
-You can also add domain-specific extraction — for engineering meetings, detect technical decisions and architecture changes; for sales calls, track objections and next steps (see the [Sales Coach blueprint](../realtime-sales-coach/)).
+You can also add domain-specific extraction. For engineering meetings, detect technical decisions and architecture changes. For sales calls, track objections and next steps (see the [Sales Coach blueprint](../realtime-sales-coach/)).
 
-### Part 3: Run the Reference Implementation
+### Part 3: Running the Reference Implementation ([Arlo](https://github.com/zoom/arlo))
 
-[Arlo](https://github.com/zoom/arlo) implements everything above as a working application. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
+Arlo implements everything above as a working application. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
 
 #### One-click deploy
 
@@ -413,7 +411,7 @@ RTMS is a Zoom App SDK feature, configured separately from OAuth scopes:
 2. Enable **Real-Time Media Streams**
 3. Select **Transcripts**
 
-RTMS requires access approval from Zoom — [request access here](https://www.zoom.com/en/realtime-media-streams/#form).
+RTMS requires access approval from Zoom. [Request access here](https://www.zoom.com/en/realtime-media-streams/#form).
 
 ### Event Subscriptions
 
@@ -449,21 +447,8 @@ The patterns above work for development and moderate scale. For production deplo
 
 ## Related Resources
 
-- [Arlo Repository](https://github.com/zoom/arlo) — Reference implementation (fork or learn from)
-- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) — API reference for Real-Time Media Streams
-- [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) — Building in-meeting experiences
-- [Zoom Developer Forum](https://devforum.zoom.us/) — Community support
+- [Arlo Repository](https://github.com/zoom/arlo) - Reference implementation
+- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) - Real-Time Media Streams API reference
+- [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) - Building in-meeting experiences
+- [Zoom Developer Forum](https://devforum.zoom.us/) - Community support
 
----
-
-## What Will You Build?
-
-This blueprint shows one path: real-time meeting notes in a Surface App panel. The same architecture supports many variations:
-
-- Push action items to Asana, Jira, or Linear as they're captured
-- Send meeting summaries to Slack or email before participants leave
-- Build a searchable knowledge base from your organization's transcripts
-- Create a manager dashboard showing meeting patterns across teams
-- Feed context to an agent that drafts follow-up emails
-
-RTMS provides the stream. The intelligence layer is yours to build.
