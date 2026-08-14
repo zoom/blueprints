@@ -25,7 +25,7 @@ AI agents are only useful when they have the right context and the right guardra
 <!-- Open with 1–2 paragraphs explaining the data flow, then the diagram.
      Label every component and connection. -->
 
-![alt](images/ai-powered-workplace.png) 
+![alt](/blueprints/human-in-the-loop/images/ai-powered-workplace.png) 
 
 ## Implementation Guide
 

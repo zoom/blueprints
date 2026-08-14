@@ -1,7 +1,7 @@
 {
     "manifest": {
         "display_information": {
-            "display_name": "your-app-name",
+            "display_name": "Zoom Workplace Chatbot",
             "discover_type": "LISTED",
             "install_type": "APP_DIRECTORY"
         },
