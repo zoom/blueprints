@@ -6,7 +6,7 @@ Use this guide when writing and reviewing blueprints. These patterns come from t
 
 ## What a Blueprint Is (and Isn't)
 
-**A Blueprint is not a tutorial.** It's more like a CloudFormation template — declarative, opinionated, and designed so that if you hand it to an agent, it can scaffold and build the integration end-to-end.
+**A Blueprint is not a tutorial.** It's more like a CloudFormation template: declarative, opinionated, and designed so that if you hand it to an agent, it can scaffold and build the integration end-to-end.
 
 | Tutorial | Blueprint |
 |----------|-----------|
@@ -16,7 +16,7 @@ Use this guide when writing and reviewing blueprints. These patterns come from t
 
 **Prescriptive but not exclusive.** Blueprints should declare a clear path (e.g., "we're using Postgres, we're using Railway") while acknowledging that other approaches exist. The goal is to give enough guidance that models and developers can move fast, without implying it's the only way.
 
-**Agent-first framing.** A Blueprint should work as a prompt artifact — if an existing customer (e.g., a telehealth app) wants to add a new capability, they should be able to feed the Blueprint to their agent and have it map the integration into their existing codebase, not just scaffold a fresh project.
+**Agent-first framing.** A Blueprint should work as a prompt artifact. If an existing customer (e.g., a telehealth app) wants to add a new capability, they should be able to feed the Blueprint to their agent and have it map the integration into their existing codebase, not just scaffold a fresh project.
 
 ---
 
@@ -31,10 +31,10 @@ You're writing for **multiple audiences at once**:
 
 Don't pick one and ignore the others. Write so all get value:
 
-- Lead with differentiation (why this approach matters) — catches decision-makers
-- Include concrete implementation details — satisfies developers
-- Make it scannable with clear section headers — helps SEs find what they need
-- Be declarative and self-contained — enables agent-driven scaffolding
+- Lead with outcomes (what you end up with): catches decision-makers
+- Include concrete implementation details: satisfies developers
+- Make it scannable with clear section headers: helps SEs find what they need
+- Be declarative and self-contained: enables agent-driven scaffolding
 
 ---
 
@@ -42,10 +42,10 @@ Don't pick one and ignore the others. Write so all get value:
 
 Every blueprint must have these sections:
 
-1. **Outcome-focused intro** — What this builds and why it matters (no "Problem Statement" H2)
-2. **Architecture** — How the solution works technically
-3. **Implementation Guide** — How the app is built, not just clone-and-run
-4. **App Manifest** — Zoom App configuration reference
+1. **Outcome-focused intro**: What this builds and why it matters (no "Problem Statement" H2)
+2. **Architecture**: How the solution works technically
+3. **Implementation Guide**: How the app is built, not just clone-and-run
+4. **App Manifest**: Zoom App configuration reference
 
 These are the floor, not the ceiling. Add more sections if they help developers succeed.
 
@@ -87,25 +87,26 @@ When introducing a Zoom product or API, link to the official documentation. This
 
 ## Tone & Voice
 
-### Lead with Value, Not Description
+### Lead with Outcome, Not Description
 
 **Don't start with:**
 > "This blueprint shows how to use RTMS to stream transcripts."
 
 **Start with:**
-> "Traditional meeting assistants join as participants. This architecture takes a different approach — no bot, no unfamiliar name in the roster."
+> "A real-time sales coach streams meeting transcripts from RTMS, passes them to an LLM, and displays qualification signals in a panel visible only to the seller."
 
-Establish *what makes this special* before explaining how it works.
+State what the thing does, then why it matters.
 
-### Frame Sections as Value Propositions
+### Use Direct Technical Headers
 
-Use headers that tell the reader *why they should care*:
+Avoid marketing-style "value prop" headers. Use plain descriptions:
 
-| Instead of | Try |
-|------------|-----|
-| "Architecture Overview" | "The No-Bot Advantage" |
-| "Latency Information" | "Real-Time, Not Post-Call" |
-| "Backend Components" | "The Intelligence Layer" |
+| Don't | Do |
+|-------|-----|
+| "The No-Bot Advantage" | "Architecture" or "Components" |
+| "Real-Time, Not Post-Call" | "How extraction works" |
+| "The Intelligence Layer" | "Frontend connection" |
+| "Wire it to the frontend" | "WebSocket connection" |
 
 ### Write Short, Punchy Sentences
 
@@ -121,21 +122,47 @@ Long sentences lose everyone. Break them up.
 > - Persists to Postgres
 > - Broadcasts to connected clients
 
+### Avoid AI-Sounding Patterns
+
+These patterns make content "smell like AI." Avoid them:
+
+| Pattern | Example | Fix |
+|---------|---------|-----|
+| Em dashes | "surfaces signals — while you can still act" | Use periods or semicolons |
+| Binary contrasts | "Real-Time, Not Post-Call" | Just describe what it does |
+| Dramatic kickers | "The intelligence layer is yours to build." | Cut it |
+| Feature list em dashes | `**Feature** — description` | Use colons: `**Feature**: description` |
+
+**Callout format:** Don't use blockquotes for "adapting this pattern" callouts. Use inline bold:
+
+Don't:
+```markdown
+> **Adapting this pattern:** Every language has HMAC-SHA256...
+```
+
+Do:
+```markdown
+**Other languages:** In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`.
+```
+
 ### Include Concrete Numbers
 
-Latency, timing, limits — these build credibility for all audiences:
+Latency, timing, limits. These build credibility for all audiences:
 
 - "typically within 300-500ms"
 - "sub-second latency"
 - "buffers for 2-3 seconds"
 
-### End Sections with Extensibility
+### Intro Structure
 
-Remind readers that this is theirs to customize:
+Every blueprint intro should follow this order:
 
-> "The RTMS stream is the input; what you do with it is up to you."
-
-> "Swap LLM providers. Add CRM integrations. Route competitor mentions to Slack."
+1. **What it does** (one sentence): "A real-time sales coach streams transcripts from RTMS, passes them to an LLM, and displays signals in a panel."
+2. **Why it matters** (one sentence): "Most coaching happens after the call. By then the deal has moved on."
+3. **What you'll need** (bulleted list): RTMS access, backend, Surface App, LLM
+4. **Features** (bulleted list): What the finished app does
+5. **Zoom product callout**: "If you'd rather buy than build, Zoom offers [AI Companion]..."
+6. **Transition**: "Follow along as we walk through the architecture."
 
 ---
 
@@ -175,10 +202,10 @@ ZOOM_CLIENT_SECRET=your_client_secret
 
 These rules prevent hydration errors on the dev-docs site:
 
-1. **No inline `style` attributes** — Use `width` and `height` attributes only
-2. **Use `<div>` not `<p>` for image containers** — `<p>` tags can't contain block elements
-3. **No `&nbsp;` between elements** — MDX converts these to nested `<p>` tags
-4. **No JSX components** — Stick to GitHub-flavored markdown
+1. **No inline `style` attributes**: Use `width` and `height` attributes only
+2. **Use `<div>` not `<p>` for image containers**: `<p>` tags can't contain block elements
+3. **No `&nbsp;` between elements**: MDX converts these to nested `<p>` tags
+4. **No JSX components**: Stick to GitHub-flavored markdown
 
 ---
 
@@ -242,7 +269,7 @@ Use the blueprint preview tool on the dev-docs staging site to see how your blue
 
 1. Open `/blueprints/preview/` on the staging site (VPN required until launch)
 2. Click **Choose blueprint folder…** and select your `blueprints/<your-slug>/` directory
-3. Write — in Chrome/Edge the preview re-renders ~1 second after every save
+3. Write. In Chrome/Edge the preview re-renders ~1 second after every save
 
 The preview shows:
 - Frontmatter errors and warnings (missing fields, unknown product/vertical IDs)
@@ -257,18 +284,19 @@ See CONTRIBUTING.md for full instructions.
 
 When reviewing a blueprint PR, verify:
 
-- [ ] **Validation passes** — `npm run validate blueprints/<slug>`
-- [ ] **Required sections present** — Outcome-focused intro, Architecture, Implementation Guide, App Manifest
-- [ ] **Intro is outcome-focused** — Leads with what you'll build and why it matters
-- [ ] **Architecture leads with differentiation** — Why this approach matters
-- [ ] **Implementation teaches how it's built** — Not just clone-and-run
-- [ ] **Zoom products linked** — RTMS, Zoom Apps, etc. link to official docs
-- [ ] **Images use relative paths** — `images/screenshot.png`, not absolute URLs
-- [ ] **Demo video linked** — If available
-- [ ] **Collapsible sections used appropriately** — Verbose config is collapsed
-- [ ] **No MDX compatibility issues** — No inline styles, use `<div>` for images
-- [ ] **manifest.json included** — Valid Zoom App manifest
-- [ ] **Code links to source repo** — Don't duplicate files that may drift
+- [ ] **Validation passes**: `npm run validate blueprints/<slug>`
+- [ ] **Required sections present**: Outcome-focused intro, Architecture, Implementation Guide, App Manifest
+- [ ] **Intro is outcome-focused**: Leads with what you'll build and why it matters
+- [ ] **Architecture is direct**: No marketing headers like "The No-Bot Advantage"
+- [ ] **Implementation teaches how it's built**: Not just clone-and-run
+- [ ] **Zoom products linked**: RTMS, Zoom Apps, etc. link to official docs
+- [ ] **Images use relative paths**: `images/screenshot.png`, not absolute URLs
+- [ ] **Demo video linked**: If available
+- [ ] **Collapsible sections used appropriately**: Verbose config is collapsed
+- [ ] **No MDX compatibility issues**: No inline styles, use `<div>` for images
+- [ ] **No AI patterns**: No em dashes, no dramatic kickers, no binary contrast headers
+- [ ] **manifest.json included**: Valid Zoom App manifest
+- [ ] **Code links to source repo**: Don't duplicate files that may drift
 
 ---
 
@@ -279,10 +307,10 @@ If using an LLM to help write, include these instructions:
 ```
 Write a Blueprint, not a tutorial. Blueprints are declarative and opinionated like CloudFormation templates.
 Write for multiple audiences: developers, SEs, decision-makers, and AI agents that will use this as a prompt.
-Lead with differentiation — what makes this approach special vs. alternatives.
+Lead with outcomes: what the reader ends up with.
 Use short sentences. Break up lists. Include concrete numbers (latency, timing).
 Frame sections as value props, not descriptions.
-End with extensibility — remind them this is theirs to customize.
+Avoid AI patterns: no em dashes, no dramatic kickers, no marketing headers.
 Make it scannable. Use collapsible <details> sections for verbose config steps.
 Link to Zoom docs when introducing Zoom products (helps LLMs fetch context).
 The Implementation Guide should teach how the app is built, not just clone-and-run.
@@ -295,7 +323,7 @@ Be agent-first: an existing customer should be able to feed this to their agent 
 
 Reference these blueprints when writing or reviewing:
 
-- **[Real-Time Sales Coach](./blueprints/realtime-sales-coach/)** — Sales vertical, qualification tracking, competitor detection
-- **[AI Meeting Notetaker](./blueprints/ai-meeting-notetaker/)** — Notes vertical, summaries, action items
+- **[Real-Time Sales Coach](./blueprints/realtime-sales-coach/)**: Sales vertical, qualification tracking, competitor detection
+- **[AI Meeting Notetaker](./blueprints/ai-meeting-notetaker/)**: Notes vertical, summaries, action items
 
 Both demonstrate the same RTMS + Surface App architecture for different use cases.
