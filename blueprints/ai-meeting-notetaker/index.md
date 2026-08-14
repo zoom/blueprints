@@ -161,9 +161,9 @@ Sessions are keyed by `rtms_stream_id`, not `meeting_uuid`. If Zoom's media serv
 
 **Other languages:** The `@zoom/rtms` SDK is Node-only. For other languages, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
 
-#### Normalize and broadcast
+#### Handle incoming transcripts
 
-Each transcript callback becomes a segment with a sequence number (for ordering) and millisecond timestamps:
+Each transcript callback becomes a segment with a sequence number and millisecond timestamps. Push to connected panels immediately; persist asynchronously so you don't block the real-time path:
 
 ```javascript
 async function handleTranscript(meetingId, transcript) {
@@ -174,21 +174,19 @@ async function handleTranscript(meetingId, transcript) {
     speakerId: transcript.userId || 'unknown',
     speakerLabel: transcript.userName || 'Speaker',
     text: transcript.text || '',
-    tStartMs: Math.floor(transcript.timestamp / 1000), // μs → ms
+    tStartMs: Math.floor(transcript.timestamp / 1000),
     seqNo,
   };
 
-  // Broadcast immediately for low latency
+  // Broadcast first, then persist in background
   broadcastToClients(meetingId, segment);
-
-  // Persist in background (don't block the broadcast)
   saveSegment(meetingId, segment).catch(console.error);
 }
 ```
 
-Prioritize latency: push segments to connected panels immediately, persist asynchronously. Handle ordering and duplicates via the sequence number. An upsert keyed on `(meetingId, seqNo)` makes retries idempotent.
+The unique constraint on `(meetingId, seqNo)` with upsert writes makes retries idempotent.
 
-**Other databases:** Works with Postgres, MongoDB, or a time-series database. The key is not blocking the real-time path on disk I/O.
+**Other databases:** Works with Postgres, MongoDB, or a time-series database.
 
 ### Part 2: Building the Intelligence Layer
 
