@@ -91,6 +91,19 @@ The backend collects recent transcript context, sends it to an LLM with a struct
 2. **Extract**: Send to an LLM with a structured-output prompt that returns JSON
 3. **Deliver**: Push the parsed result to connected clients over WebSocket
 
+### Agent integration map
+
+If you're grafting this into an existing codebase, check what you already have before adding anything:
+
+| Required capability | Reuse when present | Add when missing |
+|--------------------|--------------------|------------------|
+| Webhook endpoint | Existing API routes | Express router or equivalent |
+| Signature verification | Existing HMAC middleware | `verifyWebhookSignature()` |
+| WebSocket server | Existing real-time layer | ws or Socket.io server |
+| Database | Existing Postgres/MySQL | Prisma schema for transcripts |
+| LLM client | Existing OpenAI/Anthropic setup | OpenRouter client |
+| Auth/JWT | Existing session tokens | JWT signing for WebSocket auth |
+
 ---
 
 ## Implementation Guide
@@ -440,6 +453,24 @@ The patterns above work for development and moderate scale. For production deplo
 **Scaling:** Each active meeting maintains an RTMS WebSocket connection. For high-volume deployments, run multiple RTMS service instances with connection distribution.
 
 </details>
+
+---
+
+## Acceptance Criteria
+
+Use this checklist to verify the implementation:
+
+- [ ] Webhook signature verification rejects invalid or stale requests
+- [ ] Duplicate `rtms_stream_id` webhooks are ignored
+- [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
+- [ ] Transcript segments broadcast to clients before persisting to database
+- [ ] WebSocket connections require valid JWT
+- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
+- [ ] LLM extraction runs on interval, not on every segment
+- [ ] Extraction results parse as valid JSON and handle malformed responses
+- [ ] Action items dedupe by task text; key moments dedupe by similarity
+- [ ] Panel renders existing notes on connect and updates on new extractions
+- [ ] No SDK credentials in client bundles or logs
 
 ---
 
