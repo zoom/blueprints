@@ -94,6 +94,19 @@ The backend collects recent transcript context, sends it to an LLM with a struct
 2. Prompt the LLM for structured JSON output
 3. Parse and broadcast the result
 
+### Agent integration map
+
+If you're grafting this into an existing codebase, check what you already have before adding anything:
+
+| Required capability | Reuse when present | Add when missing |
+|--------------------|--------------------|------------------|
+| Webhook endpoint | Existing API routes | Express router or equivalent |
+| Signature verification | Existing HMAC middleware | `verifyWebhookSignature()` |
+| WebSocket server | Existing real-time layer | ws or Socket.io server |
+| Database | Existing Postgres/MySQL | Prisma schema for transcripts |
+| LLM client | Existing OpenAI/Anthropic setup | OpenRouter client |
+| Auth/JWT | Existing session tokens | JWT signing for WebSocket auth |
+
 ---
 
 ## Implementation Guide
@@ -399,6 +412,23 @@ In app settings: **Features** > **Zoom App SDK** > enable **Real-Time Media Stre
 Transcript data may contain sensitive information. Plan retention policies, user deletion controls, and encryption at rest.
 
 </details>
+
+---
+
+## Acceptance Criteria
+
+Use this checklist to verify the implementation:
+
+- [ ] Webhook signature verification rejects invalid or stale requests
+- [ ] Duplicate `rtms_stream_id` webhooks are ignored
+- [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
+- [ ] Transcript segments broadcast to clients before persisting to database
+- [ ] WebSocket connections require valid JWT
+- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
+- [ ] LLM extraction runs on interval, not on every segment
+- [ ] Extraction results parse as valid JSON and handle malformed responses
+- [ ] Panel renders existing signals on connect and updates on new extractions
+- [ ] No SDK credentials in client bundles or logs
 
 ---
 
