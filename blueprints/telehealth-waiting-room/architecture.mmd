@@ -1,0 +1,12 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+graph LR
+    U[Doctor or Patient Browser] -->|Sign in, open appointment| A[Next.js on Vercel]
+    A -->|Users, appointments, notes| D[(Neon Postgres)]
+    A -->|Authorize, sign 2-hour JWT| U
+    U -->|Preview, join with room ID and JWT| Z[Zoom Video SDK Session]
+    Z -->|Video, audio, chat, captions| U
+    U -->|Presigned upload, download| S[(Amazon S3 or Cloudflare R2)]
+    U -->|Start, stop recording| Z
+    A -->|Video SDK API JWT| R[Zoom Video SDK Recording API]
+    R -->|Recording metadata, download URL| A
+    K[Vercel Environment Variables] -->|SDK, API, auth, storage secrets| A
