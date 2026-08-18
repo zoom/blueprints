@@ -1,6 +1,6 @@
 ---
 title: "Build Telehealth Video Visits with Zoom Video SDK"
-slug: "telehealth-waiting-room"
+slug: "telehealth-video-visits"
 description: >-
   A reference implementation for telehealth video visits inside your own patient portal: role-based appointment access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and recording, powered by Zoom Video SDK for Web.
 products: ["video-sdk"]
@@ -24,7 +24,7 @@ deploy:
   - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fupdate&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET%2CS3_ENDPOINT%2CS3_BUCKET%2CS3_ACCESS_KEY_ID%2CS3_SECRET_ACCESS_KEY&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%7D%5D&project-name=videosdk-telehealth" }
 ---
 
-This reference implementation runs telehealth video visits inside your own application, built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/). Patients open an appointment, confirm their camera, microphone, and speaker in a device-ready check, then join a private session with their clinician. No Zoom account or separate meeting client is required on either side.
+Run telehealth video visits inside your own application, built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/). Patients open an appointment, confirm their camera, microphone, and speaker in a device-ready check, then join a private session with their clinician. No Zoom account or separate meeting client is required on either side.
 
 Most telehealth integrations send users to an external video app. A native waiting room keeps the visit inside your product, identity model, and pre-call flow.
 
