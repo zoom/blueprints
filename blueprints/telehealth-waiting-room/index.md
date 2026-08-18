@@ -1,8 +1,8 @@
 ---
-title: "Build a Telehealth Waiting Room with Zoom Video SDK"
+title: "Build Telehealth Video Visits with Zoom Video SDK"
 slug: "telehealth-waiting-room"
 description: >-
-  Add a branded telehealth waiting room to a patient portal with device checks, role-based appointment access, in-session video, chat, captions, clinical notes, and recording workflows powered by Zoom Video SDK for Web.
+  A reference implementation for telehealth video visits inside your own patient portal: role-based appointment access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and recording, powered by Zoom Video SDK for Web.
 products: ["video-sdk"]
 verticals: ["healthcare"]
 solution_types: ["data-integration", "security-encryption"]
@@ -13,8 +13,8 @@ status: "draft"
 updated: 2026-08-17
 github_repo: "https://github.com/zoom/VideoSDK-Web-Telehealth"
 tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]
-seo_title: "Build a telehealth waiting room with Zoom Video SDK for Web"
-seo_keywords: ["zoom video sdk telehealth", "telehealth waiting room", "embed video in patient portal"]
+seo_title: "Build telehealth video visits with Zoom Video SDK for Web"
+seo_keywords: ["zoom video sdk telehealth", "telehealth video visit app", "telehealth waiting room", "embed video in patient portal"]
 partners: ["vercel"]
 demo_url: "https://www.youtube.com/watch?v=pqXgNJAejQk"
 license_required: true
@@ -24,31 +24,28 @@ deploy:
   - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fupdate&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET%2CS3_ENDPOINT%2CS3_BUCKET%2CS3_ACCESS_KEY_ID%2CS3_SECRET_ACCESS_KEY&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%2C%22protocol%22%3A%22storage%22%7D%5D&project-name=videosdk-telehealth" }
 ---
 
-A telehealth waiting room built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/) keeps the entire visit inside your patient portal: appointment check-in, privacy notice, device test, and the live video call. It gates each session by appointment role, so only the assigned clinician and invited patient join.
+This reference implementation runs telehealth video visits inside your own application, built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/). Patients open an appointment, confirm their camera, microphone, and speaker in a device-ready check, then join a private session with their clinician. No Zoom account or separate meeting client is required on either side.
 
-A separate meeting handoff adds friction while patients are checking permissions, choosing devices, and confirming that they have the right appointment. Keeping those steps in the portal preserves the existing identity and appointment controls.
+Most telehealth integrations send users to an external video app. A native waiting room keeps the visit inside your product, identity model, and pre-call flow.
 
 **What you'll need:**
 
-- A [Zoom Video SDK](https://developers.zoom.us/docs/video-sdk/get-credentials/) account with SDK key and secret (plus API key and secret for recording)
-- A web app with server-side auth and an appointment/identity model (Next.js on Vercel in this guide; any stack works)
-- A PostgreSQL database for users, appointments, and notes (Neon in this guide)
-- A private object store for patient documents (Amazon S3 or Cloudflare R2)
-
-> Create your SDK and API credentials in the [Zoom Video SDK dashboard](https://developers.zoom.us/docs/video-sdk/get-credentials/)
+- [Video SDK credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/): SDK key and secret, plus API key and secret for recording
+- A backend to authorize appointments and issue short-lived session JWTs
+- A frontend for the waiting room and video session (Next.js on Vercel in this guide; any stack works)
+- A PostgreSQL database and private object store for appointments, notes, and patient documents
+- Optional: EHR or scheduler integration for patient context
 
 **Features:**
 
-- Doctor and patient onboarding with separate permissions
-- Appointment scheduling and calendar invitations
-- A reusable device preview with camera, microphone, speaker, and virtual background controls
-- In-session video, audio, chat, live captions, and cloud recording controls
+- Device-ready waiting room with camera, microphone, and speaker preview
+- Role-based session access derived from the appointment record
+- In-session video, audio, chat, and live captions
 - Patient context and SOAP-format notes beside the call
-- Patient document uploads through time-limited S3 URLs
-- Post-visit access to cloud recordings
+- Patient document uploads through time-limited storage URLs
+- Optional cloud recording with consent
 
-
-Teams that can use a standard patient experience should evaluate [Zoom for Healthcare](https://www.zoom.com/en/industry/healthcare/), which includes telehealth and healthcare collaboration capabilities. For visit documentation, [Zoom Workplace for Clinicians: Clinical Note](https://www.zoom.com/en/industry/healthcare/solutions/clinical-notes/) can generate clinical note drafts and connect them to EHR workflows. Use Video SDK when the visit must live inside your own portal, identity model, and clinical workflow.
+If you'd rather buy than build, Zoom offers [Zoom for Healthcare](https://www.zoom.com/en/industry/healthcare/) with telehealth video visits out of the box, and [Clinical Note](https://www.zoom.com/en/industry/healthcare/solutions/clinical-notes/) for visit documentation. Use Video SDK when the visit must live inside your own portal, identity model, and clinical workflow.
 
 [Watch the demo](https://www.youtube.com/watch?v=pqXgNJAejQk)
 
@@ -279,7 +276,9 @@ The older blog and parts of the repository README reference Prisma. The `update`
 
 ---
 
-The sample repository is **not designed for protected health information (PHI)** and must not be treated as HIPAA compliant. Before a production launch, work with your privacy, security, and legal teams on identity, consent, data retention, auditability, vendor agreements, and applicable healthcare rules. Zoom Video SDK can help eligible providers meet HIPAA obligations when the required arrangements, including a BAA, are in place; compliance still depends on the complete application and operating model.
+## Before production
+
+The sample repository is **not built for protected health information (PHI)** and is not HIPAA compliant as shipped. Zoom Video SDK can support HIPAA obligations for eligible providers with a signed BAA and the right controls, but compliance depends on your full application. Review identity, consent, retention, and auditability with your security and legal teams before production.
 
 ## Related Resources
 
