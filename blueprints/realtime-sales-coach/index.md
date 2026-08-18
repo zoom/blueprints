@@ -145,103 +145,82 @@ Use `express.raw()` to preserve the exact bytes Zoom sent; re-serialized JSON pr
 
 **Other languages:** In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`.
 
-#### Join the stream
+#### Stream session management
 
-Create one `@zoom/rtms` client per stream and register transcript handlers before joining:
+**Input:** `meeting.rtms_started` webhook payload with `meeting_uuid`, `rtms_stream_id`, `server_urls`
 
-```javascript
-const rtms = require('@zoom/rtms').default;
+**Output:** Active RTMS session registered, client connected, transcript handler receiving segments
 
-async function handleRTMSStarted(payload) {
-  const { meeting_uuid, rtms_stream_id, server_urls } = payload;
+**Invariants:**
 
-  if (activeSessions.has(rtms_stream_id)) return; // duplicate webhook
+- Deduplicate by `rtms_stream_id`, not `meeting_uuid`
+- If same meeting arrives with new stream ID (media server failover), tear down old session and join new
+- Register transcript handlers before calling `join()`
+- Clean up session on `onLeave` callback
+- Track sequence counter per session for segment ordering
 
-  const client = new rtms.Client();
+**Other languages:** The `@zoom/rtms` SDK is Node-only. For other stacks, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
 
-  client.onTranscriptData((data, size, timestamp, metadata) => {
-    handleTranscript(meeting_uuid, {
-      text: data.toString('utf-8'),
-      timestamp,
-      userId: metadata?.userId,
-      userName: metadata?.userName,
-    }).catch(console.error);
-  });
+See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/services/rtms) for the reference implementation.
 
-  client.onLeave(() => activeSessions.delete(rtms_stream_id));
+#### Transcript segment handling
 
-  activeSessions.set(rtms_stream_id, {
-    client,
-    meetingUuid: meeting_uuid,
-    seqCounter: 0,
-    startTime: new Date(),
-  });
+**Input:** Raw transcript callback with `text`, `timestamp` (microseconds), `userId`, `userName`
 
-  client.join({ meeting_uuid, rtms_stream_id, server_urls });
-}
-```
+**Output:** Normalized segment with `speakerId`, `speakerLabel`, `text`, `tStartMs`, `seqNo`
 
-Key sessions by `rtms_stream_id`, not `meeting_uuid`. If Zoom's media server fails over, the same meeting arrives with a new stream ID; tear down the old session and join the new one.
+**Invariants:**
 
-**Other languages:** The `@zoom/rtms` SDK is Node-only. For other languages, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
-
-#### Handle incoming transcripts
-
-Each transcript callback becomes a segment with a sequence number and millisecond timestamps. Push to connected panels immediately; persist asynchronously so you don't block the real-time path:
-
-```javascript
-async function handleTranscript(meetingId, transcript) {
-  const { text, timestamp, userId, userName } = transcript;
-  const session = findSessionByMeetingUuid(meetingId)?.session;
-  const seqNo = session ? ++session.seqCounter : Date.now();
-  const tStartMs = Math.floor(timestamp / 1000);
-
-  const segment = {
-    speakerId: userId ? String(userId) : 'unknown',
-    speakerLabel: userName || 'Speaker',
-    text: text || '',
-    tStartMs,
-    tEndMs: tStartMs,
-    seqNo,
-  };
-
-  // Broadcast first, then persist in background
-  broadcastTranscriptSegment(meetingId, segment);
-  saveTranscriptSegment(meetingId, segment).catch(console.error);
-}
-```
-
-The unique constraint on `(meetingId, seqNo)` with upsert writes makes retries idempotent.
+- Assign monotonic sequence number per session
+- Convert timestamp from microseconds to milliseconds
+- Broadcast to clients immediately (don't block on persistence)
+- Persist asynchronously with upsert on `(meetingId, seqNo)` for idempotency
+- Handle missing userId/userName gracefully with defaults
 
 **Other databases:** Works with Postgres, MongoDB, or a time-series database.
 
-#### WebSocket connection
+#### WebSocket delivery
 
-The backend runs a WebSocket server that requires a JWT on every connection:
+**Input:** Client connection with `meeting_id` and JWT token
 
-```
-Connection:      ws://host/ws?meeting_id={uuid}&token={jwt}
-Client → Server: { type: 'subscribe', meetingId }
-Server → Client: { type: 'transcript.segment', data: { meetingId, segment } }
-```
+**Output:** Real-time transcript segments and extraction updates pushed to connected clients
 
-The panel subscribes on mount and appends segments in `seqNo` order.
+**Invariants:**
+
+- Require valid JWT on every connection
+- Client sends `{ type: 'subscribe', meetingId }` after connecting
+- Server broadcasts `{ type: 'transcript.segment', data }` and `{ type: 'sales_signals', data }`
+- Clean up subscriptions on disconnect
+- Panel appends segments in `seqNo` order
 
 ### Part 2: Building the Sales Intelligence Layer
 
 With transcripts flowing, extract sales signals: qualification criteria, competitor mentions, and commitments.
 
-#### Extraction function
+#### Sales signal extraction
 
-```javascript
-async function extractSalesSignals(transcript, currentState = {}, watchList = []) {
-  const systemPrompt = `You are a sales coaching assistant analyzing a live call.
+**Input:** Recent transcript context (last 100 segments or last N minutes), current qualification state, competitor watch list
+
+**Output:** JSON with `qualification` (BANT status + signals), `competitors` (mentions + sentiment), `commitments` (task + owner + due)
+
+**Invariants:**
+
+- Run on debounce interval (30 seconds), not on every segment
+- Track last processed sequence number to avoid redundant calls
+- Parse JSON response, strip markdown fences if present
+- Validate minimum transcript length before calling LLM
+- Merge results incrementally (don't replace, dedupe by text)
+
+**Prompt structure** (customize for MEDDIC, SPICED, or your criteria):
+
+```
+You are a sales coaching assistant analyzing a live call.
 Extract:
 
 1. Qualification (budget, authority, need, timeline). For each:
    - status: "confirmed" | "unclear" | "missing" | "unknown"
    - signals: array of { "text": "quote", "seqNo": number or null }
-2. Competitor mentions. Watch list: ${JSON.stringify(watchList)}.
+2. Competitor mentions. Watch list: [your competitors].
    { "name": "competitor", "text": "quote", "sentiment": "positive|negative|neutral" }
 3. Commitments:
    { "text": "what was committed", "owner": "who", "due": "timeframe or null" }
@@ -251,72 +230,26 @@ Return JSON only:
   "qualification": { "budget": {...}, "authority": {...}, "need": {...}, "timeline": {...} },
   "competitors": [...],
   "commitments": [...]
-}`;
-
-  const response = await callOpenRouter(transcript, systemPrompt, { maxTokens: 1536 });
-  const cleaned = response.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-  return JSON.parse(cleaned);
 }
 ```
 
-**Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling. To change qualification criteria, edit the prompt (BANT → MEDDIC, SPICED, etc.).
+**Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling.
 
-#### API endpoint
+See [Arlo's AI routes](https://github.com/zoom/arlo/tree/main/backend/routes/ai) for the reference implementation.
 
-```javascript
-router.post('/sales-signals', async (req, res) => {
-  const { transcript, currentState, watchList } = req.body;
+#### Frontend state management
 
-  if (!transcript || transcript.trim().length < 50) {
-    return res.status(400).json({ error: 'transcript required (min 50 chars)' });
-  }
+**Input:** WebSocket stream of segments and extraction updates
 
-  const signals = await extractSalesSignals(transcript.trim(), currentState || {}, watchList || []);
-  res.json(signals);
-});
-```
+**Output:** React state for transcript, qualification tracker, competitor mentions, commitments
 
-#### Frontend hook
+**Invariants:**
 
-Call the extraction endpoint every 30 seconds with recent transcript context:
-
-```javascript
-const ANALYZE_DEBOUNCE_MS = 30000;
-
-export default function useSalesSignals(segments, isLive, watchList) {
-  const [signals, setSignals] = useState({ qualification: {}, competitors: [], commitments: [] });
-  const lastProcessedCount = useRef(0);
-
-  const analyze = useCallback(async () => {
-    if (!segments?.length || segments.length === lastProcessedCount.current) return;
-
-    const transcript = segments.slice(-100).map(s => `[${s.speakerLabel}]: ${s.text}`).join('\n');
-
-    const res = await fetch('/api/ai/sales-signals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript, currentState: signals.qualification, watchList }),
-    });
-    if (!res.ok) return;
-
-    const data = await res.json();
-    setSignals(prev => ({
-      qualification: { ...prev.qualification, ...data.qualification },
-      competitors: mergeMentions(prev.competitors, data.competitors),
-      commitments: dedupeByText(prev.commitments, data.commitments),
-    }));
-    lastProcessedCount.current = segments.length;
-  }, [segments, signals.qualification, watchList]);
-
-  useEffect(() => {
-    if (!isLive || !segments.length) return;
-    const timer = setTimeout(analyze, ANALYZE_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [segments.length, isLive, analyze]);
-
-  return signals;
-}
-```
+- Append segments in `seqNo` order
+- Dedupe action items by task text
+- Dedupe competitor mentions by quote text
+- Show existing state on reconnect, then apply incremental updates
+- Trigger extraction on debounce interval while `isLive` is true
 
 **Other frameworks:** Works with Vue, Svelte, or vanilla JS. The Surface App runs inside the Zoom client via iframe; standard web tech applies.
 
