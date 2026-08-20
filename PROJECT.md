@@ -3,60 +3,72 @@
 > Living doc. Update when you pick up or finish a task (PR welcome).
 > Project context: the full spec lives with the site team (`BLUEPRINTS_CONTEXT.md` in the dev-docs repo). Timeline dates in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Last updated:** 2026-08-10
+**Last updated:** 2026-08-20
+
+## Decisions locked (Aug 19 sync)
+
+- **Intro structure locked.** See [STYLE_GUIDE.md § The Intro Block](STYLE_GUIDE.md#the-intro-block-field-by-field) for the required fields and filled example
+- **Code = Input/Output/Invariants contracts.** Stack-agnostic format for business logic. Security-critical code (HMAC, JWT, signature verification) stays concrete. See [STYLE_GUIDE.md § Contracts](STYLE_GUIDE.md#contracts-and-agent-first-content)
+- **Zoom license prerequisites required.** Every blueprint must state the required Zoom plan/entitlement in "What you'll need" with a link to pricing. See [STYLE_GUIDE.md § Zoom License Prerequisites](STYLE_GUIDE.md#what-youll-need-zoom-license-prerequisites)
+- **Platform-agnostic Dockerfile required.** Every sample repo must include a Dockerfile that runs on any cloud (Render, Railway, Fly, AWS, etc.) — not locked to one vendor
+- **Demo GIFs: optional but quality-gated.** If present, must be short (~1 min), unnarrated, and focused on the end result. No talking-head walkthroughs
+- **OSS maturity standards.** Link to Max Mansfield's internal doc for repo health (README, LICENSE, CONTRIBUTING, CI, etc.)
 
 ## Decisions locked (Aug 5–10)
 
 - **MVP launch scope: 8–10 blueprints.** Flagship exemplar is the sales assistant grounded in [zoom/arlo](https://github.com/zoom/arlo)
-- **Four required sections per blueprint:** Problem Statement, Architecture Diagram, Implementation Guide, App Manifest. Agent skill export is required but auto-generated
+- **Four required sections per blueprint:** Features, Architecture, Implementation Guide, App Manifest. Agent skill export is auto-generated
 - **Taxonomy is use case + industry vertical, not Zoom product.** Products are tags
 - **Live demos are optional for V1** — shown when a demo URL exists, never a publishing gate
 - **Surface Apps are one supported pattern, not the preferred default.** Future blueprints should also cover CRM, dashboard, automation, and agent flows
-- **Blueprint images live with the blueprint** (`blueprints/<slug>/images/`), referenced by relative path. `hero_image` frontmatter sets the header; the site auto-generates a metadata thumbnail when it's absent. The site serves them at `/img/blueprints/<slug>/…` via a build-time path rewrite
+- **Blueprint images live with the blueprint** (`blueprints/<slug>/images/`), referenced by relative path. `hero_image` frontmatter sets the header; the site auto-generates a metadata thumbnail when it's absent
 
 ## Where we are
 
-- ✅ Content pipeline is end to end: author in this repo → renders on developers.zoom.us at build time, no engineering handoff. This repo is the site's ONLY blueprint source; drafts render on the site until launch. Repo is still private — site builds need a GitHub access token until the Sep 29 public flip
+- ✅ Content pipeline is end to end: author in this repo → renders on developers.zoom.us at build time, no engineering handoff
 - ✅ Repo foundation: template, taxonomy, collections, validation + CI on every PR, contribution docs, this status board
-- ✅ **Two gold-standard drafts ready for team review:** `realtime-sales-coach` (`jen/sales-coach-draft`) and `ai-meeting-notetaker` (`jen/ai-meeting-notetaker`) — both expand beyond the four minimum sections and are setting the authoring bar
-- ✅ **Local preview is live:** render your local draft folder exactly as it will appear on the site, before opening a PR → [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/) ([how-to](CONTRIBUTING.md#previewing-your-blueprint))
-- ✅ [STYLE_GUIDE.md](STYLE_GUIDE.md) on `main`; PR template checklist expanded so review standards are embedded in the workflow
-- 🟡 Branch protection partial: merges now require a PR. Full enforcement (required `validate` check + review) is blocked until the repo goes public (Sep 29) or the GitHub plan is upgraded
-- ⚠ Gotcha: Zoom's push-time secret scanner matches key-shaped strings even in docs and test fixtures. Fake keys in examples must be obvious placeholders (`YOUR_KEY_HERE`), never realistic-looking values
-- 🔜 Team outlines due **Aug 18**; drafts Aug 25–Sep 5
+- ✅ **Gold-standard drafts converted to contracts format:** `realtime-sales-coach` and `ai-meeting-notetaker` now use Input/Output/Invariants contracts for business logic, concrete code for security-critical sections
+- ✅ **STYLE_GUIDE.md overhauled:** New required structure including intro field-by-field, Zoom license prerequisites, Dockerfile requirements, contracts format, extended PR checklist, annotated gold standard examples
+- ✅ **CONTRIBUTING.md made procedural:** Now focuses on mechanics (folder setup, frontmatter reference, validation, PR workflow) and links to STYLE_GUIDE for content rules
+- ✅ **Local preview is live:** render your local draft folder exactly as it will appear on the site → [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
+- 🟡 Branch protection partial: merges now require a PR. Full enforcement blocked until repo goes public (Sep 29)
+- ⚠ Gotcha: Zoom's push-time secret scanner matches key-shaped strings even in docs. Fake keys must be obvious placeholders (`YOUR_KEY_HERE`)
+- 🔜 Team drafts due **Aug 25–Sep 5**
 
 ## Topic claims
 
 | Blueprint | Owner | Status |
 |-----------|-------|--------|
-| Real-Time Sales Coach | Jen | Draft in review (`jen/sales-coach-draft`) |
-| AI Meeting Notetaker | Jen | Draft in review (`jen/ai-meeting-notetaker`) |
+| Real-Time Sales Coach | Jen | Contracts conversion complete, ready for final review |
+| AI Meeting Notetaker | Jen | Contracts conversion complete, ready for final review |
 | Human-in-the-Loop | Donte | In progress (`donte/human-in-loop-blueprint`) |
-| Telehealth Waiting Room | Ekaansh Arora | Claimed |
+| Telehealth Waiting Room | Ekaansh Arora | In progress |
 | Live Sentiment | Ticorrian Heard | Claimed |
-
-**Claims due Aug 11 (EOD):** commit to a title in the #Blueprinters thread so the team can give feedback. Still needed from: Donte, Pranjal, Rehema, Chun Siong — Gianni optional. Claim by adding a row here (PR) or posting in #Blueprinters.
 
 ## Open tasks
 
-| # | Task | Owner | When |
-|---|------|-------|------|
-| 1 | **All:** comment on [PR #1](https://github.com/zoom/blueprints/pull/1) to solidify the content structure | everyone | **Tue Aug 11 EOD** |
-| 2 | Lock editorial review & content skills (what qualifies, quality bar, review criteria); explore auto-review on PR submit via GitHub Actions | Jen + Ekaansh | **Aug 15** |
-| 3 | Manifest verification on PR: align manifests to the real Zoom app schema (arlo-style `display_information`/`oauth_information`/`features`), add field-level validation so only valid manifests merge; then verify against the live Marketplace manifests API (create-app roundtrip) | Donte | this week |
-| 4 | Image convention: repo half **merged** ([PR #4](https://github.com/zoom/blueprints/pull/4) — relative paths, `hero_image`, validation errors on broken refs, binary-safe secret scan). Remaining: dev-docs half — `/img/blueprints/<slug>/` path rewrite + metadata fallback-thumbnail generator (contract in [spec](docs/superpowers/specs/2026-08-10-blueprint-image-convention-design.md)) | Michael + site team | this week |
-| 5 | Decide: similar use case across different products — one blueprint or separate? Michael's vote: separate (e.g. "Track sentiment in Zoom Meetings" ≠ "Add sentiment analysis to Video SDK sessions") | Jen | this week |
-| 6 | Site rendering polish (dev-docs side): populate `/img/blueprints/_assets/partners` and add a fallback icon; fix code block contrast (light gray text on light gray background is unreadable); Mermaid text clipping | Michael | pre-launch |
-| 7 | dev-docs must fail gracefully when pulled content doesn't match the schema — verify the `gen-blueprints` script handles invalid content | — | pre-launch |
-| 8 | Agent-skill generation for accepted blueprints: script that runs on merged PR? Open question: does generating one require an LLM/AI-gateway connection? Scope an approach | Chun Siong + Ekaansh | scoping now |
-| 9 | Add the fake-credentials-must-be-placeholders rule to CONTRIBUTING (see gotcha above) | — | ~5 min |
-| 10 | Update the catalog table in the project spec (exemplar row still says real-time-transcription) | Michael | editorial call |
+| # | Task | Owner | Status |
+|---|------|-------|--------|
+| 1 | Add platform-agnostic Dockerfile to Arlo repo | Donte | This week |
+| 2 | Add platform-agnostic Dockerfile to Meeting Notetaker sample repo | — | Needs owner |
+| 3 | Update template with Dockerfile requirements and example | Jen | This week |
+| 4 | Manifest verification on PR: validate against Zoom app schema, verify create-app roundtrip | Donte | In progress |
+| 5 | Site rendering polish: partner icon fallback, code block contrast, Mermaid text clipping | Michael | Pre-launch |
+| 6 | dev-docs graceful failure when pulled content doesn't match schema | — | Pre-launch |
+| 7 | Agent-skill generation for accepted blueprints: scope LLM/AI-gateway approach | Chun Siong + Ekaansh | Scoping |
+| 8 | Validate `collections/index.json` slugs against real blueprint dirs (typos 404 silently) | — | Pre-launch |
+| 9 | Review and merge gold-standard blueprints (Sales Coach, AI Meeting Notetaker) | Team | This week |
+
+## Completed tasks (Aug 10–20)
+
+- ✅ Lock editorial review & content standards → [STYLE_GUIDE.md](STYLE_GUIDE.md)
+- ✅ Convert gold-standard blueprints to contracts format
+- ✅ Add credential-safety rule to CONTRIBUTING.md
+- ✅ Image convention (repo half): relative paths, `hero_image`, validation errors on broken refs
 
 ## Later (scheduled, don't start yet)
 
-- **Integration weeks (Sep 15–26):** `build-catalog.js`, `generate-agent-skills.js` build (scoping pulled forward — task 8 above), **Blueprints entry point in the developers.zoom.us site nav** (header dropdown)
-- Decide fate of the `real-time-transcription` skeleton (keep as second blueprint vs fold into catalog work)
-- Validate `collections/index.json` slugs against real blueprint dirs (typos currently 404 silently at site build)
-- Credential scan is top-level-files only — recurse if blueprints grow subdirectories
-- Repo flips **public at soft launch (Sep 29)** — also unlocks full branch protection (see above)
-- 💡 Exploratory (no commitment): richer `ArchDiagram` component for complex flows beyond what Mermaid handles cleanly
+- **Integration weeks (Sep 15–26):** `build-catalog.js`, `generate-agent-skills.js`, **Blueprints entry point in site nav** (header dropdown)
+- Credential scan recursion if blueprints grow subdirectories
+- Repo flips **public at soft launch (Sep 29)** — also unlocks full branch protection
+- Exploratory: richer `ArchDiagram` component for complex flows beyond Mermaid

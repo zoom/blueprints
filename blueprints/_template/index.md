@@ -15,6 +15,8 @@ updated: 2026-08-04                # YYYY-MM-DD, bump on every edit
 
 # ── Strongly encouraged — the site hides blueprints without a repo ──────────
 github_repo: ""                    # sample code lives in its own repo, linked here
+                                   # REQUIRED: repo must include a platform-agnostic Dockerfile
+                                   # (see STYLE_GUIDE.md § Sample Code and Repository Requirements)
 
 # ── Optional — delete what you don't use ────────────────────────────────────
 # hero_image: images/hero.png       # header + catalog thumbnail; relative to this
