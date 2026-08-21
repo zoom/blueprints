@@ -33,8 +33,7 @@
 - ✅ **Local preview is live:** [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
 - 🟡 **Meeting cadence:** Wednesdays 9am PT (60 min dedicated sync) + 15-20 min in Tuesday team meetings as needed
 - 🟡 **Target: reviewable PR for each Blueprint by Aug 27**
-- 🟡 **Site integration aligned to Sept 20 developer site release**
-- 🟡 **Jeremy presenting Blueprints at ship-room meeting**
+- 🟡 **Waiting on developers.zoom.us refresh (Sept 20):** Blueprints will launch with or shortly after the site redesign. Coordinating with Brendan Abajelo to see if we can integrate earlier.
 - 🟡 Branch protection partial: full enforcement blocked until repo goes public (Sep 29)
 - ⚠ Gotcha: Zoom's push-time secret scanner matches key-shaped strings. Fake keys must be obvious placeholders (`YOUR_KEY_HERE`)
 
@@ -110,7 +109,7 @@
 | # | Task | Owner | Status |
 |---|------|-------|--------|
 | 1 | Build partner-focused / ISV-integrator Blueprint using existing Rivet SDK code | Jeremy | This week |
-| 2 | Coordinate Blueprints into new dev site with Brendan Abajelo + stand up Amplitude user-journey tracking | Michael | In progress |
+| 2 | Coordinate Blueprints into new dev site with Brendan Abajelo; check if we can integrate before Sept 20 launch + stand up Amplitude user-journey tracking | Michael | In progress |
 | 3 | Confirm Blueprint topics in potluck channel; use GitHub traffic + Amplitude data to prioritize which RTMS sample apps become Blueprints | Team | Ongoing |
 | 4 | Resolve developer access-to-test-licensing friction (Developer Pack SKU for test accounts) | Jen / Team | Separate workstream |
 | 5 | Clarify RTMS manifest required-scopes | Jen | This week |
