@@ -231,16 +231,28 @@ These patterns make content smell like AI. Avoid them:
 
 ---
 
-## Images and Video/GIF Requirements
+## Images and Video Requirements
 
-### Images (required)
+### Screenshots (required)
 
-Every Blueprint should include approximately 5 images minimum:
+Every Blueprint must include **5+ screenshots**. These are non-negotiable.
 
-- UI screenshots showing the finished application
-- Architecture diagram (Mermaid renders automatically)
-- Code structure or key components
+**What to capture:**
+- UI screenshots showing the finished application in action
+- Architecture diagram (Mermaid renders automatically, but additional visuals help)
+- Key configuration or setup screens
 - Output/results examples
+
+**What makes a good screenshot:**
+
+| Do | Don't |
+|----|-------|
+| Crop to the relevant area | Full desktop with toolbars and tabs |
+| Show real data or realistic placeholders | Empty states or "lorem ipsum" |
+| Capture the app in a working state | Error screens (unless documenting error handling) |
+| Use consistent window sizes | Mix of random dimensions |
+| High resolution, readable text | Blurry or scaled-down images |
+| Light mode preferred for consistency | Dark mode (unless the app is dark-mode-only) |
 
 Images live in `blueprints/<slug>/images/` and are referenced by **relative path**:
 
@@ -257,21 +269,32 @@ For centered images with sizing:
 
 **Hero image** (optional): Add `hero_image: images/hero.png` to frontmatter. If omitted, the site auto-generates a thumbnail from metadata.
 
-### Demo video/GIF (optional, non-blocking)
+### Demo video (required)
 
-Videos are optional and never a publishing gate, but when included:
+Every Blueprint must include a **short video showing the end result**. This can be simple.
 
-- **Short**: ~1 minute maximum
-- **Unnarrated**: No voiceover; let the UI speak
-- **End-result focused**: Show the deployed sample working, not a step-by-step deploy walkthrough
-- **Decision-maker audience**: Aimed at non-technical stakeholders quickly assessing fit
-- **Quality bar**: Must meet minimum production quality (no rough cuts, visible errors, or placeholder content)
+**Minimum bar (required):**
+- Screen recording of the working application
+- Shows the output/result, not the setup process
+- 30 seconds to 2 minutes
+- No face required
+- No voice required
+- No editing required beyond trimming start/end
+
+A simple screen capture with QuickTime or Loom showing "here's what happens when you run it" is enough.
+
+**Nice to have (not required):**
+- Narrated walkthrough
+- Polished editing
+- Longer deep-dive video
 
 Link demo videos in the intro after the images:
 
 ```markdown
-[Watch a 3-minute demo](https://www.youtube.com/watch?v=...)
+[Watch a 2-minute demo](https://www.youtube.com/watch?v=...)
 ```
+
+**Format:** Upload to YouTube (unlisted is fine) or host as a GIF/MP4. Don't embed large files in the repo.
 
 ---
 
@@ -511,8 +534,8 @@ When reviewing a Blueprint PR, verify all items:
 ### Technical requirements
 - [ ] **Zoom products linked**: RTMS, Zoom Apps, etc. link to official docs
 - [ ] **Images use relative paths**: `images/screenshot.png`, not absolute URLs
-- [ ] **~5 images minimum**: UI, architecture, code structure, output
-- [ ] **GIF (if present) is compliant**: Short, unnarrated, end-result only, meets quality bar
+- [ ] **5+ screenshots included**: UI, architecture, config screens, output (see screenshot quality checklist)
+- [ ] **Demo video included**: Screen recording of working app, 30s-2min, linked in intro
 - [ ] **No MDX compatibility issues**: No inline styles, use `<div>` for images, no `&nbsp;`
 - [ ] **manifest.json included**: Valid Zoom App manifest
 
