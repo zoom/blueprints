@@ -1,5 +1,5 @@
 ---
-title: "AI Meeting Notetaker in Zoom Meetings"
+title: "AI Meeting Notetaker"
 slug: "ai-meeting-notetaker"
 description: >-
   Build an AI-powered meeting assistant that lives inside Zoom meetings.
