@@ -588,6 +588,29 @@ The litmus test: If you removed all prose and left only the architecture diagram
 
 ---
 
+## Blueprint Naming
+
+A Blueprint title must pass these checks:
+
+| Requirement | Why |
+|-------------|-----|
+| **States what it does** | "Real-time sales coach" not "RTMS Integration" |
+| **Includes the use case or outcome** | "Transcripts → Salesforce" not "CRM Connector" |
+| **Uses terms developers would search for** | "AI meeting notetaker" not "Intelligent Note Capture System" |
+| **Scannable in a list** | Keep it under 8 words |
+| **No jargon without context** | "Human-in-the-loop" means nothing alone; "Meeting follow-up agent with human approval" is clear |
+
+**Pattern that works:** `[What] + [Where/How/For What]`
+
+- "Live sentiment analysis in meetings"
+- "Transcripts to Salesforce CRM"
+- "Telehealth waiting room"
+- "Deepfake detection in meetings"
+
+**Litmus test:** If someone sees only the title in a list of 20 blueprints, can they decide in 2 seconds whether to click?
+
+---
+
 ## One Blueprint Per Product
 
 If you have similar use cases across different products, create **separate blueprints** for each.
