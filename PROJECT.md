@@ -7,6 +7,7 @@
 
 ---
 
+<<<<<<< HEAD
 ## Timeline & Milestones
 
 | Date | Milestone |
@@ -43,6 +44,14 @@
 - **Zoom license prerequisites required.** Every blueprint must state the required Zoom plan/entitlement in "What you'll need"
 - **Platform-agnostic Dockerfile required.** Every sample repo must include a Dockerfile
 - **Demo video required.** Screen recording (30s-2min). No face, no voice, no editing required.
+=======
+- **Blueprint = declarative/prescriptive gold standard, distinct from tutorial.** See [What a Blueprint Is](STYLE_GUIDE.md#what-a-blueprint-is-and-what-it-isnt) in STYLE_GUIDE.md
+- **Intro structure locked.** See [The Intro Block](STYLE_GUIDE.md#the-intro-block-field-by-field) in STYLE_GUIDE.md for the required fields and filled example
+- **Code = Input/Output/Invariants contracts.** Stack-agnostic format for business logic. Security-critical code (HMAC, JWT, signature verification) stays concrete. See [Contracts](STYLE_GUIDE.md#contracts-and-agent-first-content) in STYLE_GUIDE.md
+- **Zoom license prerequisites required.** Every blueprint must state the required Zoom plan/entitlement in "What you'll need" with a link to pricing
+- **Platform-agnostic Dockerfile required.** Every sample repo must include a Dockerfile that runs on any cloud (Render, Railway, Fly, AWS, etc.)
+- **Demo video required.** Screen recording of the working app (30s-2min). No face, no voice, no editing required. Just show it working. See [Images and Video Requirements](STYLE_GUIDE.md#images-and-video-requirements) in STYLE_GUIDE.md
+>>>>>>> bcb8abf (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
 - **Sample code follows Max's OSS standards.** Link to repo, don't duplicate code that will drift
 
 ### Aug 5–10
@@ -62,11 +71,18 @@
 - ✅ **Gold standards complete:** `realtime-sales-coach` and `ai-meeting-notetaker` ready to ship (need cover image + GitHub author link fixes)
 - ✅ **STYLE_GUIDE.md + CONTRIBUTING.md overhauled**
 - ✅ **Local preview is live:** [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
+<<<<<<< HEAD
 - ✅ **Repository access granted to all contributors**
 - ✅ **Brandon sync completed:** Integration path defined, Max assigned as migration bridge
 - ✅ **Site rendering fixes:** Code block formatting, partner icon fallback, Mermaid text clipping improved
 - 🟡 **Meeting cadence:** Wednesdays 9am PT (60 min dedicated sync) + 15-20 min in Tuesday team meetings
 - 🟡 **DevDocs refresh integration:** Brandon confident in Sept 27 deadline if Max starts now. Work may stay in branch until main app launches Sept 20.
+=======
+- 🟡 **Meeting cadence:** Thursdays 9am PT (60 min dedicated sync) + 15-20 min in Tuesday team meetings as needed
+- 🟡 **Target: reviewable PR for each Blueprint by Aug 27**
+- 🟡 **Site integration aligned to Sept 20 developer site release**
+- 🟡 **Jeremy presenting Blueprints at ship-room meeting**
+>>>>>>> bcb8abf (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
 - 🟡 Branch protection partial: full enforcement blocked until repo goes public (Sep 29)
 - ⚠️ **Blocker:** Credential scan recursion if subdirectories grow (could block site builds)
 
