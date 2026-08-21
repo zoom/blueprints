@@ -235,7 +235,7 @@ These patterns make content smell like AI. Avoid them:
 
 ### Screenshots (required)
 
-Every Blueprint must include **5+ screenshots**. These are non-negotiable.
+Every Blueprint must include **screenshots**. These are non-negotiable.
 
 **What to capture:**
 - UI screenshots showing the finished application in action
@@ -534,7 +534,7 @@ When reviewing a Blueprint PR, verify all items:
 ### Technical requirements
 - [ ] **Zoom products linked**: RTMS, Zoom Apps, etc. link to official docs
 - [ ] **Images use relative paths**: `images/screenshot.png`, not absolute URLs
-- [ ] **5+ screenshots included**: UI, architecture, config screens, output (see screenshot quality checklist)
+- [ ] **Screenshots included**: UI, architecture, config screens, output (see screenshot quality checklist)
 - [ ] **Demo video included**: Screen recording of working app, 30s-2min, linked in intro
 - [ ] **No MDX compatibility issues**: No inline styles, use `<div>` for images, no `&nbsp;`
 - [ ] **manifest.json included**: Valid Zoom App manifest
