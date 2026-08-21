@@ -20,7 +20,7 @@
 - **MVP launch scope: 8–10 blueprints.** Flagship exemplars are `realtime-sales-coach` and `ai-meeting-notetaker`, grounded in [zoom/arlo](https://github.com/zoom/arlo)
 - **Four required sections per blueprint:** Features, Architecture, Implementation Guide, App Manifest. Agent skill export is auto-generated
 - **Taxonomy is use case + industry vertical, not Zoom product.** Products are tags
-- **Live demos are optional for V1.** Shown when a demo URL exists, never a publishing gate
+- **Interactive live demos (hosted instances) are optional.** If a `demo_url` exists, the site shows it. Not a blocker for launch. (Note: demo *videos* ARE required; see Aug 19 decisions above.)
 - **Surface Apps are one supported pattern, not the preferred default.** Future blueprints should also cover CRM, dashboard, automation, and agent flows
 - **Blueprint images live with the blueprint** (`blueprints/<slug>/images/`), referenced by relative path
 
