@@ -39,11 +39,14 @@ A Blueprint is **declarative, opinionated, and prescriptive**. It's a gold stand
 | `collections/index.json` | Vertical collections shown on the site |
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 | `scripts/validate.js` | Quality gate — run `npm run validate` |
 | `scripts/validate-zoom-manifest.js` | validate manifest — run `npm run validate-zoom-manifest -- your-blueprint` |
 =======
 =======
 >>>>>>> fdb9aec (Updated HLTL blueprint)
+=======
+>>>>>>> eda6f92 (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
 | `scripts/validate.js` | Quality gate: `npm run validate` |
 <<<<<<< HEAD
 >>>>>>> bcb8abf (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
@@ -58,6 +61,16 @@ A Blueprint is **declarative, opinionated, and prescriptive**. It's a gold stand
 | `scripts/validate.js` | Quality gate — run `npm run validate` |
 | `scripts/validate-zoom-manifest.js` | validate manifest — run `npm run validate-zoom-manifest -- your-blueprint` |
 >>>>>>> b48d4a1 (Updated readme with validate manifest instructions)
+=======
+| `scripts/validate.js` | Quality gate — run `npm run validate` |
+| `scripts/validate-zoom-manifest.js` | validate manifest — run `npm run validate-zoom-manifest -- your-blueprint` |
+=======
+| `scripts/validate.js` | Quality gate: `npm run validate` |
+| `STYLE_GUIDE.md` | Content standards, tone, required sections |
+| `CONTRIBUTING.md` | Step-by-step contribution workflow |
+| `PROJECT.md` | Current status, open tasks, topic claims |
+>>>>>>> f317ed1 (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
+>>>>>>> cd7706e (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
 
 ## Previewing a draft
 

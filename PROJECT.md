@@ -69,7 +69,11 @@
 - **Zoom license prerequisites required.** Every blueprint must state the required Zoom plan/entitlement in "What you'll need" with a link to pricing
 - **Platform-agnostic Dockerfile required.** Every sample repo must include a Dockerfile that runs on any cloud (Render, Railway, Fly, AWS, etc.)
 - **Demo video required.** Screen recording of the working app (30s-2min). No face, no voice, no editing required. Just show it working. See [Images and Video Requirements](STYLE_GUIDE.md#images-and-video-requirements) in STYLE_GUIDE.md
+<<<<<<< HEAD
 >>>>>>> bcb8abf (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
+=======
+>>>>>>> cd7706e (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
+>>>>>>> eda6f92 (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
 - **Sample code follows Max's OSS standards.** Link to repo, don't duplicate code that will drift
 
 ### Aug 5–10
@@ -100,7 +104,11 @@
 - 🟡 **Target: reviewable PR for each Blueprint by Aug 27**
 - 🟡 **Site integration aligned to Sept 20 developer site release**
 - 🟡 **Jeremy presenting Blueprints at ship-room meeting**
+<<<<<<< HEAD
 >>>>>>> bcb8abf (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
+=======
+>>>>>>> cd7706e (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
+>>>>>>> eda6f92 (Clean up repo: README, remove difficulty, fix collections, remove § symbols)
 - 🟡 Branch protection partial: full enforcement blocked until repo goes public (Sep 29)
 - ⚠️ **Blocker:** Credential scan recursion if subdirectories grow (could block site builds)
 
