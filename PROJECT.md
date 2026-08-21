@@ -121,6 +121,7 @@
 | 11 | Confirm author byline displays on rendered blueprints (dev-docs site template) | Michael | Pre-launch |
 | 12 | Widen content container on blueprint pages (Clay feedback: currently too narrow) | Michael | Pre-launch |
 | 13 | Add persistent "Need help?" footer to each blueprint: link to [devforum.zoom.us](https://devforum.zoom.us/), note that developers can post questions there and tag the blueprint author directly if needed | Michael | Pre-launch |
+| 14 | Make Blueprints homepage clear about what Blueprints are: intro video, explanatory copy, design treatment, tags for discoverability. Needs brainstorm. | Jen / Michael | Pre-launch |
 
 ## Completed tasks (Aug 10–20)
 
