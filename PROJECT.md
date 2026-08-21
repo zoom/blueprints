@@ -31,7 +31,7 @@
 - ✅ **Gold-standard drafts complete:** `realtime-sales-coach` and `ai-meeting-notetaker` use Input/Output/Invariants contracts, ready for final review
 - ✅ **STYLE_GUIDE.md + CONTRIBUTING.md overhauled:** New required structure, Zoom license prerequisites, Dockerfile requirements, contracts format, extended PR checklist
 - ✅ **Local preview is live:** [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
-- 🟡 **Meeting cadence:** Wednesdays 8:30am PT (60 min dedicated sync) + 15-20 min in Tuesday team meetings as needed
+- 🟡 **Meeting cadence:** Wednesdays 9am PT (60 min dedicated sync) + 15-20 min in Tuesday team meetings as needed
 - 🟡 **Target: reviewable PR for each Blueprint by Aug 27**
 - 🟡 **Site integration aligned to Sept 20 developer site release**
 - 🟡 **Jeremy presenting Blueprints at ship-room meeting**
