@@ -7,7 +7,6 @@ description: >-
   Shown on cards and used for SEO — write how a customer would search.
 products: ["rtms"]                 # ids from /taxonomy.json → products
 verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
-difficulty: "intermediate"         # beginner | intermediate | advanced
 estimated_time: "2-4 hours"        # honest wall-clock estimate to implement
 author: "Your Name"
 status: "draft"                    # draft | review | published
@@ -16,7 +15,7 @@ updated: 2026-08-04                # YYYY-MM-DD, bump on every edit
 # ── Strongly encouraged — the site hides blueprints without a repo ──────────
 github_repo: ""                    # sample code lives in its own repo, linked here
                                    # REQUIRED: repo must include a platform-agnostic Dockerfile
-                                   # (see STYLE_GUIDE.md § Sample Code and Repository Requirements)
+                                   # (see STYLE_GUIDE.md)
 
 # ── Optional — delete what you don't use ────────────────────────────────────
 # hero_image: images/hero.png       # header + catalog thumbnail; relative to this

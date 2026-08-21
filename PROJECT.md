@@ -7,12 +7,12 @@
 
 ## Decisions locked (Aug 19 sync)
 
-- **Blueprint = declarative/prescriptive gold standard, distinct from tutorial.** See [STYLE_GUIDE.md § What a Blueprint Is](STYLE_GUIDE.md#what-a-blueprint-is-and-what-it-isnt) for the litmus test
-- **Intro structure locked.** See [STYLE_GUIDE.md § The Intro Block](STYLE_GUIDE.md#the-intro-block-field-by-field) for the required fields and filled example
-- **Code = Input/Output/Invariants contracts.** Stack-agnostic format for business logic. Security-critical code (HMAC, JWT, signature verification) stays concrete. See [STYLE_GUIDE.md § Contracts](STYLE_GUIDE.md#contracts-and-agent-first-content)
+- **Blueprint = declarative/prescriptive gold standard, distinct from tutorial.** See [What a Blueprint Is](STYLE_GUIDE.md#what-a-blueprint-is-and-what-it-isnt) in STYLE_GUIDE.md
+- **Intro structure locked.** See [The Intro Block](STYLE_GUIDE.md#the-intro-block-field-by-field) in STYLE_GUIDE.md for the required fields and filled example
+- **Code = Input/Output/Invariants contracts.** Stack-agnostic format for business logic. Security-critical code (HMAC, JWT, signature verification) stays concrete. See [Contracts](STYLE_GUIDE.md#contracts-and-agent-first-content) in STYLE_GUIDE.md
 - **Zoom license prerequisites required.** Every blueprint must state the required Zoom plan/entitlement in "What you'll need" with a link to pricing
 - **Platform-agnostic Dockerfile required.** Every sample repo must include a Dockerfile that runs on any cloud (Render, Railway, Fly, AWS, etc.)
-- **Demo video required.** Screen recording of the working app (30s-2min). No face, no voice, no editing required. Just show it working. See [STYLE_GUIDE.md § Images and Video](STYLE_GUIDE.md#images-and-video-requirements)
+- **Demo video required.** Screen recording of the working app (30s-2min). No face, no voice, no editing required. Just show it working. See [Images and Video Requirements](STYLE_GUIDE.md#images-and-video-requirements) in STYLE_GUIDE.md
 - **Sample code follows Max's OSS standards.** Link to repo, don't duplicate code that will drift
 
 ## Decisions locked (Aug 5–10)
@@ -31,7 +31,7 @@
 - ✅ **Gold-standard drafts complete:** `realtime-sales-coach` and `ai-meeting-notetaker` use Input/Output/Invariants contracts, ready for final review
 - ✅ **STYLE_GUIDE.md + CONTRIBUTING.md overhauled:** New required structure, Zoom license prerequisites, Dockerfile requirements, contracts format, extended PR checklist
 - ✅ **Local preview is live:** [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
-- 🟡 **Daily 15-min standups (Mon–Thu)** running until delivery
+- 🟡 **Meeting cadence:** Thursdays 9am PT (60 min dedicated sync) + 15-20 min in Tuesday team meetings as needed
 - 🟡 **Target: reviewable PR for each Blueprint by Aug 27**
 - 🟡 **Site integration aligned to Sept 20 developer site release**
 - 🟡 **Jeremy presenting Blueprints at ship-room meeting**
