@@ -119,6 +119,8 @@
 | 9 | Agent-skill generation for accepted blueprints: scope LLM/AI-gateway approach | Chun Siong + Ekaansh | Scoping |
 | 10 | Review and merge gold-standard blueprints (Sales Coach, AI Meeting Notetaker) | Team | This week |
 | 11 | Confirm author byline displays on rendered blueprints (dev-docs site template) | Michael | Pre-launch |
+| 12 | Widen content container on blueprint pages (Clay feedback: currently too narrow) | Michael | Pre-launch |
+| 13 | Add persistent "Need help?" footer to each blueprint linking to [devforum.zoom.us](https://devforum.zoom.us/) with note to tag the author | Michael | Pre-launch |
 
 ## Completed tasks (Aug 10–20)
 
