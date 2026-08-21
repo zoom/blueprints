@@ -119,6 +119,7 @@
 | 8 | Site rendering polish: partner icon fallback, code block contrast, Mermaid text clipping | Michael | Pre-launch |
 | 9 | Agent-skill generation for accepted blueprints: scope LLM/AI-gateway approach | Chun Siong + Ekaansh | Scoping |
 | 10 | Review and merge gold-standard blueprints (Sales Coach, AI Meeting Notetaker) | Team | This week |
+| 11 | Confirm author byline displays on rendered blueprints (dev-docs site template) | Michael | Pre-launch |
 
 ## Completed tasks (Aug 10–20)
 
