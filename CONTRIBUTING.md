@@ -29,7 +29,6 @@ Open `blueprints/<your-slug>/index.md` and complete the YAML block.
 | `description` | 1-2 sentences for cards and SEO | `"Build a real-time sales coaching panel..."` |
 | `products` | Array of IDs from taxonomy.json | `["rtms", "zoom-apps"]` |
 | `verticals` | Array of IDs from taxonomy.json | `["sales", "enterprise"]` |
-| `difficulty` | `beginner` \| `intermediate` \| `advanced` | `"intermediate"` |
 | `estimated_time` | Wall-clock estimate | `"4-6 hours"` |
 | `author` | Your name | `"Jen Brissman"` |
 | `status` | `draft` \| `review` \| `published` | `"draft"` |
