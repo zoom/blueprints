@@ -12,7 +12,7 @@
 - **Code = Input/Output/Invariants contracts.** Stack-agnostic format for business logic. Security-critical code (HMAC, JWT, signature verification) stays concrete. See [STYLE_GUIDE.md § Contracts](STYLE_GUIDE.md#contracts-and-agent-first-content)
 - **Zoom license prerequisites required.** Every blueprint must state the required Zoom plan/entitlement in "What you'll need" with a link to pricing
 - **Platform-agnostic Dockerfile required.** Every sample repo must include a Dockerfile that runs on any cloud (Render, Railway, Fly, AWS, etc.)
-- **Demo media: optional, non-blocking.** If present, must be a short unnarrated GIF of the end result. Not a publishing gate
+- **Demo video required.** Screen recording of the working app (30s-2min). No face, no voice, no editing required. Just show it working. See [STYLE_GUIDE.md § Images and Video](STYLE_GUIDE.md#images-and-video-requirements)
 - **Sample code follows Max's OSS standards.** Link to repo, don't duplicate code that will drift
 
 ## Decisions locked (Aug 5–10)
