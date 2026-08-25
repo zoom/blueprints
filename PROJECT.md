@@ -176,6 +176,14 @@
 |-----------|-------|--------|
 | Meeting follow-up agent with human approval | Donte | In progress |
 
+
+### Contact Center Ecosystem 
+
+| Blueprint | Owner | Status |
+|-----------|-------|--------|
+| Admin remote access to agent engagement | Rehema | Claimed |
+| CRM Contact Management | Rehema/Pranjal | Claimed |
+
 ---
 
 ## Open Tasks
