@@ -2,8 +2,8 @@
 title: "Send Transcription to Sentiment Analysis Model"
 slug: "transcription-sentiment-analysis"
 description: >-
-  Send live Zoom meeting transcriptions to a sentiment analysis model in real-time. 
-  The model evaluates the sentiment of each transcript chunk and provides insights on the overall mood of the conversation.
+    Send live Zoom meeting transcriptions to a sentiment analysis model in real time.
+    The model evaluates the sentiment of each transcript chunk and provides insights into the overall mood of the conversation.
 products: ["rtms", "videosdk"]
 verticals: ["support", "sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
@@ -23,17 +23,17 @@ deploy:
 ---
 
 Support teams and product owners often rely on delayed surveys, ticket notes,
-and post-conversation reviews to understand how people actually feel about an
-experience. By the time negative sentiment is identified, the customer has
-already been frustrated, and the chance to respond in the moment is gone.
+    and post-conversation reviews to understand how people feel about an
+    experience. By the time negative sentiment is identified, the customer may
+    already be frustrated, and the opportunity to respond in the moment is gone.
 Sentiment analysis makes live or transcribed feedback easier to understand at
-scale. <!-- Expand: real use-case
+scale. <!-- Expand: a real use case,
 grounding, business outcome framing, why in-meeting beats post-call. -->
 
 
 Requirements:
-- A Zoom Video SDK account with SDK key and secret
-- RTMS and Live Transcription enabled on your Video SDK account
+- A Zoom Video SDK account with an SDK key and secret
+- RTMS and Live Transcription enabled for your Video SDK account
   
 > Create your SDK and API credentials in the [Zoom Video SDK dashboard](https://developers.zoom.us/docs/video-sdk/get-credentials/)
 
@@ -41,9 +41,9 @@ Requirements:
 
 
 ### Server-Side with RTMS
-A Zoom Session is started via the Video SDK. Once audio is joined and participants begin to speak,
-**RTMS** streams the live transcript to the backend, processing the received transcripts and 
-sending to the Sentiment LLM for analysis. The result of this analysis is returned to the backend. 
+A Zoom session is started through the Video SDK. Once audio is connected and participants begin to speak,
+**RTMS** streams the live transcript to the backend. The backend processes the received transcripts
+and sends them to the sentiment LLM for analysis. The analysis result is returned to the backend.
 
 ```mermaid
 graph LR
@@ -60,7 +60,10 @@ graph LR
 
 
 ### Client-Side with Live Transcription
-A Zoom Session is started via the Video SDK. Once audio is joined and participants begin to speak, the Zoom Cloud sends transcripts to the Client device via SDK Transcript listener. These transcripts are sent as strings to a Web Worker which runs the Sentiment LLM locally. The Sentiment Worker runs its analysis and returns the result either the main thread or the backend. 
+A Zoom session is started through the Video SDK. Once audio is connected and participants begin to speak,
+the Zoom Cloud sends transcripts to the client device through the SDK transcript listener. These transcripts
+are sent as strings to a web worker, which runs the sentiment LLM locally. The sentiment worker analyzes the
+transcripts and returns the result to either the main thread or the backend.
 
 ```mermaid
 graph LR
@@ -83,12 +86,12 @@ graph LR
 
 ## Implementation Guide (Work in Progress)
 
-Reference this [Sentiment Analysis Walkthrough](https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/) to access the Github Repo for app setup.
+Reference this [Sentiment Analysis Walkthrough](https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/) to access the GitHub repository and set up the app.
 
 ### Server-Side with RTMS
 
 #### Front End - Video SDK Implementation
-Implement Video SDK with at least audio capabilities for host and session participants. You will also need a `generateSignature` function to generate a JWT needed to join or start the Zoom Session.
+Implement the Video SDK with at least audio capabilities for the host and session participants. You will also need a `generateSignature` function to generate the JWT required to join or start the Zoom session.
 ```js
 import ZoomVideo, { VideoClient } from "@zoom/videosdk";
 
@@ -104,14 +107,14 @@ const startCall = async () => {
 await startCall();
 ```
 
-The existing sample uses Pure VanillaJS and can be run with the below commands when installed:
+The existing sample uses plain vanilla JavaScript and can be run with the following commands after dependencies are installed:
 ```bash
 npm install
 bun dev
 ```
 
 #### Backend - RTMS Implementation
-On the Backend NodeJS Server, implement RTMS using the RTMS SDK. This example demostrates the configuration by mounting the RTMS SDK webhook handler to the HTTP Server:
+On the backend Node.js server, implement RTMS using the RTMS SDK. This example demonstrates the configuration by mounting the RTMS SDK webhook handler on the HTTP server:
 ```js
 // Import the RTMS SDK
 import express from 'express';
@@ -181,14 +184,14 @@ server.listen(PORT, () => {
 });
 ```
 
-#### Model Integration on Server Side
-On the Backend NodeJS Server, implement, train, and integrate your model into a seperate worker thread so the main event loop is not bottlenecked by the Sentiment processing.  
+#### Model Integration on the Server Side
+On the backend Node.js server, implement, train, and integrate your model in a separate worker thread so the main event loop is not bottlenecked by sentiment processing.
 ```js
-//Example logic for the TODO line from the last step
+// Example logic for the TODO line from the previous step
 if (text.length > WordThreshold) {
   const workerPath = path.resolve(__dirname, 'transcript-sentiment.js');
     
-    // Spawn the worker thread and pass data (e.g., transcript)
+    // Spawn the worker thread and pass data, such as the transcript
     const worker = new Worker(workerPath, {
         workerData: { transcript: text }
     });
@@ -198,7 +201,7 @@ if (text.length > WordThreshold) {
         console.log(`Sentiment Result: ${result.sentiment}`);
     });
 
-    // Handle potential errors inside the worker
+    // Handle potential errors in the worker
     worker.on('error', (error) => {
         console.log(`Error from Worker: ${error.message}`);
     });
@@ -215,7 +218,7 @@ if (text.length > WordThreshold) {
 ### Client-Side with Live Transcription
 
 #### Frontend - Video SDK Configuration
-Implement Video SDK with at least audio and live transcription capabilities for host and session participants. Configure the Video SDK `caption-message` listener to receive transcript text as a `string` and run Sentiment Analysis on it. You will also need a `generateSignature` function to generate a JWT needed to join or start the Zoom Session.
+Implement the Video SDK with at least audio and live transcription capabilities for the host and session participants. Configure the Video SDK `caption-message` listener to receive transcript text as a `string` and run sentiment analysis on it. You will also need a `generateSignature` function to generate the JWT required to join or start the Zoom session.
 ```js
 import ZoomVideo, { VideoClient } from "@zoom/videosdk";
 
@@ -243,9 +246,9 @@ await startCall();
 ```
 
 ### Model Integration via Web Worker
-Configure a web worker that handles Sentiment Processing by either running the model in the web worker via Tensorflow or makes a Web Request to a secure backend that handles the Analysis
+Configure a web worker to handle sentiment processing. It can either run the model in the web worker with TensorFlow.js or make a web request to a secure backend that handles the analysis.
 ```js
-//In main.ts, the worker is launched on site load and ready to receive transcripts
+// In main.ts, the worker is launched when the site loads and is ready to receive transcripts
 const launchAI = async () => {
     sentimentWorker = new Worker(window.location.origin + "/transcript-sentiment.js");
     sentimentWorker.onmessage = (e: any) => {
@@ -268,10 +271,10 @@ const launchAI = async () => {
 **The following sections apply to both client-side and server-side.**
 
 ### Use a Transcription Buffer for Better Contextual Understanding
-It is recommended to store the received transcripts in a buffer variable, concatenating the transcripts into a single string rather than sending each one to Analysis as soon as you receive it. This helps to give the LLM better contextual understanding for more accurate results.
+It is recommended that you store received transcripts in a buffer, concatenating them into a single string rather than sending each one for analysis as soon as it arrives. This gives the LLM more context and can produce more accurate results.
 
 ### JWT Generation
-Use the [Video SDK SDK key and secret](https://developers.zoom.us/docs/video-sdk/get-credentials/) only in the server runtime. The needed claims for this application are as follows:
+Use the [Video SDK key and secret](https://developers.zoom.us/docs/video-sdk/get-credentials/) only in the server runtime. The required claims for this application are as follows:
 
 | Claim       | Required value                                                   |
 | ----------- | ---------------------------------------------------------------- |
@@ -306,10 +309,10 @@ function generateSignature(
 	return sdkJWT;
 }
 ```
-**Do not expose your credentials to the client, when using the Video SDK in production please make sure to use a backend service to sign the tokens. Don't store credentials in plain text, in the sample app a  `.env` was used for sake of simplicity**
+**Do not expose your credentials to the client. When using the Video SDK in production, use a backend service to sign tokens. Do not store credentials in plain text. The sample app uses a `.env` file for simplicity.**
 
 ### Model Training
-The sample app trains a simple model on server startup using TensorflowJS according to this [Sentiment example](https://github.com/tensorflow/tfjs-examples/tree/master/sentiment).
+The sample app trains a simple model on server startup using TensorFlow.js, based on this [sentiment example](https://github.com/tensorflow/tfjs-examples/tree/master/sentiment).
 
 
 ## Related Resources
@@ -323,10 +326,10 @@ The sample app trains a simple model on server startup using TensorflowJS accord
 ## Acceptance Criteria
 
 **General**
-- [ ] Ensure SDK credentials are not exposed when producing JWT token. Keep the production off the frontend, only store on the backend and not in plaintext
-- [ ] No logging of Credentials or JWT Token
-- [ ] Utilize a Transcription Buffer for better context
-- [ ] Proper Implementation of [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
+- [ ] Ensure SDK credentials are not exposed when producing a JWT. Keep token generation off the frontend; store credentials only on the backend and never in plain text.
+- [ ] Do not log credentials or JWTs.
+- [ ] Use a transcription buffer for better context.
+- [ ] Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
 
 **Server-side**
 - [ ] WebSocket connections require valid JWT
@@ -334,8 +337,8 @@ The sample app trains a simple model on server startup using TensorflowJS accord
 - [ ] Duplicate `rtms_stream_id` webhooks are ignored
 - [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
 
-**Client-sidee**
-- [ ] Implement check for `payload.done` before sending transcript to sentiment worker
-- [ ] Release and Teardown of web worker
-- [ ] proper deletion of any transcription data in browser storage
+**Client-side**
+- [ ] Check `payload.done` before sending the transcript to the sentiment worker.
+- [ ] Release and tear down the web worker.
+- [ ] Properly delete transcription data from browser storage.
 
