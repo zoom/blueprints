@@ -111,7 +111,6 @@ bun dev
 ```
 
 #### Backend - RTMS Implementation
-
 On the Backend NodeJS Server, implement RTMS using the RTMS SDK. This example demostrates the configuration by mounting the RTMS SDK webhook handler to the HTTP Server:
 ```js
 // Import the RTMS SDK
@@ -215,7 +214,8 @@ if (text.length > WordThreshold) {
 
 ### Client-Side with Live Transcription
 
-1. Implement Video SDK with at least audio and live transcription capabilities for host and session participants. Configure the Video SDK `caption-message` listener to receive transcript text as a `string` and run Sentiment Analysis on it. You will also need a `generateSignature` function to generate a JWT needed to join or start the Zoom Session.
+#### Frontend - Video SDK Configuration
+Implement Video SDK with at least audio and live transcription capabilities for host and session participants. Configure the Video SDK `caption-message` listener to receive transcript text as a `string` and run Sentiment Analysis on it. You will also need a `generateSignature` function to generate a JWT needed to join or start the Zoom Session.
 ```js
 import ZoomVideo, { VideoClient } from "@zoom/videosdk";
 
@@ -265,8 +265,12 @@ const launchAI = async () => {
 };
 ```
 
-### JWT Generation
+**The following sections apply to both client-side and server-side.**
 
+### Use a Transcription Buffer for Better Contextual Understanding
+It is recommended to store the received transcripts in a buffer variable, concatenating the transcripts into a single string rather than sending each one to Analysis as soon as you receive it. This helps to give the LLM better contextual understanding for more accurate results.
+
+### JWT Generation
 Use the [Video SDK SDK key and secret](https://developers.zoom.us/docs/video-sdk/get-credentials/) only in the server runtime. The needed claims for this application are as follows:
 
 | Claim       | Required value                                                   |
@@ -302,21 +306,36 @@ function generateSignature(
 	return sdkJWT;
 }
 ```
+**Do not expose your credentials to the client, when using the Video SDK in production please make sure to use a backend service to sign the tokens. Don't store credentials in plain text, in the sample app a  `.env` was used for sake of simplicity**
 
 ### Model Training
-
-The sample trains a simple model on server startup using server-side TensorflowJS according to this [Sentiment example](https://github.com/tensorflow/tfjs-examples/tree/master/sentiment)
-
+The sample app trains a simple model on server startup using TensorflowJS according to this [Sentiment example](https://github.com/tensorflow/tfjs-examples/tree/master/sentiment).
 
 
-## References
-- [Sentiment Analysis Walkthrough](https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/)
+## Related Resources
+- [Sentiment Analysis with RTMS Walkthrough](https://github.com/zoom/videosdk-rtms-sentiment-analysis/tree/main)
+- [Sentiment Analysis with Live Transcriptions Walkthrough](https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/)
 - [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/) - SDK documentation
+- [Realtime Media Streams](https://developers.zoom.us/docs/rtms/)
 - [Zoom Developer Forum](https://devforum.zoom.us/)
+- [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
   
-## App Manifest
+## Acceptance Criteria
 
-The `manifest.json` in this directory mirrors arlo's `zoom-app-manifest.json`
-— a Zoom App with in-meeting panel and RTMS-backed transcription scopes.
-<!-- Expand: scope-by-scope explanation and one-click creation via the
-     Marketplace manifests API. -->
+**General**
+- [ ] Ensure SDK credentials are not exposed when producing JWT token. Keep the production off the frontend, only store on the backend and not in plaintext
+- [ ] No logging of Credentials or JWT Token
+- [ ] Utilize a Transcription Buffer for better context
+- [ ] Proper Implementation of [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
+
+**Server-side**
+- [ ] WebSocket connections require valid JWT
+- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload 
+- [ ] Duplicate `rtms_stream_id` webhooks are ignored
+- [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
+
+**Client-sidee**
+- [ ] Implement check for `payload.done` before sending transcript to sentiment worker
+- [ ] Release and Teardown of web worker
+- [ ] proper deletion of any transcription data in browser storage
+

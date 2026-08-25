@@ -52,7 +52,7 @@
 | Real-time compliance advisor in meetings | — | Unclaimed |
 | Transcripts → LLM (OpenAI / Claude) | Chun Siong | In progress |
 | Transcripts quickstart | Chun Siong | In progress |
-| Live sentiment analysis in meetings | Ticorrian | Claimed |
+| Live sentiment analysis in meetings | Ticorrian | In progress |
 
 ### Conversation → Business Systems
 
@@ -68,7 +68,7 @@
 |-----------|-------|--------|
 | OpenAI voice agent in Zoom Meetings | Chun Siong | In progress |
 | OpenAI voice agent (Video SDK) | — | Unclaimed |
-| Gemini Live voice agent (Video SDK) | — | Unclaimed |
+| Gemini Live voice agent (Video SDK) | Ticorrian | Unclaimed |
 
 ### Healthcare & Telehealth
 
@@ -81,7 +81,7 @@
 
 | Blueprint | Owner | Status |
 |-----------|-------|--------|
-| Video chat app (React/Next.js) | — | Unclaimed |
+| Video chat app (React/Next.js) | Ticorrian | claimed |
 | Embed meetings into website | — | Unclaimed |
 
 ### Media Intelligence & Safety
