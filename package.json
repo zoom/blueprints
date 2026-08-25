@@ -3,12 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "description": "Curated, use-case-driven reference implementations for the Zoom developer platform.",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "validate": "node scripts/validate.js",
-    "test": "node --test \"scripts/**/*.test.js\""
+    "test": "node --test \"scripts/**/*.test.js\"",
+    "dev": "vite",
+    "build": "vite build"
   },
   "dependencies": {
-    "gray-matter": "^4.0.3"
+    "buffer": "^6.0.3",
+    "gray-matter": "^4.0.3",
+    "marked": "^15.0.7",
+    "mermaid": "^11.9.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.6"
   }
 }
