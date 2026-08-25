@@ -17,15 +17,15 @@ tags: ["sales", "coaching", "real-time"]
 seo_title: "Receive Zoom Transcripts for a Sentiment Analysis Model"
 seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysis", "rtms ai sentiment"]
 license_required: false
-stack: "Node · Express · React · Tensorflow"
+stack: "Node · Express · React · TensorFlow"
 deploy:
   - { label: "Render", url: "" }
 ---
 
 Support teams and product owners often rely on delayed surveys, ticket notes,
     and post-conversation reviews to understand how people feel about an
-    experience. By the time negative sentiment is identified, the customer may
-    already be frustrated, and the opportunity to respond in the moment is gone.
+    experience. By the time negative sentiment is identified, the customer is
+    already frustrated, and the opportunity to respond in the moment is gone.
 Sentiment analysis makes live or transcribed feedback easier to understand at
 scale. <!-- Expand: a real use case,
 grounding, business outcome framing, why in-meeting beats post-call. -->
