@@ -78,11 +78,11 @@
 |-------------|--------------|--------|
 | **Jen Brissman** | Real-Time Sales Coach, AI Meeting Notetaker | ✅ 100% complete. Only need cover image + GitHub author link fixes |
 | **Chun Siong Tan** | Multiple PRs submitted | Polishing: screenshots and editor snippets done. Needs details and videos. Dockerfile in progress. Will ping Jen when ready |
-| **Ticorrian Heard** | Live Sentiment Analysis (Video SDK), Gemini Integration, Video Chat App (Next.js/React) | Pushing sentiment analysis branch today; PR coming. Repo access granted |
+| **Ticorrian Heard** | Live Sentiment Analysis (Video SDK), Gemini Integration, Video Chat App (Next.js/React) | Pushing sentiment analysis branch today; PR coming |
 | **Donte Small** | Manifest verification script | Script ready; PR submission pending |
 | **Jeremy Wright** | Zoom Scheduler (ISV sample) | Building sample for Hims & Hers; offered as Blueprint alongside ISV sample |
 | **Max Mansfield** | Real-time compliance advisor, Embed meetings into website + DevDocs migration bridge | In progress. Also bridging Blueprints team and Brandon's new app migration |
-| **Rehema Armorer** | Remote Admin Control (Contact Center), CRM Experience (Contact Center/CX) | Committed in RTMS Dev Success meeting. Was out sick, plans to deliver soon. Needs repo access |
+| **Rehema Armorer** | Remote Admin Control (Contact Center), CRM Experience (Contact Center/CX) | Committed in RTMS Dev Success meeting. Plans to deliver soon |
 | **Ekaansh Arora** | Video SDK Telehealth Waiting Room | No update this week |
 
 ---
@@ -213,9 +213,8 @@
 | Push sentiment analysis branch and submit PR | Ticorrian | Today |
 | Submit PR for manifest verification script | Donte | Pending |
 | Continue Zoom Scheduler ISV sample | Jeremy | In progress |
-| Begin Remote Admin Control + CRM Experience Blueprints | Rehema | Starting (needs repo access) |
+| Begin Remote Admin Control + CRM Experience Blueprints | Rehema | Starting |
 | Work on Real-time compliance advisor + Embed meetings Blueprints | Max | In progress |
-| Grant repo access to Rehema | Jen | This week |
 
 ---
 
