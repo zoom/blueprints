@@ -11,8 +11,9 @@ difficulty: "advanced"
 estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
 status: "draft"
-updated: 2026-08-11
-github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis"
+updated: 2026-08-25
+github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
+demo_url: ""
 tags: ["sales", "coaching", "real-time"]
 seo_title: "Receive Zoom Transcripts for a Sentiment Analysis Model"
 seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysis", "rtms ai sentiment"]
