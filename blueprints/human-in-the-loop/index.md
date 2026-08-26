@@ -40,15 +40,23 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 * **AI Actions: Follow-up Docs (Execute):** When the meeting contains enough useful context, the app recommends creating a follow-up document. The user can preview and edit the AI-generated Markdown before approving it. The backend then uses the OpenAI Responses API with **Zoom MCP** as a remote tool source to create a Zoom Doc. This action requires the `docs:write:import` scope.
 * **Share to Zoom Chat:** Post the created Zoom Doc link to the current chat using the Zoom Apps SDK’s `sendMessageToChat` API. This requires the `imchat:userapp` scope and must run inside the Zoom client.
 
+<<<<<<< HEAD
+=======
+AI agents are only useful when they have the right context and the right guardrails. This guide explores how Zoom meeting, chat, and workflow context can help developers build agentic experiences that observe what happened, recommend next steps, ask for approval, and then take action.
+>>>>>>> a8cc3a1 (Added image)
 
 ## Architecture
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a8cc3a1 (Added image)
 <div align="center">
   <img src="images/ai-powered-workplace.png" alt="AI-powered Workplace" width="640" />
 
 </div>
+<<<<<<< HEAD
 
 
 ## Implementation Guide 
@@ -737,6 +745,8 @@ The model can interpret context and prepare work, but application code still con
 =======
 ![alt](/blueprints/human-in-the-loop/images/ai-powered-workplace.png) 
 >>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
+=======
+>>>>>>> a8cc3a1 (Added image)
 
 
 
