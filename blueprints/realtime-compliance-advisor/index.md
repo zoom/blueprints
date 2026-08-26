@@ -35,7 +35,7 @@ Compliance review normally happens weeks after the call, when a surveillance tea
 
 - Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires a paid Zoom Workplace plan with RTMS entitlement; [request access](https://www.zoom.com/en/realtime-media-streams/#form))
 - A backend to receive webhooks, screen segments, and persist audit records (Node/Express in this guide; any stack works)
-- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the advisor panel in-meeting
+- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/create/) to render the advisor panel in-meeting
 - An LLM to adjudicate flagged phrases in context (OpenRouter, OpenAI, Anthropic, or self-hosted)
 - A rule pack for your jurisdiction, reviewed and signed off by your compliance team
 
