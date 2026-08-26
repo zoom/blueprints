@@ -149,26 +149,38 @@ npm install @zoom/rtms
 
 Prebuilt binaries exist for `darwin-arm64` and `linux-x64`. A Node version below 22 segfaults on import rather than failing cleanly, so pin it in `.nvmrc` and check it in CI.
 
-#### Mount the webhook handler
+#### Mount the webhook route
 
-The SDK can run its own HTTP server via `rtms.onWebhookEvent()`, but a compliance app already needs an Express app for the Surface App and the audit API. Use `createWebhookHandler` to mount the handler on a route you already own:
+The SDK offers two ways in. `rtms.onWebhookEvent()` runs its own HTTP server, which is the fastest path for a standalone listener. `rtms.createWebhookHandler(callback, path)` mounts on an Express app you already own, which is what a compliance app needs, since it also serves the Surface App and the audit API.
+
+Take the raw body on that route rather than parsed JSON. Zoom signs the exact bytes it sent, and re-serializing a parsed object produces different bytes and a different HMAC:
 
 ```javascript
 import express from 'express';
-import rtms from '@zoom/rtms';
 
 const app = express();
 
-// Preserve the exact bytes Zoom sent; re-serialized JSON produces a
-// different signature.
-app.use(express.json({
-  verify: (req, _res, buf) => { req.rawBody = buf; },
-}));
+// express.raw() guarantees req.body is the original Buffer. Do not mount
+// express.json() ahead of this route.
+app.post('/api/rtms/webhook', express.raw({ type: '*/*' }), (req, res) => {
+  const { status, body, action } = handleWebhook({
+    rawBody: req.body,
+    headers: req.headers,
+    secret: process.env.ZM_RTMS_WEBHOOK_SECRET,
+  });
 
-app.post('/api/rtms/webhook', rtms.createWebhookHandler(handleZoomWebhook, '/api/rtms/webhook'));
+  // Acknowledge before doing any work. Zoom retries a slow response, and a
+  // retry is a second join for the same stream.
+  res.status(status).json(body);
+
+  if (action.type === 'stream_start') sessions.startStream(action.payload);
+  if (action.type === 'stream_stop') sessions.stopStream(action.payload);
+});
+
+app.use(express.json()); // every other route
 ```
 
-`createWebhookHandler` accepts either the parsed form `({ event, payload }) => {}` or the raw form `(payload, req, res) => {}`. Compliance apps need the raw form, because verification requires the headers.
+Keeping verification in your own handler, rather than inside the SDK callback, means the security-critical path is a pure function you can test directly: bytes and headers in, a decision out.
 
 #### Verify the webhook
 
@@ -500,23 +512,32 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
    - Surface: Home URL `https://YOUR-NGROK-URL`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
 
-4. Fill `.env`. The SDK reads its own variables from the environment:
+4. Fill `.env`. The SDK reads the `ZM_RTMS_*` variables directly from the environment; the rest are the app's:
 
    ```bash
+   # Read by @zoom/rtms
    ZM_RTMS_CLIENT=your_client_id
    ZM_RTMS_SECRET=your_client_secret
    ZM_RTMS_WEBHOOK_SECRET=your_webhook_secret_token
    ZM_RTMS_LOG_LEVEL=info
    ZM_RTMS_LOG_FORMAT=json
+
+   # Read by the app
+   ZOOM_HOST=https://zoom.us          # https://zoomgov.com for Zoom for Government
    PUBLIC_URL=https://your-subdomain.ngrok-free.app
+   DATABASE_URL=postgresql://compliance:compliance@localhost:5432/compliance
    RULE_PACK_ID=fin-us-retail-v3
+   TRANSCRIPT_LANGUAGE=ENGLISH
+   LLM_API_KEY=your_llm_api_key
    ```
 
-   Generate app secrets with:
+   Generate `SESSION_SECRET`, `JWT_SECRET`, and `TOKEN_ENCRYPTION_KEY` with:
 
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
+
+   Startup fails with every missing variable named at once, rather than at the first webhook.
 
 5. Start:
 
