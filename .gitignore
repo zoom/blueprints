@@ -1,7 +1,11 @@
 node_modules/
 .DS_Store
 
+<<<<<<< HEAD
 # Environment variables / credentials
 .env
 .env.local
 .env.*.local
+=======
+.env
+>>>>>>> e0dd73a (Added validate-zoom-manifest script and Git workflow)
