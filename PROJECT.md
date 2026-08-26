@@ -49,7 +49,7 @@
 |-----------|-------|--------|
 | Real-time sales coach | Jen | Done |
 | AI meeting notetaker | Jen | Done |
-| Real-time compliance advisor in meetings | — | Unclaimed |
+| Real-time compliance advisor in meetings | Max | In Progress |
 | Transcripts → LLM (OpenAI / Claude) | Chun Siong | In progress |
 | Transcripts quickstart | Chun Siong | In progress |
 | Live sentiment analysis in meetings | Ticorrian | Claimed |
@@ -82,7 +82,7 @@
 | Blueprint | Owner | Status |
 |-----------|-------|--------|
 | Video chat app (React/Next.js) | — | Unclaimed |
-| Embed meetings into website | — | Unclaimed |
+| Embed meetings into website | Max | In Progress |
 
 ### Media Intelligence & Safety
 
