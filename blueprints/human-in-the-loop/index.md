@@ -18,14 +18,15 @@ seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom m
 
 ## Problem Statement
 
-AI agents are only useful when they have the right context and the right guardrails. This sample explores how Zoom meeting, chat, and workflow context can help developers build agentic experiences that observe what happened, recommend next steps, ask for approval, and then take action.
+AI agents are only useful when they have the right context and the right guardrails. This guide explores how Zoom meeting, chat, and workflow context can help developers build agentic experiences that observe what happened, recommend next steps, ask for approval, and then take action.
 
 ## Architecture
 
-<!-- Open with 1–2 paragraphs explaining the data flow, then the diagram.
-     Label every component and connection. -->
 
-![alt](/blueprints/human-in-the-loop/images/ai-powered-workplace.png) 
+<div align="center">
+  <img src="images/ai-powered-workplace.png" alt="AI-powered Workplace" width="640" />
+
+</div>
 
 ## Implementation Guide
 
@@ -35,6 +36,6 @@ AI agents are only useful when they have the right context and the right guardra
 
 ## App Manifest
 
- See [0-app-manifest](https://github.com/zoom/human-in-the-loop-workplace-agent-sample/tree/main/0-app-manifest) — it contains app-manifest.json (scopes, chatbot subscription, events, webview, and redirect URIs already configured) plus a short guide to importing it in the Zoom App Marketplace. Replace example.ngrok.app with your tunnel URL, upload, and your app is configured.
+ See [0-app-manifest](https://github.com/zoom/human-in-the-loop-workplace-agent-sample/tree/main/0-app-manifest) it contains app-manifest.json (scopes, chatbot subscription, events, webview, and redirect URIs already configured) plus a short guide to importing it in the Zoom App Marketplace. Replace example.ngrok.app with your tunnel URL, upload, and your app is configured.
 
 
