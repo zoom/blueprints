@@ -320,6 +320,7 @@ The sample app trains a simple model on server startup using TensorFlow.js, base
 - [Sentiment Analysis with RTMS Walkthrough](https://github.com/zoom/videosdk-rtms-sentiment-analysis/tree/main)
 - [Sentiment Analysis with Live Transcriptions Walkthrough](https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/)
 - [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/) - SDK documentation
+- [Zoom Video SDK Agent Skills](https://github.com/zoom/skills/tree/main/skills/video-sdk)
 - [Realtime Media Streams](https://developers.zoom.us/docs/rtms/)
 - [Zoom Developer Forum](https://devforum.zoom.us/)
 - [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
