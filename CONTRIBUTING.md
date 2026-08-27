@@ -54,7 +54,7 @@ Open `blueprints/<your-slug>/index.md` and complete the YAML block.
 | `license_required` | `true` if Zoom license beyond free tier needed |
 | `license_note` | Explain which license/add-on |
 | `stack` | Tech stack summary (e.g., `"Node · Express · React · MySQL"`) |
-| `deploy` | Array of `{ label, url }` for one-click deploy buttons |
+| `deploy` | Array of `{ label, url }` for deploy buttons. Vercel is preferred for Next.js/React apps. |
 
 ---
 
