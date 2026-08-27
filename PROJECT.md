@@ -196,6 +196,8 @@
 | Amplitude tracking for Blueprint clicks | Jen | Pre-launch |
 | Agent-skill generation workflow (consult LLM Gateway team) | Chun Siong | Scoping |
 | Mermaid chart refinement | Michael | Pre-launch |
+| Manifest copy/download button on Blueprint pages | Michael | Pre-launch |
+| One-click deploy buttons (render `deploy` field from frontmatter) | Michael | Pre-launch |
 | Content sanitation & validation for external repos (V2) | Brandon | Future |
 | Credential scan recursion if subdirectories grow | — | ⚠️ Blocker identified |
 
