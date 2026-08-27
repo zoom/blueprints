@@ -45,7 +45,7 @@ Every blueprint must have these sections:
 1. **Outcome-focused intro**: What this builds and why it matters (no "Problem Statement" H2)
 2. **Architecture**: How the solution works technically
 3. **Implementation Guide**: How the app is built, not just clone-and-run
-4. **App Manifest**: Zoom App configuration reference
+4. **App Manifest, when applicable**: Zoom App configuration reference
 
 These are the floor, not the ceiling. Add more sections if they help developers succeed.
 
@@ -205,7 +205,7 @@ These rules prevent hydration errors on the dev-docs site:
 1. **No inline `style` attributes**: Use `width` and `height` attributes only
 2. **Use `<div>` not `<p>` for image containers**: `<p>` tags can't contain block elements
 3. **No `&nbsp;` between elements**: MDX converts these to nested `<p>` tags
-4. **No JSX components**: Stick to GitHub-flavored markdown
+4. **No JSX/MDX components**: Stick to GitHub-flavored markdown; use a plain `<iframe>` for embeds like video
 
 ---
 
@@ -285,7 +285,7 @@ See CONTRIBUTING.md for full instructions.
 When reviewing a blueprint PR, verify:
 
 - [ ] **Validation passes**: `npm run validate blueprints/<slug>`
-- [ ] **Required sections present**: Outcome-focused intro, Architecture, Implementation Guide, App Manifest
+- [ ] **Required sections present**: Outcome-focused intro, Architecture, Implementation Guide, and App Manifest when the product uses one
 - [ ] **Intro is outcome-focused**: Leads with what you'll build and why it matters
 - [ ] **Architecture is direct**: No marketing headers like "The No-Bot Advantage"
 - [ ] **Implementation teaches how it's built**: Not just clone-and-run

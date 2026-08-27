@@ -104,9 +104,13 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
   return { errors, warnings };
 }
 
-const REQUIRED_SECTIONS = [
-  'Architecture', 'Implementation Guide', 'App Manifest',
-];
+const REQUIRED_SECTIONS = ['Architecture', 'Implementation Guide'];
+
+// These products do not use a Zoom App manifest, so their blueprints may omit
+// manifest.json. If one is present, it is still validated below.
+const MANIFEST_OPTIONAL_PRODUCTS = new Set([
+  'video-sdk', 'cobrowse-sdk', 'ai-services',
+]);
 
 // Parse + non-empty check only for now. Field-level checks land during
 // integration weeks once the Marketplace manifests API schema is confirmed.
@@ -140,9 +144,14 @@ const IMAGE_MD_PATTERN = /!\[[^\]]*\]\(\s*([^)\s]+)/g;
 // responsibility; only relative paths resolve to a file we can check on disk.
 const isRemoteOrAbsolute = (ref) => /^(?:https?:|data:|\/)/i.test(ref);
 
-function validateBody(body) {
+function validateBody(body, products = []) {
   const errors = [];
-  for (const section of REQUIRED_SECTIONS) {
+  const requiredSections = [...REQUIRED_SECTIONS];
+  const manifestIsOptional = asArray(products)
+    .some((product) => MANIFEST_OPTIONAL_PRODUCTS.has(product));
+  if (!manifestIsOptional) requiredSections.push('App Manifest');
+
+  for (const section of requiredSections) {
     const heading = new RegExp(`^## ${section}\\s*$`, 'm');
     if (!heading.test(body)) errors.push(`missing required section: ## ${section}`);
   }
@@ -158,9 +167,13 @@ function validateBody(body) {
   return errors;
 }
 
-function validateManifest(dir) {
+function validateManifest(dir, products = []) {
   const manifestPath = path.join(dir, 'manifest.json');
-  if (!fs.existsSync(manifestPath)) return ['missing manifest.json'];
+  if (!fs.existsSync(manifestPath)) {
+    const manifestIsOptional = asArray(products)
+      .some((product) => MANIFEST_OPTIONAL_PRODUCTS.has(product));
+    return manifestIsOptional ? [] : ['missing manifest.json'];
+  }
   try {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)
@@ -231,19 +244,21 @@ function validateBlueprintDir(dir, taxonomy) {
   const indexPath = path.join(dir, 'index.md');
   const errors = [];
   const warnings = [];
+  let products = [];
 
   if (!fs.existsSync(indexPath)) {
     errors.push('missing index.md');
   } else {
     const parsed = matter(fs.readFileSync(indexPath, 'utf8'));
+    products = parsed.data.products;
     const fm = validateFrontmatter(parsed.data, slug, taxonomy);
     errors.push(...fm.errors);
     warnings.push(...fm.warnings);
-    errors.push(...validateBody(parsed.content));
+    errors.push(...validateBody(parsed.content, parsed.data.products));
     errors.push(...validateImages(dir, parsed.data, parsed.content));
   }
 
-  errors.push(...validateManifest(dir));
+  errors.push(...validateManifest(dir, products));
   errors.push(...scanCredentials(dir));
   return { slug, errors, warnings };
 }

@@ -47,8 +47,8 @@ github_repo: ""                    # sample code lives in its own repo, linked h
        RELATIVE path — ![Coaching panel](images/coaching-panel.png). The site
        rewrites it to /img/blueprints/<slug>/…; never hand-write that /img path
        (it 404s in GitHub preview). Validation errors on a ref with no file.
-     - The four H2 sections below (Features, Architecture, Implementation Guide,
-       App Manifest) are REQUIRED and validated by CI.
+     - Architecture and Implementation Guide are required and validated by CI.
+       Keep App Manifest only when the selected product uses a Zoom App manifest.
      - Do NOT write an Agent Skill Export section — it is auto-generated
        from this content by the build pipeline. -->
 
@@ -88,7 +88,8 @@ graph LR
 
 ## App Manifest
 
-<!-- Explain what the manifest.json in this directory configures (scopes,
+<!-- Delete this section when the selected product does not use a Zoom App
+     manifest. Otherwise, explain what manifest.json configures (scopes,
      event subscriptions, redirect URLs) and how to use it for one-click app
      creation via the Zoom Marketplace manifests API. -->
 

@@ -5,7 +5,9 @@ graph LR
     A -->|Authorize, sign 2-hour JWT| U
     U -->|Preview, join with room ID and JWT| Z[Zoom Video SDK Session]
     Z -->|Video, audio, chat, captions| U
-    U -->|Presigned upload, download| S[(Amazon S3 or Cloudflare R2)]
+    U -->|Request authorized storage URL| A
+    A -->|Return short-lived presigned URL| U
+    U -->|Direct upload or download| S[(S3-compatible Storage)]
     U -->|Start, stop recording| Z
     A -->|Video SDK API JWT| R[Zoom Video SDK Recording API]
     R -->|Recording metadata, download URL| A
