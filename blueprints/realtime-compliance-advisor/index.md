@@ -507,7 +507,7 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
 
 3. Create your Zoom App at [marketplace.zoom.us](https://marketplace.zoom.us/):
    - OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`
-   - Scopes: `meeting:read:meeting`
+   - Scopes: `zoomapp:inmeeting` only
    - Zoom App SDK: enable RTMS > Transcripts
    - Surface: Home URL `https://YOUR-NGROK-URL`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
@@ -562,10 +562,10 @@ The [`manifest.json`](./manifest.json) pre-configures OAuth scopes, Surface App 
 | Scope | Required | Purpose |
 |-------|----------|---------|
 | `zoomapp:inmeeting` | Yes | Render the advisor panel in meetings |
-| `meeting:read:meeting` | Yes | Meeting metadata for the audit record |
-| `user:read` | Optional | Identify the assigned representative |
 
-The attendee list on the audit record comes from the SDK's `onParticipantEvent` callback rather than an API call, so no additional OAuth scope is needed for participants.
+One scope, and it is the one that makes the panel exist. Everything else this app needs arrives over the media stream: transcripts through RTMS, the attendee roster through `onParticipantEvent`, and the speaker on each segment through the transcript callback's `metadata`. Panel identity comes from the Zoom Apps SDK in-client, not from a REST call.
+
+That means there is no server-side token exchange to implement, and no `meeting:read:meeting` or `user:read` to justify to a reviewer. Add them when you add the REST call that needs them, not before. A compliance app asking for scopes it never exercises is a poor advertisement for itself.
 
 ### RTMS Configuration
 
