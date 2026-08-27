@@ -474,7 +474,7 @@ The [sample repo](https://github.com/zoom/rtms-compliance-sample-js) implements 
 
 Both have free tiers. After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), set `ZM_RTMS_CLIENT` and `ZM_RTMS_SECRET` to your app's OAuth credentials, and point the OAuth redirect URL at your backend.
 
-**Deploy anywhere:** The repo includes a platform-agnostic [Dockerfile](https://github.com/zoom/rtms-compliance-sample-js/blob/main/Dockerfile) for any container platform. It uses a Debian base rather than Alpine, because the SDK ships a glibc-linked native addon.
+**Deploy anywhere:** The repo includes a platform-agnostic [Dockerfile](https://github.com/zoom/rtms-compliance-sample-js/blob/main/Dockerfile) for any container platform. It uses `node:24-trixie-slim`; see the platform constraint below before changing the base image.
 
 #### Local setup
 
@@ -598,7 +598,9 @@ The SDK authenticates with the same OAuth Client ID and Secret, supplied as `ZM_
 
 **This is engineering guidance, not legal advice.** Rule pack content, retention periods, and supervision workflows must be reviewed and approved by your compliance and legal teams before use with real clients.
 
-**Platform constraint:** `@zoom/rtms` ships prebuilt binaries for `darwin-arm64` and `linux-x64`. Build your images on `linux-x64` and use a glibc base such as `debian:bookworm-slim`. Alpine's musl libc will not load the addon.
+**Platform constraint:** `@zoom/rtms` ships prebuilt binaries for `darwin-arm64` and `linux-x64`, and the Linux binary has two base-image requirements. It needs glibc, so Alpine's musl will not load it at all. It also needs libstdc++ providing `GLIBCXX_3.4.31` or newer, which rules out Debian bookworm: bookworm ships gcc-12 and stops at `GLIBCXX_3.4.30`. Debian trixie (gcc-14, `GLIBCXX_3.4.33`) works.
+
+Both failures happen when the container starts, not when it builds, and the second one reports as `version GLIBCXX_3.4.31 not found (required by rtms.node)`. Boot the container in CI rather than trusting a successful `docker build`.
 
 **Data retention:** Transcripts and audit records contain client information and evidence of supervision. These usually have different retention requirements from each other. Store them separately so you can expire transcripts without destroying the audit chain.
 
