@@ -486,24 +486,24 @@ These rules prevent hydration errors on the dev-docs site:
 
 ---
 
-## One-Click and Portable Deploy
+## Deploy Options
 
-### One-click deploy buttons (easy path)
+### Deploy buttons (easy path)
 
-Include deploy buttons for Render and Railway:
+Include deploy buttons where the stack supports it. **Vercel is preferred for Next.js/React apps.**
 
 ```markdown
 | Platform | What you get |
 |----------|--------------|
+| [**Deploy to Vercel**](https://vercel.com/new/clone?repository-url=https://github.com/zoom/your-repo) | Frontend, serverless functions, edge |
 | [**Deploy to Render**](https://render.com/deploy?repo=https://github.com/zoom/your-repo) | Backend, frontend, database |
 | [**Deploy to Railway**](https://railway.app/new?repo=https://github.com/zoom/your-repo) | Backend, frontend, database |
-
-Both platforms offer free tiers.
 ```
 
-For this to work, the sample repo needs:
-- `render.yaml` for Render
-- `railway.json` for Railway
+For this to work, the sample repo needs the appropriate config:
+- Vercel: `vercel.json` (optional, auto-detects Next.js)
+- Render: `render.yaml`
+- Railway: `railway.json`
 
 ### Portable Dockerfile (any platform)
 
