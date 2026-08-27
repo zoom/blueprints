@@ -41,7 +41,7 @@ github_repo: ""                    # sample code lives in its own repo, linked h
      - GitHub-flavored markdown ONLY. No JSX/MDX components.
      - No inline style attributes on HTML elements (causes hydration errors).
        Use width/height attributes for sizing. Avoid &nbsp; between elements.
-     - Diagrams are ```mermaid fences (keep architecture.mmd in sync).
+     - Diagrams are ```mermaid fences (inline in index.md is the single source of truth).
      - Long code blocks may be wrapped in <details> collapsibles.
      - Open with intro PROSE before any heading — CI validates this.
      - Images live in this folder's images/ subdir; reference them with a
