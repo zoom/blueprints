@@ -6,8 +6,9 @@ V1 is team-only (Developer Advocacy). Partner contributions open in V2.
 
 1. Copy `blueprints/_template/` to `blueprints/<your-slug>/` (lowercase, hyphenated)
 2. Fill in every required frontmatter field, the outcome-focused intro prose
-   (before any heading), and the three required sections:
-   **Architecture**, **Implementation Guide**, **App Manifest**
+   (before any heading), and the required **Architecture** and
+   **Implementation Guide** sections. Add **App Manifest** when the selected
+   product uses a Zoom App manifest.
 3. Keep sample code in its own repo; link it via `github_repo`
 4. Validate locally: `npm install && npm run validate blueprints/<your-slug>`
 5. Open a PR. CI runs the same validation; peer review per the team schedule
