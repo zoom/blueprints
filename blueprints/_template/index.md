@@ -30,8 +30,9 @@ github_repo: ""                    # sample code lives in its own repo, linked h
 # license_required: false
 # license_note: "Requires RTMS add-on license"
 # stack: "Node · TypeScript · Postgres"
-# deploy:
-#   - { label: "Vercel", url: "" }
+# deploy:                                             # Vercel preferred for Next.js/React
+#   - { label: "Deploy to Vercel", url: "https://vercel.com/new/clone?repository-url=..." }
+#   - { label: "Deploy to Render", url: "https://render.com/deploy?repo=..." }
 ---
 
 <!-- HTML comments like these are invisible on GitHub and on the site.
