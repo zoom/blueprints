@@ -30,8 +30,9 @@ github_repo: ""                    # sample code lives in its own repo, linked h
 # license_required: false
 # license_note: "Requires RTMS add-on license"
 # stack: "Node · TypeScript · Postgres"
-# deploy:
-#   - { label: "Vercel", url: "" }
+# deploy:                                             # Vercel preferred for Next.js/React
+#   - { label: "Deploy to Vercel", url: "https://vercel.com/new/clone?repository-url=..." }
+#   - { label: "Deploy to Render", url: "https://render.com/deploy?repo=..." }
 ---
 
 <!-- HTML comments like these are invisible on GitHub and on the site.
@@ -41,7 +42,7 @@ github_repo: ""                    # sample code lives in its own repo, linked h
      - GitHub-flavored markdown ONLY. No JSX/MDX components.
      - No inline style attributes on HTML elements (causes hydration errors).
        Use width/height attributes for sizing. Avoid &nbsp; between elements.
-     - Diagrams are ```mermaid fences (keep architecture.mmd in sync).
+     - Diagrams are ```mermaid fences (inline in index.md is the single source of truth).
      - Long code blocks may be wrapped in <details> collapsibles.
      - Open with intro PROSE before any heading — CI validates this.
      - Images live in this folder's images/ subdir; reference them with a

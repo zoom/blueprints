@@ -1,11 +1,11 @@
 ---
 title: "Build Telehealth Video Visits with Zoom Video SDK"
 slug: "telehealth-video-visits"
-description: >-
-  Build telehealth video visits inside your patient portal with role-based access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and optional recording using Zoom Video SDK for Web.
+hero_image: "images/hero.png"
+description: Build telehealth video visits inside your patient portal with role-based access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and optional recording using Zoom Video SDK for Web.
 products: ["video-sdk"]
 verticals: ["healthcare"]
-solution_types: ["data-integration", "security-encryption"]
+solution_types: ["data-integration"]
 difficulty: "advanced"
 estimated_time: "1-2 days"
 author: "Ekaansh Arora"
@@ -19,12 +19,14 @@ partners: ["vercel"]
 demo_url: "https://www.youtube.com/watch?v=pqXgNJAejQk"
 license_required: true
 license_note: "Requires a Zoom Video SDK account; cloud recording requires a Cloud Recording Storage Plan."
-stack: "Next.js · React · TypeScript · tRPC · Drizzle · Vercel · Neon Postgres · Amazon S3 or Cloudflare R2"
+stack: "Next.js · React · TypeScript · tRPC · Drizzle · Vercel · Neon Postgres · Vercel Blob, Amazon S3, or Cloudflare R2"
 deploy:
-  - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET%2CS3_ENDPOINT%2CS3_BUCKET%2CS3_ACCESS_KEY_ID%2CS3_SECRET_ACCESS_KEY&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20Zoom%20API%2C%20and%20S3-compatible%20storage%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%5D&skippable-integrations=0" }
+  - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0" }
 ---
 
 Run telehealth video visits inside your own application, built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/). Patients open an appointment, confirm their camera, microphone, and speaker in a device-ready check, then join a private session with their clinician. No Zoom account or separate meeting client is required on either side.
+
+![Appointment schedule in the patient portal](images/dashboard.png)
 
 External video apps pull patients out of the portal. A native waiting room keeps the visit inside your product, identity model, and pre-call flow.
 
@@ -47,7 +49,7 @@ External video apps pull patients out of the portal. A native waiting room keeps
 
 If you'd rather buy than build, Zoom offers [Zoom for Healthcare](https://www.zoom.com/en/industry/healthcare/) with telehealth video visits out of the box, and [Clinical Note](https://www.zoom.com/en/industry/healthcare/solutions/clinical-notes/) for visit documentation. Use Video SDK when the visit must live inside your own portal, identity model, and clinical workflow.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/pqXgNJAejQk" title="Demo video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/pqXgNJAejQk?si=CvxzH1mUiDtH9Srq" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ---
 
@@ -57,7 +59,11 @@ If you'd rather buy than build, Zoom offers [Zoom for Healthcare](https://www.zo
 
 The appointment record is the control plane. It stores the clinician, invited patient, scheduled time, and clinical artifacts. The first authorized participant starts the [Video SDK session](https://developers.zoom.us/docs/video-sdk/web/sessions/) on demand, using the appointment ID as the session topic.
 
+![New appointment form in the patient portal](images/schedule.png)
+
 When a user opens an appointment, the Next.js backend checks the authenticated user against the room creator and invite list. Only then does it sign a short-lived Video SDK JWT. The room ID becomes the session topic (`tpc`), so both participants receive tokens for the same isolated session. The appointment creator, normally the clinician, receives host role `1`. The invited participant receives role `0`.
+
+![Appointment details with notes and recordings](images/appointement.png)
 
 ```mermaid
 graph LR
@@ -86,11 +92,15 @@ The waiting room owns pre-call device state. It calls `ZoomVideo.getDevices()`, 
 - Choose whether to join with audio or video enabled
 - Apply a virtual background before the visit
 
+![Pre-call check with video preview and appointment workspace](images/precall.png)
+
 Stop local preview tracks before `client.join()` starts. That avoids leaving the camera attached to two media flows and carries the participant's device choices into the call.
 
 ### Clinical data layer
 
 Video SDK carries the live conversation. Your application owns the clinical workflow. The reference stack stores users, appointments, role-specific profiles, SOAP notes, transcripts, file metadata, and Zoom session IDs in Neon Postgres. A private Amazon S3 or Cloudflare R2 bucket holds patient documents.
+
+![Patient details and document upload during a video visit](images/details.png)
 
 The media adapter reads the appointment ID and authorized role without owning clinical data. These contracts let you use an EHR-backed appointment service, another PostgreSQL provider, or another approved object store in place of Neon and the selected bucket.
 
@@ -113,6 +123,7 @@ The reference stack uses:
 | Secrets           | Vercel environment variables                        | Video SDK, Video SDK API, auth, database, and storage secrets |
 | Real-time media   | Zoom Video SDK for Web                              | Preview, video, audio, chat, captions, recording controls     |
 
+
 Each default maps to a separate contract. An existing portal may retain its framework, identity provider, EHR appointment store, and approved object storage when they implement those contracts. Do not replace a working system to match the sample repository.
 
 ### Agent integration map
@@ -128,6 +139,7 @@ Before changing code, inventory the target application and produce a mapping for
 | Pre-call route                 | Existing appointment detail page    | `/appointments/:id/join` surface                              |
 | Clinical workspace             | Existing chart or encounter panel   | Role-gated patient context and SOAP notes                     |
 | File storage                   | Approved document service           | Private Amazon S3 or Cloudflare R2 bucket with presigned URLs |
+
 
 Document which components the implementation reuses, adapts, creates, or omits. Recording, captions, notes, and documents are optional. Identity, appointment authorization, server-side token issuance, device preview, session cleanup, and visible failure states are required.
 
@@ -246,6 +258,8 @@ On failure or exit, it unregisters every listener, stops local media, detaches r
 
 The reference app implements this with the [`useSession`](https://www.npmjs.com/package/@zoom/videosdk-react) hook from `@zoom/videosdk-react`, which owns the client and handles join on mount and leave on unmount. Pass it the authorized `sessionName` and JWT with the chosen audio and video options; it surfaces join and media errors as state, and `useSessionUsers()` tracks who is present. See [`Videocall.tsx`](https://github.com/zoom/VideoSDK-Web-Telehealth/blob/main/src/components/videocall/Videocall.tsx). Listeners you register yourself, such as `connection-change`, must still be unregistered on teardown.
 
+![Active telehealth video session](images/videocall.png)
+
 If you drive the core `@zoom/videosdk` client directly instead of the hook, make cleanup idempotent so simultaneous route, connection, and component events cannot leave twice:
 
 ```typescript
@@ -272,6 +286,7 @@ Register `connection-change` before joining and run `cleanupSession()` from ever
 
 Clinical data remains outside the media session. Use this minimum model whether it lives in PostgreSQL or behind an existing EHR service:
 
+
 | Entity                | Required relationships and data                          |
 | --------------------- | -------------------------------------------------------- |
 | User                  | Stable identity ID and application role                  |
@@ -279,6 +294,7 @@ Clinical data remains outside the media session. Use this minimum model whether 
 | Clinical note         | Appointment ID, clinician ID, SOAP fields, timestamps    |
 | Patient document      | Patient ID, object key, media type, timestamps           |
 | Zoom session instance | Appointment ID, Zoom session ID, start/end state         |
+
 
 Clinicians may read patient context only when the appointment relationship permits it. Patients may manage only their own documents. The server issues short-lived Amazon S3 or Cloudflare R2 URLs; bucket credentials never reach the browser. Each module defines its own retention and audit events.
 
@@ -310,26 +326,29 @@ The sample retrieves recordings on demand and includes no recording-completed we
 
 ### Vercel deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET%2CS3_ENDPOINT%2CS3_BUCKET%2CS3_ACCESS_KEY_ID%2CS3_SECRET_ACCESS_KEY&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20Zoom%20API%2C%20and%20S3-compatible%20storage%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&products=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%5D&skippable-integrations=0)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0)
 
-Vercel builds and hosts the Next.js app. The deploy flow provisions [Neon Postgres](https://vercel.com/marketplace/neon), injects `DATABASE_URL`, applies the committed Drizzle migrations, and seeds demo accounts during the build. Seeding is a no-op once the database has users, so later deploys are unaffected.
+Vercel builds and hosts the Next.js app. The deploy flow provisions [Neon Postgres](https://vercel.com/marketplace/neon) and a private [Vercel Blob](https://vercel.com/docs/vercel-blob) store, injects `DATABASE_URL` and `BLOB_READ_WRITE_TOKEN`, applies the committed Drizzle migrations, and seeds demo accounts during the build. Seeding is a no-op once the database has users, so later deploys are unaffected.
 
 <details>
 <summary><strong>Vercel configuration</strong></summary>
 
-The application requires three groups of environment variables:
+The Deploy Button collects two groups of environment variables:
 
-| Service                                                                                                                                                              | Values                                                    |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| GitHub OAuth                                                                                                                                                         | `AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` |
-| Zoom Video SDK                                                                                                                                                       | SDK key and secret; API key and secret for recording      |
-| [Cloudflare R2](https://developers.cloudflare.com/r2/get-started/s3/) or [Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html) | Endpoint, bucket, access key, secret                      |
+
+| Service        | Values                                                    |
+| -------------- | --------------------------------------------------------- |
+| GitHub OAuth   | `AUTH_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` |
+| Zoom Video SDK | SDK key and secret; API key and secret for recording      |
+
 
 Enter these values in the Deploy Button's environment-variable form. If the form does not appear (Vercel can omit it when a Marketplace integration is included), let the initial build finish, then add the values under **Project Settings → Environment Variables** for Production, Preview, and Development and redeploy. Generate `AUTH_SECRET` with `npx auth secret`; Neon supplies `DATABASE_URL`.
 
-Register `https://YOUR_PRODUCTION_DOMAIN/api/auth/callback/github` as the production GitHub OAuth callback. The application reads the domain that Vercel supplies. The existing `next.config.js` supplies the Video SDK cross-origin isolation headers.
+File storage needs no manual setup: the Deploy Button provisions a **private** Vercel Blob store and connects it over OIDC, injecting `BLOB_STORE_ID` (no long-lived token). The app detects the store and switches to Blob automatically. Uploads and downloads both go through auth-gated Functions that authenticate via OIDC — `/api/blob/upload` verifies the caller and streams the file to the store with the SDK's `put()`, and `/api/blob/download` re-checks appointment ownership before calling `get()`. Private blobs are never publicly readable. Uploads pass through the Function, so keep files under the ~4.5 MB body limit (or switch to client uploads, which need `BLOB_READ_WRITE_TOKEN`). Review Blob's data-residency region and your BAA obligations before storing real PHI.
 
-Set `S3_REGION` to the bucket's AWS region for Amazon S3. It defaults to `auto`, which works for Cloudflare R2. Review the bucket CORS policy and restrict it to the application origin before production.
+To use Amazon S3 or Cloudflare R2 instead — for an existing bucket — leave Blob unprovisioned and set the `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY` variables manually. `S3_REGION` defaults to `auto` (correct for R2); set the bucket's AWS region for S3. Review the bucket CORS policy and restrict it to the application origin before production.
+
+Register `https://YOUR_PRODUCTION_DOMAIN/api/auth/callback/github` as the production GitHub OAuth callback. The application reads the domain that Vercel supplies. The existing `next.config.js` supplies the Video SDK cross-origin isolation headers.
 
 </details>
 
@@ -360,7 +379,6 @@ bun run db:push
 bun run db:seed
 bun run dev
 ```
-
 
 </details>
 
