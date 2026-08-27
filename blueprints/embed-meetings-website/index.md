@@ -31,7 +31,7 @@ Sending a customer a Zoom link takes them off your site, often into a download p
 **What you'll need:**
 
 - A Meeting SDK app in the [Zoom Marketplace](https://marketplace.zoom.us/) for the SDK Key and Secret (free to create on any Zoom account; see [Meeting SDK authorization](https://developers.zoom.us/docs/meeting-sdk/auth/))
-- The [`@zoom/meetingsdk`](https://developers.zoom.us/docs/meeting-sdk/web/) package (6.2.0 at the time of writing, MIT)
+- The [`@zoom/meetingsdk`](https://developers.zoom.us/docs/meeting-sdk/web/) package (6.2.0 at the time of writing, MIT). It declares an exact peer dependency on `react@18.2.0`, so a React 19 project will not install it.
 - A backend that can sign an HS256 JWT (Node/Express in this guide; any stack works)
 - A scheduled meeting for the appointment, plus its meeting number and passcode
 - A browser that supports WebAssembly, which every current browser does
@@ -228,6 +228,10 @@ await client.join({
 
 `zoomAppRoot` is the only part that makes this Component View rather than Client View. In React, hold the node in a ref and call `init()` after the element has mounted, not during render.
 
+**Pin React to 18.2.0.** `@zoom/meetingsdk` 6.2.0 declares an exact peer dependency, not a range, so `npm install` fails outright against React 19. The canonical [`meetingsdk-web-sample/Components`](https://github.com/zoom/meetingsdk-web-sample/tree/main/Components) pins the same version. Reaching for `--legacy-peer-deps` to get around it means shipping the SDK against a React it was never tested with.
+
+**Budget for the bundle.** A production build of the page in the companion sample is 3.25 MB, or 976 KB gzipped, almost all of it the SDK. That is fine behind a CDN with caching and slow on a first cold load, so it is worth knowing before someone reports the page as broken.
+
 #### Init and join
 
 **Input:** A mounted DOM node, and `{ signature, sdkKey, meetingNumber, passcode, userName }` from your backend
@@ -356,7 +360,7 @@ Add every origin that will embed the meeting to your app's domain allow list, in
 
 **Zoom for Government.** The SDK targets a web endpoint that differs on government accounts. Configure it rather than accepting the commercial default, and confirm the current parameter in the [Meeting SDK documentation](https://developers.zoom.us/docs/meeting-sdk/web/).
 
-**Browser support.** Component View is WebAssembly. It works in current browsers, but the first load pulls a non-trivial bundle; serve it from a CDN and let it cache.
+**Browser support and bundle size.** Component View is WebAssembly. It works in current browsers, but the SDK dominates your bundle: 3.25 MB, 976 KB gzipped, in the companion sample. Serve it from a CDN, let it cache, and consider loading the SDK only on the appointment route rather than in your main bundle.
 
 </details>
 
@@ -380,6 +384,7 @@ Use this checklist to verify the implementation:
 - [ ] Leaving the meeting returns the visitor to your page with the layout intact
 - [ ] Unmounting the page tears the client down rather than orphaning it
 - [ ] Every embedding origin is on the app's domain allow list
+- [ ] React is pinned to 18.2.0 rather than installed with `--legacy-peer-deps`
 
 ---
 
