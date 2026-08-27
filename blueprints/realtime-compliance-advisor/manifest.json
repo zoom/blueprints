@@ -15,17 +15,9 @@
       {
         "scope": "zoomapp:inmeeting",
         "optional": false
-      },
-      {
-        "scope": "meeting:read:meeting",
-        "optional": false
-      },
-      {
-        "scope": "user:read",
-        "optional": true
       }
     ],
-    "scope_description": "Meeting access for live transcription via RTMS and user profile to identify the assigned representative."
+    "scope_description": "Renders the compliance advisor panel inside meetings. No REST scopes are requested: transcripts arrive over RTMS, and the attendee roster comes from the RTMS onParticipantEvent callback."
   },
   "features": {
     "products": ["ZOOM_MEETING"],
@@ -49,12 +41,9 @@
           "getMeetingUUID",
           "getRunningContext",
           "getUserContext",
-          "getMeetingParticipants",
           "authorize",
           "onAuthorized",
-          "promptAuthorize",
-          "showNotification",
-          "onRunningContextChange"
+          "promptAuthorize"
         ]
       },
       "guest_mode": {
