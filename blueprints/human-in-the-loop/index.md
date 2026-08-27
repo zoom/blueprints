@@ -59,6 +59,7 @@ AI agents are only useful when they have the right context and the right guardra
 <<<<<<< HEAD
 
 
+<<<<<<< HEAD
 ## Implementation Guide 
 
 This blueprint shows how live Zoom Workplace context can become a human-in-the-loop completion workflow.
@@ -750,6 +751,8 @@ The model can interpret context and prepare work, but application code still con
 
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> c0a4a1d (Updated implementation section)
 ## Implementation Guide 
 
 This blueprint shows how live Zoom Workplace context can become a human-in-the-loop completion workflow.
@@ -803,7 +806,7 @@ case 'webinar.rtms_started': {
 }
 ```
 
-The webhook ACKs `200` immediately and dispatches the handler separately so slower AI or Zoom Chat calls do not interfere with Zoom's three-second webhook timeout.
+The webhook ACKs `200` immediately and dispatches the handler separately so slower AI or Zoom Chat calls do not interfere with [Zoom's three-second webhook timeout](https://developers.zoom.us/docs/api/webhooks/).
 
 `meeting.rtms_stopped` mirrors this branch and calls `stopRtmsSession(meetingId)`.
 
@@ -817,9 +820,7 @@ The webhook ACKs `200` immediately and dispatches the handler separately so slow
 client.enableTranscript(true);
 ```
 
-Transcript frames arrive through `onTranscriptData`.
-
-This callback is where the raw RTMS buffer becomes an application-level transcript segment.
+Transcript frames arrive through `onTranscriptData`. This callback is where the raw RTMS buffer becomes an application-level transcript segment.
 
 ### `backend/utils/rtms/rtms-service.js`
 
