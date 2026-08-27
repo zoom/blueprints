@@ -1,5 +1,5 @@
 ---
-title: "AI Meeting Notetaker in Zoom Meetings"
+title: "AI Meeting Notetaker"
 slug: "ai-meeting-notetaker"
 description: >-
   Build an AI-powered meeting assistant that lives inside Zoom meetings.
@@ -91,6 +91,19 @@ The backend collects recent transcript context, sends it to an LLM with a struct
 2. **Extract**: Send to an LLM with a structured-output prompt that returns JSON
 3. **Deliver**: Push the parsed result to connected clients over WebSocket
 
+### Agent integration map
+
+If you're grafting this into an existing codebase, check what you already have before adding anything:
+
+| Required capability | Reuse when present | Add when missing |
+|--------------------|--------------------|------------------|
+| Webhook endpoint | Existing API routes | Express router or equivalent |
+| Signature verification | Existing HMAC middleware | `verifyWebhookSignature()` |
+| WebSocket server | Existing real-time layer | ws or Socket.io server |
+| Database | Existing Postgres/MySQL | Prisma schema for transcripts |
+| LLM client | Existing OpenAI/Anthropic setup | OpenRouter client |
+| Auth/JWT | Existing session tokens | JWT signing for WebSocket auth |
+
 ---
 
 ## Implementation Guide
@@ -125,66 +138,37 @@ Two implementation details matter: use the raw request body (don't re-serialize 
 
 **Other languages:** In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`.
 
-#### Join the stream
+#### Stream session management
 
-The webhook payload includes `meeting_uuid`, `rtms_stream_id`, and `server_urls`. Create an RTMS client, register your transcript handler, then join:
+**Input:** `meeting.rtms_started` webhook payload with `meeting_uuid`, `rtms_stream_id`, `server_urls`
 
-```javascript
-const rtms = require('@zoom/rtms').default;
+**Output:** Active RTMS session registered, client connected, transcript handler receiving segments
 
-async function handleRTMSStarted(payload) {
-  const { meeting_uuid, rtms_stream_id, server_urls } = payload;
+**Invariants:**
 
-  // Deduplicate: same stream ID means duplicate webhook
-  if (activeSessions.has(rtms_stream_id)) return;
+- Deduplicate by `rtms_stream_id`, not `meeting_uuid`
+- If same meeting arrives with new stream ID (media server failover), tear down old session and join new
+- Register transcript handlers before calling `join()`
+- Clean up session on `onLeave` callback
+- Track sequence counter per session for segment ordering
 
-  const client = new rtms.Client();
+**Other languages:** The `@zoom/rtms` SDK is Node-only. For other stacks, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
 
-  // Register handlers BEFORE joining
-  client.onTranscriptData((data, size, timestamp, metadata) => {
-    handleTranscript(meeting_uuid, {
-      text: data.toString('utf-8'),
-      timestamp,                  // microseconds from Zoom
-      userId: metadata?.userId,
-      userName: metadata?.userName,
-    });
-  });
+See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/services/rtms) for the reference implementation.
 
-  client.onLeave(() => activeSessions.delete(rtms_stream_id));
+#### Transcript segment handling
 
-  activeSessions.set(rtms_stream_id, { client, meetingUuid: meeting_uuid });
-  client.join({ meeting_uuid, rtms_stream_id, server_urls });
-}
-```
+**Input:** Raw transcript callback with `text`, `timestamp` (microseconds), `userId`, `userName`
 
-Sessions are keyed by `rtms_stream_id`, not `meeting_uuid`. If Zoom's media server fails over, the same meeting arrives with a new stream ID. Tear down the old session and join the new one. A repeated stream ID is a duplicate webhook; ignore it.
+**Output:** Normalized segment with `speakerId`, `speakerLabel`, `text`, `tStartMs`, `seqNo`
 
-**Other languages:** The `@zoom/rtms` SDK is Node-only. For other languages, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
+**Invariants:**
 
-#### Handle incoming transcripts
-
-Each transcript callback becomes a segment with a sequence number and millisecond timestamps. Push to connected panels immediately; persist asynchronously so you don't block the real-time path:
-
-```javascript
-async function handleTranscript(meetingId, transcript) {
-  const session = activeSessions.get(meetingId);
-  const seqNo = session ? ++session.seqCounter : Date.now();
-
-  const segment = {
-    speakerId: transcript.userId || 'unknown',
-    speakerLabel: transcript.userName || 'Speaker',
-    text: transcript.text || '',
-    tStartMs: Math.floor(transcript.timestamp / 1000),
-    seqNo,
-  };
-
-  // Broadcast first, then persist in background
-  broadcastToClients(meetingId, segment);
-  saveSegment(meetingId, segment).catch(console.error);
-}
-```
-
-The unique constraint on `(meetingId, seqNo)` with upsert writes makes retries idempotent.
+- Assign monotonic sequence number per session
+- Convert timestamp from microseconds to milliseconds
+- Broadcast to clients immediately (don't block on persistence)
+- Persist asynchronously with upsert on `(meetingId, seqNo)` for idempotency
+- Handle missing userId/userName gracefully with defaults
 
 **Other databases:** Works with Postgres, MongoDB, or a time-series database.
 
@@ -192,39 +176,24 @@ The unique constraint on `(meetingId, seqNo)` with upsert writes makes retries i
 
 With the transcript pipeline in place, you have a live stream of what's being said. Now extract meeting intelligence from it.
 
-#### The extraction loop
+#### Meeting notes extraction
 
-Meeting notes extraction runs on a debounce. You don't want to call the LLM on every segment, but you do want updates frequently enough to feel live. A 30-second interval works well: frequent enough to capture decisions as they happen, sparse enough to keep costs reasonable.
+**Input:** Recent transcript context (last N segments or last M minutes), current notes state
 
-```javascript
-// Pseudocode for the extraction loop
-const ANALYZE_INTERVAL_MS = 30000;
+**Output:** JSON with `summary` (2-3 sentences), `actionItems` (task + owner + due), `keyMoments` (decisions, questions, announcements)
 
-function startExtractionLoop(meetingId) {
-  let lastProcessedSeqNo = 0;
+**Invariants:**
 
-  setInterval(async () => {
-    const segments = await getSegmentsSince(meetingId, lastProcessedSeqNo);
-    if (segments.length === 0) return;
+- Run on debounce interval (30 seconds), not on every segment
+- Track last processed sequence number to avoid redundant calls
+- Parse JSON response, strip markdown fences if present
+- Merge results incrementally (don't replace existing notes)
+- Shorter intervals (15s) feel more responsive but cost more; longer intervals (60s) reduce costs but lag
 
-    const transcript = formatForPrompt(segments);
-    const notes = await extractMeetingNotes(transcript);
+**Prompt structure** (customize for standups, all-hands, 1:1s):
 
-    broadcastToClients(meetingId, { type: 'notes_update', data: notes });
-    lastProcessedSeqNo = segments[segments.length - 1].seqNo;
-  }, ANALYZE_INTERVAL_MS);
-}
 ```
-
-**Tuning:** Shorter intervals (15s) feel more responsive but cost more. Longer intervals (60s) reduce costs but lag behind the conversation. For action items, you might trigger extraction when you detect phrases like "I'll" or "let's" rather than on a fixed interval.
-
-#### Extract meeting notes
-
-The extraction prompt asks the LLM to return structured JSON with summaries, action items, and key moments. Use a system prompt that defines the output schema, and a user prompt with the recent transcript:
-
-```javascript
-async function extractMeetingNotes(transcript, currentState = {}) {
-  const systemPrompt = `You are a meeting assistant analyzing a live transcript.
+You are a meeting assistant analyzing a live transcript.
 Extract three things:
 
 1. Summary: 2-3 sentences capturing the current discussion topic and any conclusions.
@@ -240,61 +209,28 @@ Return JSON only:
   "summary": "...",
   "actionItems": [...],
   "keyMoments": [...]
-}`;
-
-  const userPrompt = `Recent transcript:\n\n${transcript}`;
-
-  const response = await callLLM(systemPrompt, userPrompt);
-  return parseJSON(response);
 }
 ```
 
-The prompt structure matters:
-- **System prompt** defines the schema and constraints (no markdown, JSON only)
-- **User prompt** provides the transcript context
-- **Output parsing** strips code fences and handles malformed responses gracefully
+**Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling.
 
-**Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling. The prompt is the customization point. Adjust for your meeting types (standups, all-hands, 1:1s).
+See [Arlo's AI routes](https://github.com/zoom/arlo/tree/main/backend/routes/ai) for the reference implementation.
 
-#### Frontend connection
+#### Frontend state management
 
-The frontend subscribes to a WebSocket and renders updates as they arrive. The protocol is simple:
+**Input:** WebSocket stream of segments and notes updates
 
-```
-Client → Server: { type: 'subscribe', meetingId: '...' }
-Server → Client: { type: 'transcript_segment', data: { ... } }
-Server → Client: { type: 'notes_update', data: { summary, actionItems, keyMoments } }
-```
+**Output:** React state for transcript, summary, action items, key moments
 
-On the frontend, maintain state for each extraction type and merge updates incrementally:
+**Invariants:**
 
-```javascript
-// React hook pseudocode
-function useMeetingNotes(meetingId) {
-  const [notes, setNotes] = useState({ summary: '', actionItems: [], keyMoments: [] });
-
-  useEffect(() => {
-    const ws = connectWebSocket(meetingId);
-
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.type === 'notes_update') {
-        setNotes(prev => ({
-          summary: msg.data.summary || prev.summary,
-          actionItems: dedupeByTask(prev.actionItems, msg.data.actionItems),
-          keyMoments: dedupeByText(prev.keyMoments, msg.data.keyMoments),
-        }));
-      }
-    };
-
-    return () => ws.close();
-  }, [meetingId]);
-
-  return notes;
-}
-```
-
-Dedupe action items by task text to avoid duplicates when the same item is mentioned twice. Key moments dedupe by text similarity.
+- Require valid JWT on every WebSocket connection
+- Client sends `{ type: 'subscribe', meetingId }` after connecting
+- Server broadcasts `{ type: 'transcript_segment', data }` and `{ type: 'notes_update', data }`
+- Append segments in `seqNo` order
+- Dedupe action items by task text
+- Dedupe key moments by text similarity
+- Show existing notes on reconnect, then apply incremental updates
 
 **Other frameworks:** Works with Vue, Svelte, or vanilla JS. The Surface App runs inside the Zoom client via iframe; standard web tech applies.
 
@@ -440,6 +376,24 @@ The patterns above work for development and moderate scale. For production deplo
 **Scaling:** Each active meeting maintains an RTMS WebSocket connection. For high-volume deployments, run multiple RTMS service instances with connection distribution.
 
 </details>
+
+---
+
+## Acceptance Criteria
+
+Use this checklist to verify the implementation:
+
+- [ ] Webhook signature verification rejects invalid or stale requests
+- [ ] Duplicate `rtms_stream_id` webhooks are ignored
+- [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
+- [ ] Transcript segments broadcast to clients before persisting to database
+- [ ] WebSocket connections require valid JWT
+- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
+- [ ] LLM extraction runs on interval, not on every segment
+- [ ] Extraction results parse as valid JSON and handle malformed responses
+- [ ] Action items dedupe by task text; key moments dedupe by similarity
+- [ ] Panel renders existing notes on connect and updates on new extractions
+- [ ] No SDK credentials in client bundles or logs
 
 ---
 
