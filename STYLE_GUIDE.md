@@ -17,6 +17,15 @@ A Blueprint is **declarative, opinionated, and prescriptive**. It is a gold stan
 | Sequential walkthrough | Understand and adapt |
 | Clone and run | Scaffold and build |
 
+### Where Blueprints fit in developer content
+
+| Content type | What it is | Example |
+|--------------|------------|---------|
+| **Blueprint** | Prescriptive reference implementation - architecture, code, manifest | "Here's how to build a real-time sales coach" |
+| **Tutorial** | Step-by-step walkthrough | "Go here, click this, paste this code" |
+| **Blog** | Announcement, thought leadership, or narrative | "Here's why RTMS matters for AI apps" |
+| **Documentation** | Reference material | "Here's what this API endpoint does" |
+
 **Litmus test:** If you removed all the prose and left only the architecture diagram, contracts, and manifest, could an experienced developer (or an LLM agent) recreate the system? If yes, it's a Blueprint. If they'd be lost without the step-by-step instructions, it's a tutorial.
 
 **Prescriptive but not exclusive.** Blueprints declare a clear path (e.g., "we're using Postgres, we're using Railway") while acknowledging other approaches exist. The goal is to give enough guidance that models and developers can move fast, without implying it's the only way.
@@ -98,7 +107,7 @@ The outcome-focused intro (before any heading) must follow this exact order:
 2. **Why it matters** (one sentence): The problem this solves
 3. **What you'll need** (bulleted list): Including Zoom license prerequisites (see next section)
 4. **Features** (bulleted list): What the finished app does
-5. **Zoom product callout**: The out-of-the-box Zoom product for readers who don't need to build
+5. **Zoom product callout**: The out-of-the-box Zoom product for readers who don't need to build. Be explicit about when to use native vs. build custom (e.g., "Build custom when you need [specific customizations]").
 6. **Transition** (one sentence): Bridge to the Architecture section
 
 ### Filled example
@@ -122,7 +131,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 - Competitor mention detection with sentiment
 - Commitment and next-step capture
 
-If you'd rather buy than build, Zoom offers [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities.
+If you'd rather buy than build, Zoom offers [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities. Build custom when you need tighter integration with your CRM, custom qualification criteria, or a tailored coaching experience for your sales methodology.
 
 Follow along as we walk through the architecture.
 ```
