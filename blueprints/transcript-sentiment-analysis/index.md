@@ -1,17 +1,17 @@
 ---
 title: "Send Transcription to Sentiment Analysis Model"
-slug: "transcription-sentiment-analysis"
+slug: "transcript-sentiment-analysis"
 description: >-
     Send live Zoom meeting transcriptions to a sentiment analysis model in real time.
     The model evaluates the sentiment of each transcript chunk and provides insights into the overall mood of the conversation.
-products: ["rtms", "videosdk"]
-verticals: ["support", "sales", "enterprise"]
+products: ["rtms", "video-sdk"]
+verticals: ["customer-support", "sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 difficulty: "advanced"
 estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
 status: "draft"
-updated: 2026-08-25
+updated: 2026-08-31
 github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
 demo_url: ""
 tags: ["sales", "coaching", "real-time"]
@@ -86,7 +86,7 @@ graph LR
      orchestration, coaching-cue loop), per docs/ARCHITECTURE.md in the
      arlo repo. -->
 
-## Implementation Guide (Work in Progress)
+## Implementation Guide
 
 Reference this [Sentiment Analysis Walkthrough](https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/) to access the GitHub repository and set up the app.
 
@@ -326,6 +326,10 @@ The sample app trains a simple model on server startup using TensorFlow.js, base
 - [Zoom Developer Forum](https://devforum.zoom.us/)
 - [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
   
+## App Manifest
+
+Skip this section. Video SDK Product does not support Marketplace Manifests
+
 ## Acceptance Criteria
 
 **General**
