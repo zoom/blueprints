@@ -20,7 +20,8 @@ seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysi
 license_required: false
 stack: "Node · Express · React · TensorFlow"
 deploy:
-  - { label: "Render", url: "" }
+  - { label: "Render (Server-side)", url: "https://github.com/zoom/zoom-rtms-sentiment-sample" }
+  - { label: "Render (Client-side)", url: "https://github.com/zoom/videosdk-LTT-sentiment-analysis"}
 ---
 
 Support teams and product owners often rely on delayed surveys, ticket notes,
