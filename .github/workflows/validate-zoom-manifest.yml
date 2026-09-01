@@ -1,0 +1,75 @@
+name: Zoom Manifest Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-manifest:
+    name: Validate Zoom Manifest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate changed Zoom manifests
+        env:
+          ZOOM_ACCOUNT_ID: ${{ secrets.ZOOM_ACCOUNT_ID }}
+          ZOOM_CLIENT_ID: ${{ secrets.ZOOM_CLIENT_ID }}
+          ZOOM_CLIENT_SECRET: ${{ secrets.ZOOM_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # Ensure both endpoints of the diff are available locally.
+          git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA" >/dev/null 2>&1 || true
+
+          # Collect blueprint dir names for every added/modified/renamed manifest.json.
+          mapfile -t NAMES < <(
+            git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" \
+              | grep -E '^blueprints/[^/]+/manifest\.json$' \
+              | sed -E 's|^blueprints/([^/]+)/manifest\.json$|\1|' \
+              | sort -u
+          )
+
+          if [ ${#NAMES[@]} -eq 0 ]; then
+            echo "No blueprint manifest.json files were added or modified in this PR. Nothing to validate."
+            exit 0
+          fi
+
+          echo "Blueprints to validate: ${NAMES[*]}"
+
+          FAILED=()
+          for name in "${NAMES[@]}"; do
+            echo "::group::Validating $name"
+            if node scripts/validate-zoom-manifest.js "$name"; then
+              echo "✓ $name passed"
+            else
+              FAILED+=("$name")
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ ${#FAILED[@]} -gt 0 ]; then
+            echo "❌ Manifest validation failed for: ${FAILED[*]}"
+            exit 1
+          fi
+
+          echo "✅ All changed Zoom manifests are valid."

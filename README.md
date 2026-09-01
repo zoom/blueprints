@@ -38,6 +38,8 @@ A Blueprint is **declarative, opinionated, and prescriptive**. It's a gold stand
 | `taxonomy.json` | Vocabulary for `products`, `verticals`, `solution_types`, `partners` |
 | `collections/index.json` | Vertical collections shown on the site |
 | `scripts/validate.js` | Quality gate: `npm run validate` |
+| `scripts/validate-zoom-manifest.js` | Validate manifest.json against Zoom API |
+| `.github/workflows/` | CI: validates manifests on PRs |
 | `STYLE_GUIDE.md` | Content standards, tone, required sections |
 | `CONTRIBUTING.md` | Step-by-step contribution workflow |
 | `PROJECT.md` | Current status, open tasks, topic claims |
