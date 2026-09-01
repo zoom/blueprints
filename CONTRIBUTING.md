@@ -85,6 +85,30 @@ Validation checks:
 
 ---
 
+## 4b. Validate your manifest against Zoom's API
+
+If your blueprint includes a `manifest.json`, validate it against Zoom's official API before opening a PR:
+
+```bash
+npm run validate-zoom-manifest -- <your-slug>
+```
+
+This checks that:
+- The manifest JSON is valid
+- Required fields are present
+- Scopes and events are recognized by Zoom
+
+**Note:** This requires Zoom credentials in your `.env` file:
+```dotenv
+ZOOM_ACCOUNT_ID=your_account_id
+ZOOM_CLIENT_ID=your_client_id
+ZOOM_CLIENT_SECRET=your_client_secret
+```
+
+CI runs this automatically on PRs that modify `manifest.json` files.
+
+---
+
 ## 5. Preview your blueprint
 
 The site hosts a local preview that renders exactly as it will ship. Files never leave your machine.
