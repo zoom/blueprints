@@ -7,40 +7,46 @@ description: >-
 products: ["rtms", "video-sdk"]
 verticals: ["customer-support", "sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-difficulty: "advanced"
 estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
 status: "draft"
 updated: 2026-08-31
 github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
-demo_url: ""
+demo_url: "https://success.zoom.us/clips/share/h7O9P6UVQaegHFdcEBGuFw"
 tags: ["sales", "coaching", "real-time"]
 seo_title: "Receive Zoom Transcripts for a Sentiment Analysis Model"
 seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysis", "rtms ai sentiment"]
 license_required: false
 stack: "Node · Express · React · TensorFlow"
 deploy:
-  - { label: "Render (Server-side)", url: "https://github.com/zoom/zoom-rtms-sentiment-sample" }
-  - { label: "Render (Client-side)", url: "https://github.com/zoom/videosdk-LTT-sentiment-analysis"}
+  - { label: "Render (Server-side)", url: "https://render.com/deploy?repo=https://github.com/zoom/zoom-rtms-sentiment-sample" }
+  - { label: "Render (Client-side)", url: "https://render.com/deploy?repo=https://github.com/zoom/videosdk-LTT-sentiment-analysis"}
 ---
 
-Support teams and product owners often rely on delayed surveys, ticket notes,
-    and post-conversation reviews to understand how people feel about an
-    experience. By the time negative sentiment is identified, the customer is
-    already frustrated, and the opportunity to respond in the moment is gone.
+A real-time sentiment analyzer streams Video SDK transcripts to a TensorFlow
+model and surfaces positive, negative, or neutral signals as participants speak. 
 Sentiment analysis makes live or transcribed feedback easier to understand at
-scale. <!-- Expand: a real use case,
-grounding, business outcome framing, why in-meeting beats post-call. -->
+scale.
 
-
-Requirements:
-- A Zoom Video SDK account with an SDK key and secret
+Support teams and product owners often rely on delayed surveys, ticket notes,
+and post-conversation reviews to understand how people feel about an
+experience. By the time negative sentiment is identified, the customer is
+already frustrated, and the opportunity to respond in the moment is gone.
+ 
+**What you'll need:**
+- Zoom Video SDK credentials [Get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)
 - RTMS and Live Transcription enabled for your Video SDK account
-  
-> Create your SDK and API credentials in the [Zoom Video SDK dashboard](https://developers.zoom.us/docs/video-sdk/get-credentials/)
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer))
+- A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
+- An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
+
+**Features:**
+- Live Sentiment Detection with sub-second latency
+- Project structure offers Plug-and-play with of your own LLM
+
+<Image src="images/sentimentfinalresult.png"/>
 
 ## Architecture
-
 
 ### Server-Side with RTMS
 A Zoom session is started through the Video SDK. Once audio is connected and participants begin to speak,
