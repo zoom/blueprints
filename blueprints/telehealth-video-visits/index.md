@@ -348,7 +348,7 @@ File storage needs no manual setup: the Deploy Button provisions a **private** V
 
 To use Amazon S3 or Cloudflare R2 instead — for an existing bucket — leave Blob unprovisioned and set the `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY` variables manually. `S3_REGION` defaults to `auto` (correct for R2); set the bucket's AWS region for S3. Review the bucket CORS policy and restrict it to the application origin before production.
 
-Register `https://YOUR_PRODUCTION_DOMAIN/api/auth/callback/github` as the production GitHub OAuth callback. The application reads the domain that Vercel supplies. The existing `next.config.js` supplies the Video SDK cross-origin isolation headers.
+In GitHub, open **Settings → Developer settings → OAuth Apps** and create or edit the OAuth App. Set **Homepage URL** to `https://YOUR_PRODUCTION_DOMAIN` and **Authorization callback URL** to `https://YOUR_PRODUCTION_DOMAIN/api/auth/callback/github`, then add its client ID and secret to `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` environment variables in Vercel.
 
 </details>
 
