@@ -57,7 +57,9 @@ If you'd rather buy than build, Zoom offers [Zoom for Healthcare](https://www.zo
 
 ### Session model
 
-The appointment record is the control plane. It stores the clinician, invited patient, scheduled time, and clinical artifacts. The first authorized participant starts the [Video SDK session](https://developers.zoom.us/docs/video-sdk/web/sessions/) on demand, using the appointment ID as the session topic.
+Keeping the appointment record as the control plane lets the existing portal enforce identity, scheduling, and clinical-data rules before Video SDK receives a session token.
+
+The appointment record stores the clinician, invited patient, scheduled time, and clinical artifacts. The first authorized participant starts the [Video SDK session](https://developers.zoom.us/docs/video-sdk/web/sessions/) on demand, using the appointment ID as the session topic.
 
 ![New appointment form in the patient portal](images/schedule.png)
 
