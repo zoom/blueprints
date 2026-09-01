@@ -10,7 +10,7 @@ difficulty: "advanced"
 estimated_time: "1-2 days"
 author: "Ekaansh Arora"
 status: "draft"
-updated: 2026-08-27
+updated: 2026-09-01
 github_repo: "https://github.com/zoom/VideoSDK-Web-Telehealth"
 tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]
 seo_title: "Build telehealth video visits with Zoom Video SDK for Web"
@@ -24,7 +24,7 @@ deploy:
   - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0" }
 ---
 
-Run telehealth video visits inside your own application, built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/). Patients open an appointment, confirm their camera, microphone, and speaker in a device-ready check, then join a private session with their clinician. No Zoom account or separate meeting client is required on either side.
+Run telehealth video visits inside your own application, built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/). Patients open an appointment in your app, confirm their camera, microphone, and speaker in a device-ready check, then join a private session with their clinician. No Zoom account or separate meeting client is required on either side.
 
 ![Appointment schedule in the patient portal](images/dashboard.png)
 
@@ -38,7 +38,7 @@ External video apps pull patients out of the portal. A native waiting room keeps
 - A PostgreSQL database and private object store for appointments, notes, and patient documents
 - Optional: EHR or scheduler integration for patient context
 
-**Features:**
+## Features
 
 - Device-ready waiting room with camera, microphone, and speaker preview
 - Role-based session access derived from the appointment record
