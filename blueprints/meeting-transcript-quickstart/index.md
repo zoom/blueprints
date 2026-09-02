@@ -6,18 +6,17 @@ description: >-
   segments and save VTT, SRT, and plain-text files for search or storage.
 products: ["rtms"]
 verticals: ["enterprise"]
-difficulty: "beginner"
 estimated_time: "1-2 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "quickstart", "vtt", "srt", "zoom-meetings"]
 seo_title: "Zoom Meeting Live Transcript RTMS Quickstart"
 seo_keywords: ["zoom meeting transcript api", "zoom rtms transcript", "save zoom transcript"]
 license_required: true
-license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
+license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
 stack: "Node.js · Express · RTMSManager"
 ---
 
@@ -29,7 +28,7 @@ These files are a starting point. Search them, summarize them, attach them to a 
 
 **What you'll need:**
 
-- Transcript access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS transcript access
 - A backend that can receive Zoom webhooks and RTMS transcript events
 - Writable local storage for the quickstart, or customer-managed storage for production
 - A Zoom Meeting with RTMS enabled for testing
@@ -42,6 +41,15 @@ These files are a starting point. Search them, summarize them, attach them to a 
 - Append each received transcript event to readable local files.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+These screenshots show the reference implementation receiving a transcript and
+writing the generated subtitle files.
+
+![Zoom client showing a live meeting transcript](images/zoom-client.png)
+
+![Generated VTT transcript file](images/generated-vtt-file.png)
 
 ## Architecture
 
@@ -77,14 +85,6 @@ Check what your application already provides before adding components:
 | Transcript normalizer | Existing event schema | Speaker, text, timing, and sequence normalization |
 | Format writer | Existing export service | VTT, SRT, and TXT serializers |
 | Storage | Existing object or document storage | Local filesystem for the quickstart |
-
-### Reference output
-
-These screenshots show the reference implementation receiving a transcript and writing the generated subtitle files.
-
-![Zoom client showing a live meeting transcript](images/zoom-client.png)
-
-![Generated VTT transcript file](images/generated-vtt-file.png)
 
 ## Implementation Guide
 
@@ -211,7 +211,7 @@ Run the service and start RTMS in a test meeting with at least two people speaki
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory is a candidate Zoom General App manifest and pre-configures live transcript capture: transcript scope, an OAuth callback placeholder, and RTMS lifecycle subscriptions. Import it when creating the app, replacing `YOUR_DOMAIN` with an HTTPS domain controlled by the app owner.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript capture: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` with HTTPS domains controlled by the app owner before importing it.
 
 ### Scopes
 
