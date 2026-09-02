@@ -1,0 +1,18 @@
+{
+  "name": "archive-meeting-media-to-s3",
+  "description": "Archive live Zoom Meeting audio and video in a customer-controlled S3 bucket.",
+  "scopes": [
+    "meeting:read:meeting_audio",
+    "meeting:read:meeting_video"
+  ],
+  "redirect_url": "https://YOUR_DOMAIN.example.com/auth/callback",
+  "event_subscriptions": [
+    {
+      "endpoint_url": "https://YOUR_DOMAIN.example.com/webhook",
+      "events": [
+        "meeting.rtms_started",
+        "meeting.rtms_stopped"
+      ]
+    }
+  ]
+}
