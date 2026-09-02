@@ -9,7 +9,7 @@ verticals: ["agents", "enterprise"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["voice-agent", "openai-realtime", "audio", "mcp", "zoom-meetings"]
@@ -29,7 +29,7 @@ The current implementation listens to speech and returns text and tool results. 
 
 **What you'll need:**
 
-- Audio access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio access
 - A backend that can maintain RTMS and OpenAI Realtime WebSocket sessions
 - Access to an [OpenAI Realtime model](https://developers.openai.com/api/docs/guides/realtime)
 - A user-authorized Zoom OAuth token when Zoom MCP tools are enabled
@@ -46,6 +46,13 @@ The current implementation listens to speech and returns text and tool results. 
 It does not send text to a user interface or play assistant audio into the meeting.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+The reference implementation reports the OpenAI Realtime session, text
+responses, approved Zoom MCP tool calls, and bounded usage metadata through
+server logs.
+
 
 ## Architecture
 
