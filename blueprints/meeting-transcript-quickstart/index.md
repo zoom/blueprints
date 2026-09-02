@@ -6,7 +6,6 @@ description: >-
   segments and save VTT, SRT, and plain-text files for search or storage.
 products: ["rtms"]
 verticals: ["enterprise"]
-difficulty: "beginner"
 estimated_time: "1-2 hours"
 author: "Chun Siong Tan"
 status: "draft"
