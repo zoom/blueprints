@@ -1,10 +1,10 @@
 ---
-title: "Send Meeting Transcripts to Zoom MCP Tools"
+title: "Send Zoom Meeting Transcripts to MCP Servers"
 slug: "transcripts-to-mcp"
 description: >-
-  Build a meeting assistant that batches live Zoom Meeting transcripts, sends
-  them to Claude, and lets the model use an approved read-only subset of tools
-  from Zoom's hosted Meeting MCP server.
+  Build a two-service meeting agent that batches live RTMS transcripts, routes
+  them to Claude through an authenticated private MCP service, and limits the
+  model to approved read-only tools from Zoom's hosted Meeting MCP server.
 products: ["rtms", "mcp"]
 verticals: ["agents", "enterprise"]
 estimated_time: "4-8 hours"
@@ -14,7 +14,7 @@ updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
-seo_title: "Send Live Zoom Meeting Transcripts to Zoom MCP Tools"
+seo_title: "Send Zoom Meeting Transcripts to MCP Servers"
 seo_keywords: ["zoom transcript mcp", "zoom rtms mcp client", "zoom meeting mcp tools"]
 partners: ["anthropic"]
 license_required: true
@@ -22,9 +22,9 @@ license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
 stack: "Node.js · TypeScript · Zoom RTMS · Zoom MCP · Anthropic Claude"
 ---
 
-A meeting assistant batches live Zoom Meeting transcripts, sends them to Claude, and lets the model call an approved read-only subset of tools from Zoom's hosted Meeting MCP server.
+Build a two-service meeting agent that turns live Zoom Meeting transcripts into context-aware responses backed by approved Zoom content. The public RTMS client batches each transcript stream and sends it through an authenticated private MCP connection to an isolated LLM router.
 
-The assistant can use current meeting speech to find relevant Zoom meetings, recording resources, meeting assets, or Zoom Docs without giving the model unrestricted tool access.
+The router sends each batch to Claude and exposes only the configured read-only tools discovered from Zoom's hosted Meeting MCP server. This lets current meeting speech trigger searches for relevant meetings, recording resources, meeting assets, or Zoom Docs without exposing the router publicly or giving the model unrestricted tool access.
 
 **What you'll need:**
 
