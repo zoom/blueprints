@@ -9,7 +9,7 @@ verticals: ["enterprise", "finance"]
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js"
 solution_types: ["media-processing", "data-integration", "compliance-auditing"]
 tags: ["archive", "amazon-s3", "audio", "video", "zoom-meetings"]
@@ -29,7 +29,7 @@ Archive only the meetings and media your use case requires. Tell participants, g
 
 **What you'll need:**
 
-- Audio and video access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio and video access
 - A backend with enough temporary storage for expected meeting lengths
 - [FFmpeg](https://ffmpeg.org/documentation.html) on the media worker
 - An Amazon S3 bucket and approved AWS workload identity
@@ -44,6 +44,12 @@ Archive only the meetings and media your use case requires. Tell participants, g
 - Upload objects into a bucket where the customer configures access, encryption, and retention.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+The reference implementation produces playable media and uploads the finalized
+objects to the configured customer-controlled S3 bucket.
+
 
 ## Architecture
 
