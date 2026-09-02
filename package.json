@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "description": "Curated, use-case-driven reference implementations for the Zoom developer platform.",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "validate": "node scripts/validate.js",
+    "validate-zoom-manifest": "node scripts/validate-zoom-manifest.js",
     "test": "node --test \"scripts/**/*.test.js\""
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3"
   }
 }

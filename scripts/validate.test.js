@@ -18,7 +18,6 @@ const VALID = {
   description: 'A test blueprint.',
   products: ['rtms'],
   verticals: ['healthcare'],
-  difficulty: 'intermediate',
   estimated_time: '2-4 hours',
   author: 'Test Author',
   status: 'draft',
@@ -34,7 +33,7 @@ test('valid frontmatter yields no errors or warnings', () => {
 
 test('each missing required field is an error', () => {
   for (const field of ['title', 'slug', 'description', 'products', 'verticals',
-    'difficulty', 'estimated_time', 'author', 'status', 'updated']) {
+    'estimated_time', 'author', 'status', 'updated']) {
     const data = { ...VALID };
     delete data[field];
     const { errors } = validateFrontmatter(data, 'test-blueprint', TAXONOMY);
@@ -55,16 +54,12 @@ test('reserved site-route slugs are rejected', () => {
 });
 
 test('invalid enum values are errors', () => {
-  let res = validateFrontmatter({ ...VALID, difficulty: 'expert' }, 'test-blueprint', TAXONOMY);
-  assert.ok(res.errors.some((e) => e.includes('difficulty')));
-  res = validateFrontmatter({ ...VALID, status: 'live' }, 'test-blueprint', TAXONOMY);
+  const res = validateFrontmatter({ ...VALID, status: 'live' }, 'test-blueprint', TAXONOMY);
   assert.ok(res.errors.some((e) => e.includes('status')));
 });
 
 test('falsy non-null enum and slug values are rejected, not skipped', () => {
-  let res = validateFrontmatter({ ...VALID, difficulty: false }, 'test-blueprint', TAXONOMY);
-  assert.ok(res.errors.some((e) => e.includes('difficulty')));
-  res = validateFrontmatter({ ...VALID, status: 0 }, 'test-blueprint', TAXONOMY);
+  let res = validateFrontmatter({ ...VALID, status: 0 }, 'test-blueprint', TAXONOMY);
   assert.ok(res.errors.some((e) => e.includes('status')));
   res = validateFrontmatter({ ...VALID, slug: false }, 'test-blueprint', TAXONOMY);
   assert.ok(res.errors.some((e) => e.includes('slug')));
@@ -166,7 +161,6 @@ slug: test-blueprint
 description: A test blueprint.
 products: [rtms]
 verticals: [healthcare]
-difficulty: intermediate
 estimated_time: 2-4 hours
 author: Test Author
 status: draft

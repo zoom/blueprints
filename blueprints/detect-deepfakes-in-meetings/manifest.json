@@ -1,0 +1,19 @@
+{
+  "name": "meeting-deepfake-risk-review",
+  "description": "Surface customer-model deepfake risk signals in a Zoom Meeting.",
+  "scopes": [
+    "zoomapp:inmeeting",
+    "meeting:read:meeting_audio",
+    "meeting:read:meeting_video"
+  ],
+  "redirect_url": "https://YOUR_DOMAIN.example.com/auth/callback",
+  "event_subscriptions": [
+    {
+      "endpoint_url": "https://YOUR_DOMAIN.example.com/webhook",
+      "events": [
+        "meeting.rtms_started",
+        "meeting.rtms_stopped"
+      ]
+    }
+  ]
+}
