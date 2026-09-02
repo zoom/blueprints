@@ -280,30 +280,134 @@ For centered images with sizing:
 
 ### Demo video (required)
 
-Every Blueprint must include a **short video showing the end result**. This can be simple.
+Every Blueprint must include a demo video. Duration: **30 seconds to 6 minutes**.
 
-**Minimum bar (required):**
-- Screen recording of the working application
-- Shows the output/result, not the setup process
-- 30 seconds to 2 minutes
-- No face required
-- No voice required
-- No editing required beyond trimming start/end
+---
 
-A simple screen capture with QuickTime or Loom showing "here's what happens when you run it" is enough.
+#### Required: The Intro (30-60 seconds)
 
-**Nice to have (not required):**
-- Narrated walkthrough
-- Polished editing
-- Longer deep-dive video
+Every video should open with these 5 elements. The wording is flexible.
 
-Link demo videos in the intro after the images:
+**Element 1: Hook with your name**
+
+Introduce yourself and hint at what's coming.
+
+> "Hi, I'm Jen, and I want to show you something that changes how meeting intelligence works."
+
+> "Hey, I'm Ekaansh. In the next few minutes, I'll show you how to deploy a fully working telehealth app."
+
+> "I'm Ticorrian, and I'm going to walk you through real-time sentiment analysis for Zoom meetings."
+
+> "Hi, I'm Pranjal. Let me show you what happens when you connect Zoom Contact Center to your CRM."
+
+> "I'm Rehema, and I want to show you how AI services can transform customer support calls."
+
+**Element 2-3: Explain the technology**
+
+Give context on what Zoom capability powers this. Keep it simple.
+
+> "Zoom has something called RTMS - Realtime Media Streams. It gives developers access to live transcripts as people speak, with less than one second of latency."
+
+> "This uses Zoom's Video SDK, which lets you embed video calling directly into your own application - fully branded, fully customizable."
+
+> "The technology behind this is RTMS. It streams transcript data to your backend while the meeting is still happening - not after it ends."
+
+> "Zoom Contact Center has APIs that let you pull call data, agent status, and customer context into any system you build."
+
+> "This blueprint uses AI Companion APIs to generate summaries and action items automatically."
+
+**Element 4: Name your implementation**
+
+Introduce what you built and frame it as a starting point, not a finished product.
+
+> "What we built is called Arlo. It's a reference implementation that shows what's possible when you combine Surface Apps with real-time transcription and AI."
+
+> "This blueprint deploys a working telehealth app. It's not a product - it's a starting point you can customize for your own use case."
+
+> "I built a sentiment analysis pipeline that processes transcripts through TensorFlow in real time. The code is yours to extend."
+
+> "This is a CRM integration demo. It shows the pattern - you'll swap in your own CRM and business logic."
+
+> "What you're about to see is a working example. Fork it, change it, make it yours."
+
+> "This blueprint gives you the scaffolding. The architecture works out of the box, but the real value is what you build on top of it."
+
+**Element 5: Transition to demo**
+
+Signal that the intro is over and you're about to show it working.
+
+> "I'm going to show you how this works in a real meeting. Let's jump in."
+
+> "Let me show you what this looks like. I'll start by deploying the app."
+
+> "Here's what it looks like in action."
+
+> "Let's see it work. I'm going to start a meeting and walk you through what happens."
+
+> "Enough talking - let me show you."
+
+> "I'll walk you through the full flow, from deployment to the live demo."
+
+---
+
+#### Required: The Demo (1-4 minutes)
+
+Show the **output in action**. This is the "wow moment."
+
+- If your app has a live conversation element, show real dialogue (scripted is fine)
+- Narrate what's happening: *"Here we see competitor intel... we see next steps..."*
+- Focus on what the user sees, not the code that powers it
+
+**Optional:** Deployment walkthrough (like walking through Vercel setup). Helpful for showing the one-click deploy experience, but not required since blueprints have deploy buttons.
+
+---
+
+#### Required: The Outro (30-60 seconds)
+
+Wrap up with the value and point people to the code.
+
+> "That's the power of RTMS - real-time transcript data delivered as the conversation happens, not hours later."
+
+> "This is what's possible when you have live meeting data. What you build with it is up to you."
+
+> "The pattern here works for any use case - swap in your own model, your own UI, your own business logic."
+
+Then close with availability:
+
+> "The code is open source and available in the Blueprint. Fork it, extend it, make it yours. Thanks for watching."
+
+> "Everything you saw is in the repo. Deploy it, break it apart, learn from it. Thanks for watching."
+
+> "Links to the Blueprint and repo are below. Thanks for watching."
+
+---
+
+#### Nice-to-have (not required)
+
+- Animations, zoom-ins, transitions
+- Talking head segments
+- Lower thirds / labels
+- Background music
+
+These add polish but aren't blockers for submission.
+
+---
+
+#### Video checklist
+
+- [ ] Opens with: name + hook + tech explanation + what you built + transition
+- [ ] Shows the output/result in action (the "wow moment")
+- [ ] Closes with: value statement + where to find the code + thanks
+- [ ] Duration: 30 seconds to 6 minutes
+- [ ] Audio is clear and consistent
+
+---
+
+**Format:** Upload to YouTube (unlisted is fine). Link in the intro after images:
 
 ```markdown
-[Watch a 2-minute demo](https://www.youtube.com/watch?v=...)
+[Watch the demo](https://www.youtube.com/watch?v=...)
 ```
-
-**Format:** Upload to YouTube (unlisted is fine) or host as a GIF/MP4. Don't embed large files in the repo.
 
 ---
 
