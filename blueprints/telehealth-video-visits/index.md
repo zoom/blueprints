@@ -6,7 +6,6 @@ description: Build telehealth video visits inside your patient portal with role-
 products: ["video-sdk"]
 verticals: ["healthcare"]
 solution_types: ["data-integration"]
-difficulty: "advanced"
 estimated_time: "1-2 days"
 author: "Ekaansh Arora"
 status: "draft"
@@ -126,7 +125,7 @@ The reference stack uses:
 | Real-time media   | Zoom Video SDK for Web                              | Preview, video, audio, chat, captions, recording controls     |
 
 
-Each default maps to a separate contract. An existing portal may retain its framework, identity provider, EHR appointment store, and approved object storage when they implement those contracts. Do not replace a working system to match the sample repository.
+An existing portal may retain its framework, identity provider, EHR appointment store, and approved object storage when they implement these contracts. Do not replace a working system to match the sample repository.
 
 ### Agent integration map
 
@@ -233,7 +232,7 @@ function signVideoSdkJwt(sessionName: string, role: 0 | 1) {
 
 ### Contract C: device-ready waiting room
 
-The waiting room owns pre-call media state. It initializes one Video SDK client, enumerates devices with `ZoomVideo.getDevices()`, and uses local audio and video tracks for tests. It exposes:
+Implement the waiting room around one Video SDK client. Enumerate devices with `ZoomVideo.getDevices()` and use local audio and video tracks for tests. Expose:
 
 - Camera preview and camera selector
 - Microphone input confirmation and microphone selector
@@ -346,9 +345,13 @@ The Deploy Button collects two groups of environment variables:
 
 Enter these values in the Deploy Button's environment-variable form. If the form does not appear (Vercel can omit it when a Marketplace integration is included), let the initial build finish, then add the values under **Project Settings → Environment Variables** for Production, Preview, and Development and redeploy. Generate `AUTH_SECRET` with `npx auth secret`; Neon supplies `DATABASE_URL`.
 
-File storage needs no manual setup: the Deploy Button provisions a **private** Vercel Blob store and connects it over OIDC, injecting `BLOB_STORE_ID` (no long-lived token). The app detects the store and switches to Blob automatically. Uploads and downloads both go through auth-gated Functions that authenticate via OIDC — `/api/blob/upload` verifies the caller and streams the file to the store with the SDK's `put()`, and `/api/blob/download` re-checks appointment ownership before calling `get()`. Private blobs are never publicly readable. Uploads pass through the Function, so keep files under the ~4.5 MB body limit (or switch to client uploads, which need `BLOB_READ_WRITE_TOKEN`). Review Blob's data-residency region and your BAA obligations before storing real PHI.
+Vercel Blob requires no manual storage setup. The Deploy Button provisions a **private** store and connects it over OIDC, injecting `BLOB_STORE_ID` without a long-lived token. The app detects the store and switches to Blob automatically.
 
-To use Amazon S3 or Cloudflare R2 instead — for an existing bucket — leave Blob unprovisioned and set the `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY` variables manually. `S3_REGION` defaults to `auto` (correct for R2); set the bucket's AWS region for S3. Review the bucket CORS policy and restrict it to the application origin before production.
+Uploads and downloads go through auth-gated Functions that authenticate via OIDC. `/api/blob/upload` verifies the caller and streams the file to the store with the SDK's `put()`; `/api/blob/download` re-checks appointment ownership before calling `get()`. Private blobs are never publicly readable. Uploads pass through the Function, so keep files under the ~4.5 MB body limit or switch to client uploads, which need `BLOB_READ_WRITE_TOKEN`.
+
+Review Blob's data-residency region and your BAA obligations before storing real PHI.
+
+To use an existing Amazon S3 or Cloudflare R2 bucket, leave Blob unprovisioned and set the `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY` variables manually. `S3_REGION` defaults to `auto` (correct for R2); set the bucket's AWS region for S3. Review the bucket CORS policy and restrict it to the application origin before production.
 
 In GitHub, open **Settings → Developer settings → OAuth Apps** and create or edit the OAuth App. Set **Homepage URL** to `https://YOUR_PRODUCTION_DOMAIN` and **Authorization callback URL** to `https://YOUR_PRODUCTION_DOMAIN/api/auth/callback/github`, then add its client ID and secret to `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` environment variables in Vercel.
 
@@ -388,7 +391,7 @@ bun run dev
 
 ## Before production
 
-The sample repository is **not built for protected health information (PHI)** and is not HIPAA compliant as shipped. Zoom Video SDK can support HIPAA obligations for eligible providers with a signed BAA and the right controls, but compliance depends on your full application. Review identity, consent, retention, and auditability with your security and legal teams before production.
+The sample repository is **not built for protected health information (PHI)** and is not HIPAA compliant as shipped. Zoom Video SDK can support HIPAA obligations for eligible providers with a signed BAA, but the full application must enforce identity, consent, retention, authorization, and audit requirements. Review those controls with your security and legal teams before production.
 
 ## Related Resources
 
