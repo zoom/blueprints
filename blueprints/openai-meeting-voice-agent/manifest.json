@@ -1,0 +1,23 @@
+{
+  "name": "openai-meeting-voice-agent",
+  "description": "Send live Zoom Meeting audio to an OpenAI Realtime agent with approved Zoom MCP tools.",
+  "scopes": [
+    "meeting:read:meeting_audio",
+    "meeting:read:search",
+    "meeting:read:assets",
+    "cloud_recording:read:list_user_recordings",
+    "cloud_recording:read:content",
+    "docs:write:import",
+    "docs:read:export"
+  ],
+  "redirect_url": "https://YOUR_DOMAIN.example.com/auth/callback",
+  "event_subscriptions": [
+    {
+      "endpoint_url": "https://YOUR_DOMAIN.example.com/webhook",
+      "events": [
+        "meeting.rtms_started",
+        "meeting.rtms_stopped"
+      ]
+    }
+  ]
+}
