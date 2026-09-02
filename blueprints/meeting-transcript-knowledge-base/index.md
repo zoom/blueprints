@@ -69,7 +69,7 @@ The linked [Node.js reference implementation](https://github.com/zoom/rtms-sampl
 The store suppresses recent duplicate events, repairs an incomplete JSONL tail, rebuilds projections after restart, and removes inactive stream folders according to a configurable retention period. It still uses local disk and one configured Zoom app. It does not upload records, build a search index, call a model, provide a review UI, enforce legal holds, or prove compliance with a regulation.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|RTMS transcript stream| B[Node.js transcript receiver]
     B -->|Normalized events| C[Canonical JSONL record]
     C -->|Rebuildable projections| D[VTT SRT TXT and metadata]
