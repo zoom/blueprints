@@ -78,6 +78,14 @@ Check what your application already provides before adding components:
 | Format writer | Existing export service | VTT, SRT, and TXT serializers |
 | Storage | Existing object or document storage | Local filesystem for the quickstart |
 
+### Reference output
+
+These screenshots show the reference implementation receiving a transcript and writing the generated subtitle files.
+
+![Zoom client showing a live meeting transcript](images/zoom-client.png)
+
+![Generated VTT transcript file](images/generated-vtt-file.png)
+
 ## Implementation Guide
 
 ### Part 1: Build the transcript pipeline
