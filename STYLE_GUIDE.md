@@ -393,12 +393,20 @@ These add polish but aren't blockers for submission.
 
 ---
 
+#### Zoom Developers Bumper (required)
+
+Every video must include the **Zoom Developers bumper** (3 seconds) at the beginning and end. Jen will share the bumper file in the Blueprinters channel. She can add it for you during final upload if needed, but it's easy to add yourself in any video editor.
+
+---
+
 #### Video checklist
 
+- [ ] Zoom Developers bumper at the start (3 seconds)
 - [ ] Opens with: name + hook + tech explanation + what you built + transition
 - [ ] Shows the output/result in action (the "wow moment")
 - [ ] Closes with: value statement + where to find the code + thanks
-- [ ] Duration: 30 seconds to 6 minutes
+- [ ] Zoom Developers bumper at the end (3 seconds)
+- [ ] Duration: 30 seconds to 6 minutes (not including bumpers)
 - [ ] Audio is clear and consistent
 
 ---
