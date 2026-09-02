@@ -6,7 +6,6 @@ description: >-
   to OpenAI or Anthropic and returns useful answers while the meeting is active.
 products: ["rtms"]
 verticals: ["enterprise", "agents"]
-difficulty: "intermediate"
 estimated_time: "2-4 hours"
 author: "Chun Siong Tan"
 status: "draft"
