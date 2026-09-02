@@ -1,0 +1,82 @@
+{
+  "display_information": {
+    "display_name": "Compliance Advisor",
+    "description": "Real-time compliance screening powered by RTMS transcription",
+    "long_description": "A real-time compliance advisor that streams live transcripts from Zoom meetings, screens every segment against a versioned rule pack, and surfaces prohibited-claim alerts and a required-disclosure checklist in an in-meeting panel visible only to the assigned representative. Every alert and disclosure is written to a hash-chained audit log."
+  },
+  "oauth_information": {
+    "usage": "USER_OPERATION",
+    "development_redirect_uri": "https://YOUR-NGROK-URL/api/auth/callback",
+    "production_redirect_uri": "https://YOUR-PRODUCTION-URL/api/auth/callback",
+    "oauth_allow_list": [
+      "https://YOUR-NGROK-URL"
+    ],
+    "scopes": [
+      {
+        "scope": "zoomapp:inmeeting",
+        "optional": false
+      }
+    ],
+    "scope_description": "Renders the compliance advisor panel inside meetings. No REST scopes are requested: transcripts arrive over RTMS, and the attendee roster comes from the RTMS onParticipantEvent callback."
+  },
+  "features": {
+    "products": ["ZOOM_MEETING"],
+    "development_home_uri": "https://YOUR-NGROK-URL",
+    "production_home_uri": "https://YOUR-PRODUCTION-URL",
+    "domain_allow_list": [
+      {
+        "domain": "YOUR-NGROK-URL",
+        "explanation": "Development server"
+      },
+      {
+        "domain": "appssdk.zoom.us",
+        "explanation": "Required for Zoom Apps SDK"
+      }
+    ],
+    "in_client_feature": {
+      "zoom_app_api": {
+        "enable": true,
+        "zoom_app_apis": [
+          "getMeetingContext",
+          "getMeetingUUID",
+          "getRunningContext",
+          "getUserContext",
+          "authorize",
+          "onAuthorized",
+          "promptAuthorize"
+        ]
+      },
+      "guest_mode": {
+        "enable": false
+      },
+      "in_client_oauth": {
+        "enable": true
+      }
+    },
+    "zoom_client_support": {
+      "mobile": {
+        "enable": false
+      },
+      "zoom_room": {
+        "enable": false
+      },
+      "pwa_client": {
+        "enable": false
+      }
+    },
+    "event_subscription": {
+      "enable": true,
+      "events": [
+        {
+          "subscription_name": "RTMS Events",
+          "event_types": [
+            "meeting.rtms_started",
+            "meeting.rtms_stopped"
+          ],
+          "development_webhook_url": "https://YOUR-NGROK-URL/api/rtms/webhook",
+          "production_webhook_url": "https://YOUR-PRODUCTION-URL/api/rtms/webhook"
+        }
+      ]
+    }
+  }
+}

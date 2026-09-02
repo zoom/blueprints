@@ -1,0 +1,7 @@
+{
+  "name": "real-time-transcription-reference",
+  "description": "Reference app for the Real-Time Meeting Transcription blueprint.",
+  "scopes": ["meeting:read", "rtms:read"],
+  "redirect_url": "https://example.com/auth/callback",
+  "event_subscriptions": ["meeting.rtms_started", "meeting.rtms_stopped"]
+}
