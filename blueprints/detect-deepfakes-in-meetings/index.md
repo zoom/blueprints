@@ -9,7 +9,7 @@ verticals: ["enterprise", "finance"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
@@ -28,7 +28,7 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 
 **What you'll need:**
 
-- Audio and video access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio and video access
 - A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) for the in-meeting review experience
 - A commercial detection service or customer-hosted audio and video models
 - FFmpeg and temporary media storage on the backend
@@ -43,6 +43,12 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 - Keep final decisions within the approved fraud-review policy.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+The in-meeting Zoom App shows the selected participant, separate audio and
+video service states, and the latest normalized inference result.
+
 
 ## Architecture
 
