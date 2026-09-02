@@ -8,7 +8,6 @@ description: >-
 products: ["rtms", "zoom-apps"]
 verticals: ["sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-difficulty: "intermediate"
 estimated_time: "4-6 hours"
 author: "Jen Brissman"
 status: "draft"
