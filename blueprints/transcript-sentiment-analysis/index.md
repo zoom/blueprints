@@ -44,7 +44,7 @@ already frustrated, and the opportunity to respond in the moment is gone.
 - Live Sentiment Detection with sub-second latency
 - Project structure offers Plug-and-play with of your own LLM
 
-<Image src="images/sentimentfinalresult.png"/>
+<Image src="images/sentimentpic.png"/>
 
 ## Architecture
 
