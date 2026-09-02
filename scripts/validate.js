@@ -9,11 +9,10 @@ const ROOT = path.join(__dirname, '..');
 
 const REQUIRED_FIELDS = [
   'title', 'slug', 'description', 'products', 'verticals',
-  'difficulty', 'estimated_time', 'author', 'status', 'updated',
+  'estimated_time', 'author', 'status', 'updated',
 ];
 
 const ENUMS = {
-  difficulty: ['beginner', 'intermediate', 'advanced'],
   status: ['draft', 'review', 'published'],
 };
 
