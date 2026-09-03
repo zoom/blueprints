@@ -2,29 +2,30 @@
 title: "Send Zoom Meeting Transcripts to MCP Servers"
 slug: "transcripts-to-mcp"
 description: >-
-  Build a two-service meeting agent that routes live RTMS transcript batches to
-  Claude, applies a deployment-specific task prompt, and exposes only approved
-  tools from MCP servers declared through the environment.
+  Build a two-service meeting agent that routes live RTMS transcript batches
+  through a configured Anthropic, OpenAI, or OpenRouter model, applies a
+  deployment-specific task prompt, and exposes only approved tools from MCP
+  servers declared through the environment.
 products: ["rtms", "mcp"]
 verticals: ["agents", "enterprise"]
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-09-03
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
 seo_title: "Send Zoom Meeting Transcripts to MCP Servers"
 seo_keywords: ["zoom transcript mcp", "zoom rtms mcp client", "zoom meeting mcp tools"]
-partners: ["anthropic"]
+partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
-stack: "Node.js · TypeScript · Zoom RTMS · Zoom MCP · Anthropic Claude"
+stack: "Node.js · TypeScript · Zoom RTMS · MCP · Anthropic, OpenAI, or OpenRouter"
 ---
 
 Build a two-service meeting agent that turns live Zoom Meeting transcripts into context-aware responses backed by approved Zoom content. The public RTMS client batches each transcript stream and sends it through an authenticated private MCP connection to an isolated LLM router.
 
-The router combines fixed security rules with a deployment-specific Anthropic task prompt. It discovers tools from the MCP servers declared through the environment and exposes only each server's configured allowlist to Claude. The included configuration lets current meeting speech trigger searches for relevant Zoom meetings, recording resources, meeting assets, or Zoom Docs without exposing the router publicly or giving the model unrestricted tool access.
+The router combines fixed security rules with a deployment-specific task prompt. It discovers tools from the MCP servers declared through the environment and exposes only each server's configured allowlist to the selected model. The included configuration lets current meeting speech trigger searches for relevant Zoom meetings, recording resources, meeting assets, or Zoom Docs without exposing the router publicly or giving the model unrestricted tool access.
 
 **What you'll need:**
 
@@ -32,7 +33,7 @@ The router combines fixed security rules with a deployment-specific Anthropic ta
 - A backend that can receive Zoom webhooks and maintain RTMS signaling and transcript WebSockets
 - A [Zoom General App](https://developers.zoom.us/docs/integrations/) with RTMS lifecycle events and transcript access
 - An access token for each configured MCP server, including a Zoom user OAuth token with the granular scopes required by the included [Zoom MCP tools](https://developers.zoom.us/docs/mcp/servers/)
-- An [Anthropic Claude](https://platform.claude.com/docs/en/about-claude/models/overview) API key and model ID
+- An API key and tool-capable model from [Anthropic](https://platform.claude.com/docs/en/about-claude/models/overview), [OpenAI](https://platform.openai.com/docs/models), or [OpenRouter](https://openrouter.ai/docs/quickstart)
 - Node.js 22 or Docker for the reference implementation
 
 **Features:**
@@ -43,9 +44,11 @@ The router combines fixed security rules with a deployment-specific Anthropic ta
 - Authenticate requests between the RTMS client and the private LLM router.
 - Load MCP servers from `MCP_SERVERS_JSON`, discover their tools, and keep only each server's allowlist.
 - Namespace tools by server ID so duplicate upstream tool names do not collide.
-- Add an optional deployment purpose through `ANTHROPIC_TASK_PROMPT` without replacing the fixed security rules.
-- Limit Claude output, retries, tool calls, and tool-result size.
+- Select Anthropic, OpenAI, or OpenRouter through `AI_PROVIDER` without changing the RTMS or MCP services.
+- Add an optional deployment purpose through `AI_TASK_PROMPT` without replacing the fixed security rules.
+- Limit model output, retries, tool calls, and tool-result size.
 - Record audit metadata without transcript text, tool arguments, tool results, meeting IDs, or credentials.
+- Enable `LOG_CONTENT` during local testing to inspect transcript and model-response text in the service logs.
 
 If you prefer built-in meeting assistance, [Zoom AI Companion](https://zoom.us/ai) offers related meeting search and assistance capabilities.
 
@@ -53,25 +56,28 @@ Follow along as we walk through the architecture.
 
 ## Features
 
-The reference implementation reports RTMS transcript batching, environment-configured MCP server discovery, allowlisted tool calls, and responses through structured service logs.
+The reference implementation reports RTMS transcript batching, environment-configured MCP server discovery, allowlisted tool calls, and responses through structured service logs. The screenshot shows a transcript asking for Zoom's stock price and the model response returned through the router with local content logging enabled.
 
+![RTMS transcript request and model response in structured service logs](images/request-response-to-llm.png)
+
+Content logging is disabled by default because transcripts and model responses may contain sensitive meeting data.
 
 ## Architecture
 
 The reusable pattern has four boundaries: authenticated RTMS ingestion, per-stream transcript batching, model routing, and policy-controlled tool use. Keep each boundary separate so a slow model or tool does not close the RTMS stream.
 
-The [reference implementation](https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client) uses two Node.js and TypeScript services. `mcp_client` receives Zoom webhooks, opens the RTMS sockets, and batches transcript text. `llm-router-server` exposes one authenticated private MCP tool named `ask-llm`, calls Claude, and forwards approved tool calls to the MCP server selected by the namespaced tool.
+The [reference implementation](https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client) uses two Node.js and TypeScript services. `mcp_client` receives Zoom webhooks, opens the RTMS sockets, and batches transcript text. `llm-router-server` exposes one authenticated private MCP tool named `ask-llm`, calls the provider selected by `AI_PROVIDER`, and forwards approved tool calls to the MCP server selected by the namespaced tool.
 
 ### Components
 
 | Component | Responsibility | Reference implementation |
 | --- | --- | --- |
-| Zoom webhook endpoint | Authenticate RTMS lifecycle events and restrict them to one Zoom account | Express route in `mcp_client` |
+| Zoom webhook endpoint | Authenticate RTMS lifecycle events and enforce the deployment's account policy | Express route in `mcp_client`; account authorization is an extension |
 | RTMS receiver | Open signaling and transcript WebSockets, handle heartbeats, and isolate stream state | Raw WebSocket client in `mcp_client` |
 | Transcript batcher | Group text by stream for five seconds with a 12,000-character cap | `TranscriptBatcher` |
-| Private router boundary | Authenticate transcript requests and enforce tenant matching | Streamable HTTP MCP endpoint on port `3100` |
-| Model router | Send transcript batches to Claude and manage the tool-use loop | Anthropic Messages API |
-| Prompt policy | Combine fixed security rules with an optional deployment purpose | `ANTHROPIC_TASK_PROMPT` |
+| Private router boundary | Authenticate transcript requests and manage MCP sessions | Streamable HTTP MCP endpoint on port `3100` |
+| Model router | Send transcript batches to the configured model and manage the tool-use loop | Anthropic, OpenAI, or OpenRouter adapter |
+| Prompt policy | Combine fixed security rules with an optional deployment purpose | `AI_TASK_PROMPT` |
 | MCP registry | Load server URLs, token variable names, and tool allowlists from the environment | `MCP_SERVERS_JSON` |
 | Tool policy | Intersect each server's discovered tools with its configured allowlist and namespace the result | `mcpServers.ts` |
 | Audit logging | Record request IDs, outcomes, durations, and safe error codes | Structured JSON logs in both services |
@@ -81,16 +87,16 @@ flowchart LR
     A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
     Z[Zoom lifecycle webhook] -->|Authenticated start and stop events| B
     B -->|Five-second transcript batch| C[Private LLM router]
-    C -->|Transcript and approved tool schemas| D[Claude]
+    C -->|Transcript and approved tool schemas| D[Configured AI provider]
     D -->|Tool request| C
     C -->|Allowlisted tools/list and tools/call| E[Configured MCP servers]
     E -->|Meeting, recording, or document result| C
     C -->|Text response| B
 ```
 
-The router returns Claude's text response to the RTMS client. The current client records the request outcome but does not send that text to a UI, API, CRM, or persistent store. Add an output adapter if the response needs to appear outside the service logs.
+The router returns the model's text response to the RTMS client. With `LOG_CONTENT=false`, the client records only the request outcome. Set `LOG_CONTENT=true` in both services during local testing to print transcript and response text. Add an output adapter if the response needs to appear in a UI, API, CRM, or persistent store.
 
-**What you can replace:** Claude can be replaced by another model with equivalent tool-use support. The RTMS client and private router can be implemented in another backend stack. Keep the authentication, stream isolation, input limits, tool allowlist, and audit boundaries intact.
+**What you can replace:** The included provider adapters support Anthropic, OpenAI, and OpenRouter. Another provider can be added behind the same tool-use contract. The RTMS client and private router can also be implemented in another backend stack. Keep the authentication, stream isolation, input limits, tool allowlist, and audit boundaries intact.
 
 ### Agent integration map
 
@@ -103,10 +109,10 @@ Check which boundaries already exist before adding another service:
 | RTMS connection manager | Existing signaling and media socket layer | Transcript-only RTMS client keyed by `rtms_stream_id` |
 | Transcript batching | Existing bounded stream buffer | Per-stream timer and character cap |
 | Internal service authentication | Existing service identity or mesh policy | Bearer token and HTTPS enforcement |
-| Model client | Existing Claude integration | Anthropic Messages API adapter with timeouts and retries |
+| Model client | Existing tool-capable AI provider | Anthropic, OpenAI, or OpenRouter adapter with timeouts and retries |
 | Prompt policy | Existing agent behavior and security policy | Fixed security rules plus a deployment-specific task prompt |
 | MCP client registry | Existing Streamable HTTP clients | Environment-defined server connections and `tools/list` discovery |
-| Tool authorization | Existing agent policy layer | Per-server tool allowlists, namespacing, and tenant check |
+| Tool authorization | Existing agent policy layer | Per-server tool allowlists and namespacing |
 | Response delivery | Existing UI, workflow, or API destination | Adapter for the returned assistant text |
 | Audit trail | Existing security event store | Redacted request, tool, duration, and outcome records |
 
@@ -138,7 +144,7 @@ function verifyZoomWebhook(rawBody, timestamp, signature, secret) {
 }
 ```
 
-The source-backed implementation is in [`webhookSecurity.ts`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_client/zoom-rtms-mcp-client/mcp_client/src/webhookSecurity.ts). It also checks `ZOOM_ACCOUNT_ID`. A stop event without `account_id` is accepted only when its stream was registered by an authenticated start event.
+The source-backed implementation is in [`webhookSecurity.ts`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_client/zoom-rtms-mcp-client/mcp_client/src/webhookSecurity.ts). It verifies the signature and timestamp but does not restrict events to a configured Zoom account. Add account-level authorization when one deployment must accept events for only a defined set of accounts.
 
 **Other languages:** Use a constant-time comparison such as `hmac.compare_digest` in Python or `crypto/subtle.ConstantTimeCompare` in Go.
 
@@ -146,13 +152,12 @@ The source-backed implementation is in [`webhookSecurity.ts`](https://github.com
 
 The reference implementation uses raw secure WebSockets for the RTMS signaling and transcript connections. It accepts only `wss:` URLs on `zoom.us` hosts, signs both handshakes, responds to signaling and media heartbeats, and subscribes only to transcript media.
 
-**Input:** Authenticated `meeting.rtms_started` payload with `account_id`, `meeting_uuid`, `rtms_stream_id`, and `server_urls`
+**Input:** Authenticated `meeting.rtms_started` payload with `meeting_uuid`, `rtms_stream_id`, and `server_urls`
 
 **Output:** Active signaling and transcript sockets registered under `rtms_stream_id`
 
 **Invariants:**
 
-- Reject events from an account other than `ZOOM_ACCOUNT_ID`.
 - Ignore a start event when the same `rtms_stream_id` already exists.
 - Generate the RTMS handshake signature from the client ID, meeting UUID, and stream ID.
 - Respond to message type `12` with message type `13` on both sockets.
@@ -185,16 +190,16 @@ The reference batcher trims text beyond the character cap instead of carrying th
 
 #### 4. Authenticate the private router
 
-The RTMS client calls the router's private `/mcp` endpoint with `LLM_ROUTER_AUTH_TOKEN`. The router compares the bearer token in constant time and requires the request's tenant ID to equal `ZOOM_ACCOUNT_ID`.
+The RTMS client calls the router's private `/mcp` endpoint with `LLM_ROUTER_AUTH_TOKEN`. The router compares the bearer token in constant time and creates an isolated Streamable HTTP MCP session for each initialized client session.
 
-**Input:** Streamable HTTP MCP request containing a transcript batch and tenant ID
+**Input:** Streamable HTTP MCP request containing a transcript batch
 
 **Output:** Authorized `ask-llm` invocation or a generic denial
 
 **Invariants:**
 
 - Reject a missing or incorrect bearer token.
-- Reject a tenant ID that does not match the configured Zoom account.
+- Require a valid MCP session ID after initialization.
 - Require HTTPS outside loopback unless the operator explicitly permits HTTP on a trusted private network.
 - Keep port `3100` private and expose only the RTMS webhook publicly.
 - Return sanitized failures without provider response bodies or credentials.
@@ -205,7 +210,9 @@ See [`security.ts`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_clie
 
 At startup, the router parses `MCP_SERVERS_JSON`, connects to each HTTPS Streamable HTTP endpoint, and calls `tools/list`. Each entry supplies a stable server ID, endpoint, token environment-variable name, and explicit `allowedTools` array. Startup fails for invalid configuration, a failed connection, or a server with no allowed tools.
 
-The router exposes each retained tool to Claude as `<server-id>__<tool-name>`. It keeps a private mapping back to the upstream client and tool name. This prevents collisions when multiple servers publish a tool with the same name. Configuration and discovery happen at startup, so restart the router after changing the server list.
+Bearer authentication is the default. A trusted public server may set `authType` to `none` and omit `bearerTokenEnv`. Treat an unauthenticated server as a third-party trust boundary, keep its allowlist minimal, and do not send confidential transcript content to it.
+
+The router exposes each retained tool to the selected model as `<server-id>__<tool-name>`. It keeps a private mapping back to the upstream client and tool name. This prevents collisions when multiple servers publish a tool with the same name. Configuration and discovery happen at startup, so restart the router after changing the server list.
 
 The reference implementation starts with this read-only allowlist:
 
@@ -221,7 +228,7 @@ The included `zoom_meeting` server uses a Zoom user OAuth token with only the sc
 
 **Input:** Environment-defined MCP servers, discovered tool schemas, and per-server allowlists
 
-**Output:** Namespaced Claude tool definitions containing only each server's allowed, discovered tools
+**Output:** Namespaced model tool definitions containing only each server's allowed, discovered tools
 
 **Invariants:**
 
@@ -233,9 +240,11 @@ The included `zoom_meeting` server uses a Zoom user OAuth token with only the sc
 - Treat tool output as untrusted model input.
 - Limit serialized tool results to `MAX_TOOL_RESULT_CHARACTERS`.
 
-#### 6. Route a transcript batch through Claude
+#### 6. Route a transcript batch through the selected model
 
-The router sends the batch to Claude with the allowed tool schemas. It builds the system prompt from fixed security rules and the optional `ANTHROPIC_TASK_PROMPT`, which describes what the deployment should accomplish. It repeats the model call when Claude requests a tool, up to `MAX_TOOL_CALLS_PER_REQUEST`. Provider and tool failures return generic text to the RTMS client and produce redacted audit events.
+The router sends the batch to the provider selected by `AI_PROVIDER` with the allowed tool schemas. `anthropic` uses the Anthropic Messages API. `openai` and `openrouter` use OpenAI-compatible chat completions. The same adapter contract controls tool calls, output limits, timeouts, and retries for all three paths.
+
+The router builds the system prompt from fixed security rules and the optional `AI_TASK_PROMPT`, which describes what the deployment should accomplish. It repeats the model call when the provider requests a tool, up to `MAX_TOOL_CALLS_PER_REQUEST`. Provider and tool failures return generic text to the RTMS client and produce redacted audit events.
 
 The reference implementation uses this system prompt:
 
@@ -249,39 +258,40 @@ If required tool input is missing, say what is missing. Keep responses concise.
 Add the deployment purpose separately:
 
 ```dotenv
-ANTHROPIC_TASK_PROMPT="Find relevant past meetings and return concise answers with source details."
+AI_TASK_PROMPT="Find relevant past meetings and return concise answers with source details."
 ```
 
-The router appends the task as `Task for this deployment: ...`. It limits the value to 4,000 characters. The task can shape Claude's response, but it cannot add tools, bypass the per-server allowlists, or increase the tool-call limit.
+The router appends the task as `Task for this deployment: ...`. It limits the value to 4,000 characters. The task can shape the model's response, but it cannot add tools, bypass the per-server allowlists, or increase the tool-call limit.
 
 | Limit | Default |
 | --- | ---: |
 | Transcript input | 12,000 characters |
-| Claude output | 1,000 tokens |
-| Anthropic request timeout | 30,000 milliseconds |
-| Anthropic retries | 2 |
+| Model output | 1,000 tokens |
+| Provider request timeout | 30,000 milliseconds |
+| Provider retries | 2 |
 | Tool calls per transcript request | 3 |
 | Serialized tool results | 50,000 characters |
 
 **Input:** Bounded transcript batch and allowed, namespaced MCP tool definitions
 
-**Output:** Claude text response, with approved tool results incorporated when requested
+**Output:** Model text response, with approved tool results incorporated when requested
 
 **Invariants:**
 
-- Pass the security prompt as the Anthropic system prompt.
+- Pass the security prompt as the provider's system prompt.
 - Keep the fixed security rules when a deployment task is configured.
 - Reject a deployment task longer than 4,000 characters.
 - Deny tool names outside the filtered set.
 - Stop exposing tools after the configured call limit.
 - Sanitize provider and tool errors before returning them.
-- Do not log transcript text, tool arguments, or tool results.
+- Keep transcript and response content out of logs by default. Enable `LOG_CONTENT` only for controlled local testing.
+- Never log tool arguments, tool results, meeting IDs, stream IDs, account IDs, or credentials.
 
-**Other models:** A replacement model must support schema-based tool use and the same limits. Keep policy enforcement in the router rather than relying on prompt instructions alone.
+**Other models:** Choose a model that supports schema-based tool use. Keep policy enforcement in the router rather than relying on prompt instructions alone.
 
 #### 7. Add a response destination
 
-The current RTMS client receives the `ask-llm` result and records only whether it succeeded. Add an adapter when the application needs to display or persist the response.
+The current RTMS client receives the `ask-llm` result. It records only the outcome by default and can print the returned text to local structured logs when `LOG_CONTENT=true`. Add an adapter when the application needs to display or persist the response.
 
 **Input:** Successful MCP tool result containing the assistant text and its RTMS stream context
 
@@ -324,13 +334,16 @@ Configure `llm-router-server/.env` with:
 ```dotenv
 PORT=3100
 LLM_ROUTER_AUTH_TOKEN=YOUR_KEY_HERE
-ZOOM_ACCOUNT_ID=YOUR_ACCOUNT_ID_HERE
+AI_PROVIDER=anthropic
 ANTHROPIC_API_KEY=YOUR_KEY_HERE
 ANTHROPIC_MODEL=claude-sonnet-5
-ANTHROPIC_TASK_PROMPT="Find relevant past meetings and return concise answers with source details."
+AI_TASK_PROMPT="Find relevant past meetings and return concise answers with source details."
 MCP_SERVERS_JSON='[{"id":"zoom_meeting","url":"https://zoom.us/mcp/meeting/streamable","bearerTokenEnv":"ZOOM_MEETING_MCP_ACCESS_TOKEN","allowedTools":["search_meetings","get_meeting_assets","get_recording_resource","get_file_content","recordings_list"]}]'
 ZOOM_MEETING_MCP_ACCESS_TOKEN=YOUR_KEY_HERE
+LOG_CONTENT=false
 ```
+
+To use OpenAI or OpenRouter, change `AI_PROVIDER` and set the matching key and model variables from [`llm-router-server/.env.example`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_client/zoom-rtms-mcp-client/llm-router-server/.env.example). Only the selected provider's key is required. OpenRouter also supports an alternate compatible base URL and optional application-attribution headers. Set `LOG_CONTENT=true` in both services only while checking local transcript and response output.
 
 Configure `mcp_client/.env` with:
 
@@ -340,9 +353,9 @@ WEBHOOK_PATH=/webhook
 ZOOM_SECRET_TOKEN=YOUR_KEY_HERE
 ZOOM_CLIENT_ID=YOUR_CLIENT_ID_HERE
 ZOOM_CLIENT_SECRET=YOUR_KEY_HERE
-ZOOM_ACCOUNT_ID=YOUR_ACCOUNT_ID_HERE
 LLM_MCP_SERVER_URL=http://127.0.0.1:3100/mcp
 LLM_ROUTER_AUTH_TOKEN=YOUR_KEY_HERE
+LOG_CONTENT=false
 ```
 
 Start the router:
@@ -395,23 +408,23 @@ npm run build
 npm audit --omit=dev
 ```
 
-The unit tests cover MCP server configuration, tool namespacing, prompt composition, webhook signature and replay checks, account matching, per-stream batch isolation, internal bearer authentication, tenant matching, and sanitized errors. They do not replace a live test with RTMS, Claude, and MCP credentials.
+The unit tests cover provider configuration, MCP server configuration, tool namespacing, prompt composition, webhook signature and replay checks, per-stream batch isolation, internal bearer authentication, and sanitized errors. They do not replace a live test with RTMS, an AI provider, and MCP credentials.
 
-Start RTMS in a test meeting and verify that the audit log records a successful route. Test a transcript request that needs no tool and another that should use one allowed read-only tool. The current client does not print the assistant response, so complete output verification requires the response adapter described earlier.
+Start RTMS in a test meeting and verify that the audit log records a successful route. Test a transcript request that needs no tool and another that should use one allowed read-only tool. Set `LOG_CONTENT=true` in both services to compare the received transcript with the returned model response, then disable it after testing.
 
 <details>
 <summary><strong>Production considerations</strong></summary>
 
 - Implement Zoom user OAuth authorization, secure token storage, and token refresh.
 - Add general RTMS reconnect handling for unexpected signaling and media socket closures.
-- Bound concurrent Claude and tool requests so repeated batches cannot create unlimited in-flight work.
+- Bound concurrent model and tool requests so repeated batches cannot create unlimited in-flight work.
 - Preserve transcript overflow and flush pending text on stop when complete capture is required.
 - Keep speaker and timestamp metadata if the model or output destination needs attribution.
 - Add a timeout around MCP tool calls.
 - Report actual dependency state in health checks instead of constant connection values.
 - Evaluate Zoom for Government endpoints and document unsupported MCP or RTMS behavior.
 - Route structured audit events to a durable store with access and retention controls.
-- Add the response destination before collecting screenshots or recording the required demo.
+- Add an authorized response destination when the result must leave the local service logs.
 
 </details>
 
@@ -443,19 +456,19 @@ The webhook URL must end at the `mcp_client` route configured by `WEBHOOK_PATH`.
 
 ### Structure
 
-The manifest configures the Zoom-facing permissions and lifecycle events. The Anthropic API key, internal router token, MCP server registry, server access tokens, tool allowlists, model limits, and network policy remain external application configuration.
+The manifest configures the Zoom-facing permissions and lifecycle events. The provider API key, internal router token, MCP server registry, server access tokens, tool allowlists, model limits, and network policy remain external application configuration.
 
 The app owner must confirm the current Marketplace schema, imported scopes, OAuth redirect URL, webhook endpoint, and RTMS entitlement before publishing the app.
 
 <details>
 <summary><strong>Reference implementation boundaries</strong></summary>
 
-- The deployment supports one `ZOOM_ACCOUNT_ID`; use isolated deployments and OAuth tokens for multiple tenants.
+- The reference implementation does not enforce a configured Zoom-account allowlist after webhook signature verification. Add account authorization and tenant-isolated credentials for a multi-account deployment.
 - The router stops at startup if any configured MCP server is unavailable or has no allowlisted tools.
 - MCP tool calls do not have an application-level timeout.
 - Unexpected RTMS socket closures do not trigger general reconnection.
 - Health endpoints report configured connections as available without active probes.
-- The RTMS client does not expose the returned assistant text.
+- The RTMS client exposes the returned text only through local structured logs when `LOG_CONTENT=true`; it does not include a UI, API, CRM, or persistent response adapter.
 - The external repository includes a Marketplace manifest but does not yet include Render configuration, Railway configuration, or a Compose file.
 
 </details>
@@ -463,20 +476,22 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 ## Acceptance Criteria
 
 - [ ] Invalid signatures and webhook timestamps older than five minutes are rejected.
-- [ ] A start event from another Zoom account is rejected.
 - [ ] Duplicate `rtms_stream_id` start events do not create another connection.
 - [ ] Signaling and media heartbeats receive the required response.
 - [ ] Transcript batches remain isolated by stream and never exceed 12,000 characters.
 - [ ] A missing or incorrect internal bearer token is rejected.
-- [ ] A mismatched tenant ID is rejected.
+- [ ] An MCP request without a valid initialized session is rejected.
 - [ ] Invalid MCP server JSON, duplicate IDs, non-HTTPS URLs, missing tokens, and empty allowlists stop startup.
-- [ ] `ANTHROPIC_TASK_PROMPT` is appended without removing the fixed security rules.
+- [ ] `AI_PROVIDER` selects Anthropic, OpenAI, or OpenRouter and requires only that provider's key and model.
+- [ ] `AI_TASK_PROMPT` is appended without removing the fixed security rules.
 - [ ] A task prompt longer than 4,000 characters stops startup.
-- [ ] Claude receives only tools that are both discovered and allowlisted.
-- [ ] Claude tool names include the server namespace and route to the corresponding upstream server.
+- [ ] The selected model receives only tools that are both discovered and allowlisted.
+- [ ] Model-facing tool names include the server namespace and route to the corresponding upstream server.
 - [ ] No more than three tools execute for one transcript request with the default configuration.
-- [ ] Transcript text, tool arguments, tool results, meeting IDs, stream IDs, account IDs, and credentials are absent from audit logs.
-- [ ] Claude and MCP failures return sanitized errors without closing the RTMS stream.
+- [ ] With `LOG_CONTENT=false`, transcript text and model responses are absent from audit logs.
+- [ ] Tool arguments, tool results, meeting IDs, stream IDs, account IDs, and credentials are always absent from audit logs.
+- [ ] Provider and MCP failures return sanitized errors without closing the RTMS stream.
+- [ ] Transcript and model-response content appears in logs only when `LOG_CONTENT=true`.
 - [ ] Both services close connections and stop on `SIGINT` and `SIGTERM`.
 
 ## Related Resources
@@ -487,3 +502,5 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 - [Model Context Protocol specification](https://modelcontextprotocol.io/docs/getting-started/intro)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - [Anthropic tool-use documentation](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
+- [OpenAI function-calling documentation](https://platform.openai.com/docs/guides/function-calling)
+- [OpenRouter tool-calling documentation](https://openrouter.ai/docs/guides/features/tool-calling)
