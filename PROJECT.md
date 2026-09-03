@@ -90,11 +90,13 @@
 | **Ekaansh Arora** | Video SDK Telehealth Waiting Room | ✅ Blueprint complete. 5-minute polished animated video done. Needs to add standardized intro (~30 sec) and Zoom Developers bumper. |
 | **Ticorrian Heard** | Live Sentiment Analysis | PR submitted (#22), validation passing. Needs to expand demo video beyond 15 seconds. Keeping both server-side (RTMS) and client-side (LTT) approaches in one blueprint. |
 | **Jeremy Wright** | Zoom Scheduler (ISV sample), Rivet Starter | Nearly ready with Rivet Starter blueprint. Scheduler blueprint pending PM approval. |
-| **Pranjal Pandey** | CRM Integration (Contact Center) | Demonstrated custom CRM app using Zoom Contact Center APIs. Blocked on cloud token expiration; Jen sent instructions. |
+| **Pranjal Pandey** | CRM Integration (Contact Center) | Demonstrated custom CRM app using Zoom Contact Center APIs. Cloud token issue resolved; ready to submit PR. |
 | **Rehema Armorer** | Customer Experience App, AI Services + Contact Center RTMS | Rough draft for CX app. Committed to Sept 16 deadline for new AI services blueprint. Needs to match style guide and add screenshots. |
 | **Max Mansfield** | Real-time compliance advisor, Embed meetings into website + DevDocs migration bridge | In progress. Needs to add photos/videos and apply structural changes per updated guidance. |
 | **Chun Siong Tan** | Multiple PRs submitted | Polishing: screenshots and editor snippets done. Needs details and videos. Dockerfile in progress. |
 | **Donte Small** | Manifest verification script | Script ready; PR submission pending |
+| **Boon Jun Tan** | TBD | Committed to contributing; blueprint selection pending |
+| **Gianni Latange** | TBD | Committed to contributing; blueprint selection pending |
 
 ---
 
@@ -222,13 +224,15 @@
 | Expand sentiment analysis video beyond 15 seconds; follow video formula | Ticorrian | Pending |
 | Add photos, videos, and structural changes per updated guidance | Max | Pending |
 | Update CX draft to match style guide; add screenshots | Rehema | Pending (Sept 16 deadline for AI services blueprint) |
-| Resolve cloud token expiration; submit CRM integration PR | Pranjal | Blocked |
+| Submit CRM integration PR | Pranjal | Ready |
 | Finalize Rivet Starter blueprint | Jeremy | Nearly ready |
 | Fill in details, screenshots, videos for PRs; ping Jen when ready | Chun Siong | In progress |
 | Add Dockerfile for easy deployment | Chun Siong | In progress |
 | Submit PR for manifest verification script | Donte | Pending |
 | Cover images for gold standard Blueprints | Jen | This week |
 | Rename "Live Demo" button to "Video Demo" | Michael | Pending |
+| Select blueprint topic and claim in PROJECT.md | Boon Jun | Pending |
+| Select blueprint topic and claim in PROJECT.md | Gianni | Pending |
 
 ---
 
@@ -273,7 +277,7 @@
 - ✅ Validation script updated: removed `difficulty` from required fields
 - ✅ Ticorrian's PR (#22) passing validation after rebase
 - ✅ Ekaansh's telehealth PR (#17) reviewed - blueprint complete, video polish needed
-- ✅ Jen sent Pranjal cloud token instructions
+- ✅ Pranjal's cloud token issue resolved; ready to submit PR
 
 ## Completed (Aug 20–26)
 
