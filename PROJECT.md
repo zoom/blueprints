@@ -3,7 +3,7 @@
 > Living doc. Update when you pick up or finish a task (PR welcome).
 > Project context: the full spec lives with the site team (`BLUEPRINTS_CONTEXT.md` in the dev-docs repo). Timeline dates in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-**Last updated:** 2026-08-26
+**Last updated:** 2026-09-02
 
 ---
 
@@ -22,6 +22,16 @@
 ---
 
 ## Decisions Locked
+
+### Sept 2 sync
+
+- **Demo videos: 30 seconds to 6 minutes.** Must be professional, outcome-focused. Focus on the output/result, not setup or config.
+- **Video intro formula standardized.** Every video opens with: name + hook, tech explanation, what you built, transition to demo. Multiple example scripts in STYLE_GUIDE.md.
+- **Zoom Developers bumper required.** 3-second bumper at start and end of every video. Jen will add during upload if needed.
+- **Gold standards updated.** Removed `difficulty` field from frontmatter and `architecture.mmd` files. Validation script updated.
+- **"Live Demo" button → "Video Demo"** to avoid confusion about hosting requirements. Michael handling.
+- **Screenshots are non-negotiable.** UI showing the app in action required for every blueprint.
+- **AI encouraged for drafting** but human review required for style guide compliance (no em dashes, etc.).
 
 ### Aug 26 sync
 
@@ -76,14 +86,15 @@
 
 | Contributor | Blueprint(s) | Status |
 |-------------|--------------|--------|
-| **Jen Brissman** | Real-Time Sales Coach, AI Meeting Notetaker | ✅ 100% complete. Only need cover image + GitHub author link fixes |
-| **Chun Siong Tan** | Multiple PRs submitted | Polishing: screenshots and editor snippets done. Needs details and videos. Dockerfile in progress. Will ping Jen when ready |
-| **Ticorrian Heard** | Live Sentiment Analysis (Video SDK), Gemini Integration, Video Chat App (Next.js/React) | Pushing sentiment analysis branch today; PR coming |
+| **Jen Brissman** | Real-Time Sales Coach, AI Meeting Notetaker | ✅ 100% complete. Gold standards updated (difficulty removed). |
+| **Ekaansh Arora** | Video SDK Telehealth Waiting Room | ✅ Blueprint complete. 5-minute polished animated video done. Needs to add standardized intro (~30 sec) and Zoom Developers bumper. |
+| **Ticorrian Heard** | Live Sentiment Analysis | PR submitted (#22), validation passing. Needs to expand demo video beyond 15 seconds. Keeping both server-side (RTMS) and client-side (LTT) approaches in one blueprint. |
+| **Jeremy Wright** | Zoom Scheduler (ISV sample), Rivet Starter | Nearly ready with Rivet Starter blueprint. Scheduler blueprint pending PM approval. |
+| **Pranjal Pandey** | CRM Integration (Contact Center) | Demonstrated custom CRM app using Zoom Contact Center APIs. Blocked on cloud token expiration; Jen sent instructions. |
+| **Rehema Armorer** | Customer Experience App, AI Services + Contact Center RTMS | Rough draft for CX app. Committed to Sept 16 deadline for new AI services blueprint. Needs to match style guide and add screenshots. |
+| **Max Mansfield** | Real-time compliance advisor, Embed meetings into website + DevDocs migration bridge | In progress. Needs to add photos/videos and apply structural changes per updated guidance. |
+| **Chun Siong Tan** | Multiple PRs submitted | Polishing: screenshots and editor snippets done. Needs details and videos. Dockerfile in progress. |
 | **Donte Small** | Manifest verification script | Script ready; PR submission pending |
-| **Jeremy Wright** | Zoom Scheduler (ISV sample) | Building sample for Hims & Hers; offered as Blueprint alongside ISV sample |
-| **Max Mansfield** | Real-time compliance advisor, Embed meetings into website + DevDocs migration bridge | In progress. Also bridging Blueprints team and Brandon's new app migration |
-| **Rehema Armorer** | Remote Admin Control (Contact Center), CRM Experience (Contact Center/CX) | Committed in RTMS Dev Success meeting. Plans to deliver soon |
-| **Ekaansh Arora** | Video SDK Telehealth Waiting Room | No update this week |
 
 ---
 
@@ -93,16 +104,16 @@
 |-----------|-------|--------|
 | Real-Time Sales Coach | Jen | ✅ Done |
 | AI Meeting Notetaker | Jen | ✅ Done |
-| Live Sentiment Analysis (Video SDK) | Ticorrian | PR today |
-| Gemini Integration | Ticorrian | In progress |
-| Video Chat App (Next.js/React) | Ticorrian | Needs more details from Jen |
-| Zoom Scheduler ISV Sample | Jeremy | In progress |
-| Real-time compliance advisor in meetings | Max | In progress |
+| Video SDK Telehealth Waiting Room | Ekaansh | ✅ Blueprint done, video needs intro + bumper |
+| Live Sentiment Analysis | Ticorrian | PR submitted (#22), needs video expansion |
+| Rivet Starter (ISV) | Jeremy | Nearly ready |
+| Zoom Scheduler ISV Sample | Jeremy | Pending PM approval |
+| CRM Integration (Contact Center) | Pranjal | Blocked on cloud tokens |
+| Customer Experience App | Rehema | Rough draft |
+| AI Services + Contact Center RTMS | Rehema | Sept 16 deadline |
+| Real-time compliance advisor | Max | In progress, needs photos/video |
 | Embed meetings into website | Max | In progress |
-| Remote Admin Control for Agent Engagements | Rehema | Committed |
-| CRM Experience / Managing Contacts | Rehema | Committed |
 | Chun Siong's PRs | Chun Siong | Polishing |
-| Video SDK Telehealth Waiting Room | Ekaansh | No update |
 
 ---
 
@@ -207,16 +218,17 @@
 
 | Task | Owner | Status |
 |------|-------|--------|
-| Cover images for gold standard Blueprints | Jen | This week |
-| GitHub author link fixes for gold standards | Jen | This week |
-| Get context on "Video Chat App with Next.js/React" Blueprint | Jen | Follow up publicly in channel |
+| Add standardized intro (~30 sec) + Zoom Developers bumper to telehealth video | Ekaansh | Pending |
+| Expand sentiment analysis video beyond 15 seconds; follow video formula | Ticorrian | Pending |
+| Add photos, videos, and structural changes per updated guidance | Max | Pending |
+| Update CX draft to match style guide; add screenshots | Rehema | Pending (Sept 16 deadline for AI services blueprint) |
+| Resolve cloud token expiration; submit CRM integration PR | Pranjal | Blocked |
+| Finalize Rivet Starter blueprint | Jeremy | Nearly ready |
 | Fill in details, screenshots, videos for PRs; ping Jen when ready | Chun Siong | In progress |
 | Add Dockerfile for easy deployment | Chun Siong | In progress |
-| Push sentiment analysis branch and submit PR | Ticorrian | Today |
 | Submit PR for manifest verification script | Donte | Pending |
-| Continue Zoom Scheduler ISV sample | Jeremy | In progress |
-| Begin Remote Admin Control + CRM Experience Blueprints | Rehema | Starting |
-| Work on Real-time compliance advisor + Embed meetings Blueprints | Max | In progress |
+| Cover images for gold standard Blueprints | Jen | This week |
+| Rename "Live Demo" button to "Video Demo" | Michael | Pending |
 
 ---
 
@@ -252,6 +264,16 @@
 - Work may stay in branch initially, merge after main app launches Sept 20
 
 ---
+
+## Completed (Sept 2)
+
+- ✅ Video guide expanded in STYLE_GUIDE.md with prescriptive intro/outro formula and multiple example scripts
+- ✅ Zoom Developers bumper requirement added to style guide
+- ✅ Gold standards updated: removed `difficulty` field from ai-meeting-notetaker and realtime-sales-coach
+- ✅ Validation script updated: removed `difficulty` from required fields
+- ✅ Ticorrian's PR (#22) passing validation after rebase
+- ✅ Ekaansh's telehealth PR (#17) reviewed - blueprint complete, video polish needed
+- ✅ Jen sent Pranjal cloud token instructions
 
 ## Completed (Aug 20–26)
 
