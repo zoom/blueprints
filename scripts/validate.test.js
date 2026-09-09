@@ -162,37 +162,57 @@ updated: 2026-08-04
 github_repo: https://github.com/zoom/example
 ---`;
 
-test('body with intro prose and all three required sections passes', () => {
-  assert.deepEqual(validateBody(FULL_BODY), []);
+test('body with intro prose and required sections passes', () => {
+  const result = validateBody(FULL_BODY);
+  assert.deepEqual(result.errors, []);
 });
 
 test('body must open with intro prose before the first heading', () => {
   const headingFirstBody = FULL_BODY.replace(/^.*?\n\n/, '');
-  assert.ok(validateBody(headingFirstBody).includes(
+  const result = validateBody(headingFirstBody);
+  assert.ok(result.errors.includes(
     'blueprint must open with intro prose (outcomes-first) before the first heading',
   ));
 });
 
 test('each missing required section is an error', () => {
-  const errors = validateBody('Outcome-focused intro prose.\n');
-  for (const section of ['Architecture', 'Implementation Guide', 'App Manifest']) {
-    assert.ok(errors.some((e) => e.includes(section)), `expected error for ${section}`);
+  const result = validateBody('Outcome-focused intro prose.\n');
+  // Architecture and Implementation Guide are always required
+  for (const section of ['Architecture', 'Implementation Guide']) {
+    assert.ok(result.errors.some((e) => e.includes(section)), `expected error for ${section}`);
   }
 });
 
-test('missing manifest.json is an error', () => {
+test('App Manifest section is required for zoom-apps products', () => {
+  const bodyWithoutManifest = 'Intro prose.\n\n## Architecture\n\nDiagram.\n\n## Implementation Guide\n\nSteps.';
+  const result = validateBody(bodyWithoutManifest, ['zoom-apps']);
+  assert.ok(result.errors.some((e) => e.includes('App Manifest')));
+});
+
+test('App Manifest section is NOT required for video-sdk products', () => {
+  const bodyWithoutManifest = 'Intro prose.\n\n## Architecture\n\nDiagram.\n\n## Implementation Guide\n\nSteps.';
+  const result = validateBody(bodyWithoutManifest, ['video-sdk']);
+  assert.ok(!result.errors.some((e) => e.includes('App Manifest')));
+});
+
+test('missing manifest.json is a warning (not an error)', () => {
   const dir = makeBlueprintDir({});
-  assert.ok(validateManifest(dir).some((e) => e.includes('missing manifest.json')));
+  const result = validateManifest(dir);
+  // Missing manifest is now a warning, not an error
+  assert.strictEqual(result.errors.length, 0);
+  assert.ok(result.warnings.some((w) => w.includes('not found') || w.includes('missing')));
 });
 
 test('invalid manifest JSON is an error', () => {
   const dir = makeBlueprintDir({ 'manifest.json': '{ nope' });
-  assert.ok(validateManifest(dir).some((e) => e.includes('not valid JSON')));
+  const result = validateManifest(dir);
+  assert.ok(result.errors.some((e) => e.includes('not valid JSON')));
 });
 
 test('empty-object manifest is an error', () => {
   const dir = makeBlueprintDir({ 'manifest.json': '{}' });
-  assert.ok(validateManifest(dir).some((e) => e.includes('non-empty')));
+  const result = validateManifest(dir);
+  assert.ok(result.errors.some((e) => e.includes('non-empty')));
 });
 
 // Fixture strings are split so Zoom's push-time secret scanner (which
@@ -249,13 +269,14 @@ test('credential scan ignores documentation placeholders', () => {
   assert.deepEqual(scanCredentials(dir), []);
 });
 
-test('missing index.md still surfaces manifest and credential errors', () => {
+test('missing index.md still surfaces credential errors and manifest warning', () => {
   const dir = makeBlueprintDir({ 'notes.txt': FAKE_AWS_KEY });
-  const { errors } = validateBlueprintDir(dir, {
+  const { errors, warnings } = validateBlueprintDir(dir, {
     products: new Set(), verticals: new Set(), solution_types: new Set(),
   });
   assert.ok(errors.some((e) => e.includes('missing index.md')));
-  assert.ok(errors.some((e) => e.includes('missing manifest.json')));
+  // Missing manifest is now a warning, not an error
+  assert.ok(warnings.some((w) => w.includes('not found') || w.includes('missing')));
   assert.ok(errors.some((e) => e.includes('possible credential')));
 });
 
