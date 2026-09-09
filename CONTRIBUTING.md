@@ -54,7 +54,7 @@ Open `blueprints/<your-slug>/index.md` and complete the YAML block.
 | `license_required` | `true` if Zoom license beyond free tier needed |
 | `license_note` | Explain which license/add-on |
 | `stack` | Tech stack summary (e.g., `"Node · Express · React · MySQL"`) |
-| `deploy` | Array of `{ label, url }` for one-click deploy buttons |
+| `deploy` | Array of `{ label, url }` for deploy buttons. Vercel is preferred for Next.js/React apps. |
 
 ---
 
@@ -82,6 +82,30 @@ Validation checks:
 - Required H2 sections exist
 - Image refs have files behind them
 - No credential patterns detected
+
+---
+
+## 4b. Validate your manifest against Zoom's API
+
+If your blueprint includes a `manifest.json`, validate it against Zoom's official API before opening a PR:
+
+```bash
+npm run validate-zoom-manifest -- <your-slug>
+```
+
+This checks that:
+- The manifest JSON is valid
+- Required fields are present
+- Scopes and events are recognized by Zoom
+
+**Note:** This requires Zoom credentials in your `.env` file:
+```dotenv
+ZOOM_ACCOUNT_ID=your_account_id
+ZOOM_CLIENT_ID=your_client_id
+ZOOM_CLIENT_SECRET=your_client_secret
+```
+
+CI runs this automatically on PRs that modify `manifest.json` files.
 
 ---
 

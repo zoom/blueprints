@@ -1,0 +1,53 @@
+{
+  "display_information": {
+    "display_name": "Appointment Embed",
+    "description": "Embeds a live Zoom meeting in an appointment page using Meeting SDK Component View",
+    "long_description": "A Meeting SDK app that issues the SDK Key and Secret used to sign meeting signatures. The signatures let a customer join a scheduled appointment from a page on your own website, rendered inline with your layout, without downloading the Zoom client or signing in."
+  },
+  "app_type": "MEETING_SDK",
+  "credentials": {
+    "sdk_key": {
+      "exposure": "public",
+      "explanation": "Returned to the browser alongside the signature. Safe to ship in client code."
+    },
+    "sdk_secret": {
+      "exposure": "server_only",
+      "explanation": "Signs the HS256 signature JWT. Never send it to the browser, log it, or commit it."
+    }
+  },
+  "signature": {
+    "algorithm": "HS256",
+    "claims": ["appKey", "sdkKey", "mn", "role", "iat", "exp", "tokenExp"],
+    "role_values": {
+      "0": "Attendee. The default for a customer joining their appointment.",
+      "1": "Host. Granted only to the staff member the booking names as host."
+    },
+    "expiration_seconds": {
+      "minimum": 1800,
+      "maximum": 172800,
+      "recommended": "Scope to the appointment window rather than a fixed constant."
+    }
+  },
+  "features": {
+    "products": ["ZOOM_MEETING"],
+    "view": "COMPONENT_VIEW",
+    "domain_allow_list": [
+      {
+        "domain": "YOUR-DEVELOPMENT-ORIGIN",
+        "explanation": "Local development origin, for example localhost:5173"
+      },
+      {
+        "domain": "YOUR-PRODUCTION-ORIGIN",
+        "explanation": "Every origin that embeds the meeting must be listed, or join() fails"
+      }
+    ]
+  },
+  "oauth_information": {
+    "required": false,
+    "explanation": "A Meeting SDK app requests no OAuth scopes. The credential signs meeting signatures rather than calling APIs on a user's behalf."
+  },
+  "event_subscription": {
+    "enable": false,
+    "explanation": "No webhooks are used. The page learns about meeting state from the SDK client, not from server-side events."
+  }
+}
