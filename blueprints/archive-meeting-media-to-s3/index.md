@@ -6,11 +6,10 @@ description: >-
   media with RTMS, package it with FFmpeg, and store the files in Amazon S3.
 products: ["rtms"]
 verticals: ["enterprise", "finance"]
-difficulty: "advanced"
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js"
 solution_types: ["media-processing", "data-integration", "compliance-auditing"]
 tags: ["archive", "amazon-s3", "audio", "video", "zoom-meetings"]
@@ -18,7 +17,7 @@ seo_title: "Archive Live Zoom Meeting Audio and Video to Amazon S3"
 seo_keywords: ["zoom meeting archive s3", "zoom rtms aws s3", "save zoom audio video"]
 partners: ["aws"]
 license_required: true
-license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
+license_note: "Requires a Zoom Developer Pack with RTMS audio and video access."
 stack: "Node.js · Express · RTMSManager · FFmpeg · Amazon S3"
 ---
 
@@ -30,7 +29,7 @@ Archive only the meetings and media your use case requires. Tell participants, g
 
 **What you'll need:**
 
-- Audio and video access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio and video access
 - A backend with enough temporary storage for expected meeting lengths
 - [FFmpeg](https://ffmpeg.org/documentation.html) on the media worker
 - An Amazon S3 bucket and approved AWS workload identity
@@ -45,6 +44,12 @@ Archive only the meetings and media your use case requires. Tell participants, g
 - Upload objects into a bucket where the customer configures access, encryption, and retention.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+The reference implementation produces playable media and uploads the finalized
+objects to the configured customer-controlled S3 bucket.
+
 
 ## Architecture
 
@@ -242,7 +247,7 @@ Test short and long meetings, interrupted RTMS sessions, an unavailable S3 endpo
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory is a candidate Zoom General App manifest and pre-configures the media archive: audio and video scopes, an OAuth callback placeholder, and RTMS lifecycle subscriptions. Import it when creating the app, replacing `YOUR_DOMAIN` first.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the media archive: audio and video scopes, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it.
 
 ### Scopes
 
