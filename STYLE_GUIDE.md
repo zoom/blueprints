@@ -17,6 +17,15 @@ A Blueprint is **declarative, opinionated, and prescriptive**. It is a gold stan
 | Sequential walkthrough | Understand and adapt |
 | Clone and run | Scaffold and build |
 
+### Where Blueprints fit in developer content
+
+| Content type | What it is | Example |
+|--------------|------------|---------|
+| **Blueprint** | Prescriptive reference implementation - architecture, code, manifest | "Here's how to build a real-time sales coach" |
+| **Tutorial** | Step-by-step walkthrough | "Go here, click this, paste this code" |
+| **Blog** | Announcement, thought leadership, or narrative | "Here's why RTMS matters for AI apps" |
+| **Documentation** | Reference material | "Here's what this API endpoint does" |
+
 **Litmus test:** If you removed all the prose and left only the architecture diagram, contracts, and manifest, could an experienced developer (or an LLM agent) recreate the system? If yes, it's a Blueprint. If they'd be lost without the step-by-step instructions, it's a tutorial.
 
 **Prescriptive but not exclusive.** Blueprints declare a clear path (e.g., "we're using Postgres, we're using Railway") while acknowledging other approaches exist. The goal is to give enough guidance that models and developers can move fast, without implying it's the only way.
@@ -98,7 +107,7 @@ The outcome-focused intro (before any heading) must follow this exact order:
 2. **Why it matters** (one sentence): The problem this solves
 3. **What you'll need** (bulleted list): Including Zoom license prerequisites (see next section)
 4. **Features** (bulleted list): What the finished app does
-5. **Zoom product callout**: The out-of-the-box Zoom product for readers who don't need to build
+5. **Zoom product callout**: The out-of-the-box Zoom product for readers who don't need to build. Be explicit about when to use native vs. build custom (e.g., "Build custom when you need [specific customizations]").
 6. **Transition** (one sentence): Bridge to the Architecture section
 
 ### Filled example
@@ -122,7 +131,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 - Competitor mention detection with sentiment
 - Commitment and next-step capture
 
-If you'd rather buy than build, Zoom offers [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities.
+If you'd rather buy than build, Zoom offers [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities. Build custom when you need tighter integration with your CRM, custom qualification criteria, or a tailored coaching experience for your sales methodology.
 
 Follow along as we walk through the architecture.
 ```
@@ -271,30 +280,142 @@ For centered images with sizing:
 
 ### Demo video (required)
 
-Every Blueprint must include a **short video showing the end result**. This can be simple.
+Every Blueprint must include a demo video. Duration: **30 seconds to 6 minutes**.
 
-**Minimum bar (required):**
-- Screen recording of the working application
-- Shows the output/result, not the setup process
-- 30 seconds to 2 minutes
-- No face required
-- No voice required
-- No editing required beyond trimming start/end
+---
 
-A simple screen capture with QuickTime or Loom showing "here's what happens when you run it" is enough.
+#### Required: The Intro (30-60 seconds)
 
-**Nice to have (not required):**
-- Narrated walkthrough
-- Polished editing
-- Longer deep-dive video
+Every video should open with these 5 elements. The wording is flexible.
 
-Link demo videos in the intro after the images:
+**Element 1: Hook with your name**
+
+Introduce yourself and hint at what's coming.
+
+> "Hi, I'm Jen, and I want to show you something that changes how meeting intelligence works."
+
+> "Hey, I'm Ekaansh. In the next few minutes, I'll show you how to deploy a fully working telehealth app."
+
+> "I'm Ticorrian, and I'm going to walk you through real-time sentiment analysis for Zoom meetings."
+
+> "Hi, I'm Pranjal. Let me show you what happens when you connect Zoom Contact Center to your CRM."
+
+> "I'm Rehema, and I want to show you how AI services can transform customer support calls."
+
+**Element 2-3: Explain the technology**
+
+Give context on what Zoom capability powers this. Keep it simple.
+
+> "Zoom has something called RTMS - Realtime Media Streams. It gives developers access to live transcripts as people speak, with less than one second of latency."
+
+> "This uses Zoom's Video SDK, which lets you embed video calling directly into your own application - fully branded, fully customizable."
+
+> "The technology behind this is RTMS. It streams transcript data to your backend while the meeting is still happening - not after it ends."
+
+> "Zoom Contact Center has APIs that let you pull call data, agent status, and customer context into any system you build."
+
+> "This blueprint uses AI Companion APIs to generate summaries and action items automatically."
+
+**Element 4: Name your implementation**
+
+Introduce what you built and frame it as a starting point, not a finished product.
+
+> "What we built is called Arlo. It's a reference implementation that shows what's possible when you combine Surface Apps with real-time transcription and AI."
+
+> "This blueprint deploys a working telehealth app. It's not a product - it's a starting point you can customize for your own use case."
+
+> "I built a sentiment analysis pipeline that processes transcripts through TensorFlow in real time. The code is yours to extend."
+
+> "This is a CRM integration demo. It shows the pattern - you'll swap in your own CRM and business logic."
+
+> "What you're about to see is a working example. Fork it, change it, make it yours."
+
+> "This blueprint gives you the scaffolding. The architecture works out of the box, but the real value is what you build on top of it."
+
+**Element 5: Transition to demo**
+
+Signal that the intro is over and you're about to show it working.
+
+> "I'm going to show you how this works in a real meeting. Let's jump in."
+
+> "Let me show you what this looks like. I'll start by deploying the app."
+
+> "Here's what it looks like in action."
+
+> "Let's see it work. I'm going to start a meeting and walk you through what happens."
+
+> "Enough talking - let me show you."
+
+> "I'll walk you through the full flow, from deployment to the live demo."
+
+---
+
+#### Required: The Demo (1-4 minutes)
+
+Show the **output in action**. This is the "wow moment."
+
+- If your app has a live conversation element, show real dialogue (scripted is fine)
+- Narrate what's happening: *"Here we see competitor intel... we see next steps..."*
+- Focus on what the user sees, not the code that powers it
+
+**Optional:** Deployment walkthrough (like walking through Vercel setup). Helpful for showing the one-click deploy experience, but not required since blueprints have deploy buttons.
+
+---
+
+#### Required: The Outro (30-60 seconds)
+
+Wrap up with the value and point people to the code.
+
+> "That's the power of RTMS - real-time transcript data delivered as the conversation happens, not hours later."
+
+> "This is what's possible when you have live meeting data. What you build with it is up to you."
+
+> "The pattern here works for any use case - swap in your own model, your own UI, your own business logic."
+
+Then close with availability:
+
+> "The code is open source and available in the Blueprint. Fork it, extend it, make it yours. Thanks for watching."
+
+> "Everything you saw is in the repo. Deploy it, break it apart, learn from it. Thanks for watching."
+
+> "Links to the Blueprint and repo are below. Thanks for watching."
+
+---
+
+#### Nice-to-have (not required)
+
+- Animations, zoom-ins, transitions
+- Talking head segments
+- Lower thirds / labels
+- Background music
+
+These add polish but aren't blockers for submission.
+
+---
+
+#### Zoom Developers Bumper (required)
+
+Every video must include the **Zoom Developers bumper** (3 seconds) at the beginning and end. Jen will share the bumper file in the Blueprinters channel. She can add it for you during final upload if needed, but it's easy to add yourself in any video editor.
+
+---
+
+#### Video checklist
+
+- [ ] Zoom Developers bumper at the start (3 seconds)
+- [ ] Opens with: name + hook + tech explanation + what you built + transition
+- [ ] Shows the output/result in action (the "wow moment")
+- [ ] Closes with: value statement + where to find the code + thanks
+- [ ] Zoom Developers bumper at the end (3 seconds)
+- [ ] Duration: 30 seconds to 6 minutes (not including bumpers)
+- [ ] Audio is clear and consistent
+
+---
+
+**Format:** Upload to YouTube (unlisted is fine). Link in the intro after images:
 
 ```markdown
-[Watch a 2-minute demo](https://www.youtube.com/watch?v=...)
+[Watch the demo](https://www.youtube.com/watch?v=...)
 ```
-
-**Format:** Upload to YouTube (unlisted is fine) or host as a GIF/MP4. Don't embed large files in the repo.
 
 ---
 
@@ -486,24 +607,24 @@ These rules prevent hydration errors on the dev-docs site:
 
 ---
 
-## One-Click and Portable Deploy
+## Deploy Options
 
-### One-click deploy buttons (easy path)
+### Deploy buttons (easy path)
 
-Include deploy buttons for Render and Railway:
+Include deploy buttons where the stack supports it. **Vercel is preferred for Next.js/React apps.**
 
 ```markdown
 | Platform | What you get |
 |----------|--------------|
+| [**Deploy to Vercel**](https://vercel.com/new/clone?repository-url=https://github.com/zoom/your-repo) | Frontend, serverless functions, edge |
 | [**Deploy to Render**](https://render.com/deploy?repo=https://github.com/zoom/your-repo) | Backend, frontend, database |
 | [**Deploy to Railway**](https://railway.app/new?repo=https://github.com/zoom/your-repo) | Backend, frontend, database |
-
-Both platforms offer free tiers.
 ```
 
-For this to work, the sample repo needs:
-- `render.yaml` for Render
-- `railway.json` for Railway
+For this to work, the sample repo needs the appropriate config:
+- Vercel: `vercel.json` (optional, auto-detects Next.js)
+- Render: `render.yaml`
+- Railway: `railway.json`
 
 ### Portable Dockerfile (any platform)
 
