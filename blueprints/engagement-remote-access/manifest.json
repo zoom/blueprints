@@ -1,0 +1,117 @@
+{
+  "$schema": "https://marketplace.zoom.us/schemas/zoom-app-manifest.json",
+  "name": "Remote Access to Live Engagements",
+  "version": "1.0.0",
+  "description": "Real-time audio capture and live transcript monitoring for Zoom Contact Center voice engagements",
+  "appType": "generalApp",
+  "managementType": "admin",
+
+  "display_information": {
+    "short_name": "Remote Engagement Access",
+    "long_description": "An engagement dashboard that captures live engagement audio, transcript, and events for admin management and control. Stream audio to browsers with sub-second latency, display real-time transcripts, and track metrics including hold time, transfers, and conferences. Admins have remote control over when media stream capture starts and stops, with real time insight and analytics.",
+    "category": "Contact Center",
+    "support_url": "https://github.com/zoom/zcc-rtms-PWA_sample-js/issues",
+    "documentation_url": "https://github.com/zoom/zcc-rtms-PWA_sample-js#readme",
+    "privacy_policy_url": "https://your-domain.com/privacy"
+  },
+
+  "oauth_information": {
+    "redirect_uri": "https://your-domain.com/api/auth/callback",
+    "scopes": [
+      {
+        "scope": "contact_center:read:zcc_voice_audio",
+        "description": "Read real-time audio streams from Contact Center voice engagements via RTMS"
+      },
+      {
+        "scope": "contact_center:update:engagement_rtms_app_status",
+        "description": "Start and stop RTMS capture for specific Contact Center engagements"
+      },
+      {
+        "scope": "contact_center:read:zcc_voice_transcript",
+        "description": "Read real-time transcripts from Contact Center voice engagements"
+      }
+    ]
+  },
+
+  "features": {
+    "zoom_app_sdk": {
+      "enabled": true,
+      "capabilities": [
+        "getEngagementContext",
+        "getEngagementStatus",
+        "authorize",
+        "onAuthorized"
+      ]
+    },
+    "rtms": {
+      "enabled": true,
+      "auto_start": false,
+      "settings": {
+        "audio": {
+          "enabled": true,
+          "sample_rate": 16000,
+          "channels": 1,
+          "format": "L16",
+          "interval_ms": 20
+        },
+        "transcript": {
+          "enabled": true,
+          "language": "en-US",
+          "enable_language_detection": true
+        }
+      }
+    },
+    "webhooks": {
+      "event_subscriptions": [
+        {
+          "event": "contact_center.engagement_started",
+          "description": "Triggered when a Contact Center voice engagement begins - enables Start/Stop buttons in PWA"
+        },
+        {
+          "event": "contact_center.engagement_ended",
+          "description": "Triggered when a voice engagement ends - resets engagement state and counters"
+        },
+        {
+          "event": "contact_center.engagement_user_hold",
+          "description": "Triggered when agent places customer on hold - updates hold tracking counters"
+        },
+        {
+          "event": "contact_center.engagement_user_unhold",
+          "description": "Triggered when agent removes customer from hold - updates hold timer"
+        },
+        {
+          "event": "contact_center.voice_rtms_started",
+          "description": "Triggered when RTMS capture begins - establishes WebSocket connections to Zoom media servers"
+        },
+        {
+          "event": "contact_center.voice_rtms_stopped",
+          "description": "Triggered when RTMS capture ends - converts raw PCM to WAV files"
+        },
+        {
+          "event": "contact_center.engagement_transfer_initiated",
+          "description": "Triggered when agent initiates transfer - tracked in event counts on dashboard"
+        }
+      ],
+      "endpoint_url": "https://your-domain.com/api/webhooks/zoom"
+    }
+  },
+
+  "domain_allowlist": [
+    "https://your-domain.com",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://appssdk.zoom.us"
+  ],
+
+  "requirements": {
+    "rtms_access": true,
+    "contact_center_license": true,
+    "zoom_apps_sdk": "0.16.0",
+    "admin_managed": true
+  },
+
+  "contact_center": {
+    "queue_assignment_required": true,
+    "supervisor_initiated_capture": true
+  }
+}

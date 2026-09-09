@@ -6,11 +6,10 @@ description: >-
   RTMS audio, allow approved Zoom MCP tools, and return text and tool results.
 products: ["rtms", "mcp"]
 verticals: ["agents", "enterprise"]
-difficulty: "advanced"
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["voice-agent", "openai-realtime", "audio", "mcp", "zoom-meetings"]
@@ -18,7 +17,7 @@ seo_title: "Analyze Live Zoom Meeting Audio with OpenAI Realtime"
 seo_keywords: ["zoom meeting audio openai", "zoom rtms openai realtime", "zoom meeting listening agent"]
 partners: ["openai"]
 license_required: true
-license_note: "Requires RTMS for Zoom Meetings and access to the selected OpenAI Realtime model."
+license_note: "Requires a Zoom Developer Pack with RTMS audio access and access to the selected OpenAI Realtime model."
 stack: "Node.js · RTMS · OpenAI Realtime API · Zoom MCP"
 ---
 
@@ -30,7 +29,7 @@ The current implementation listens to speech and returns text and tool results. 
 
 **What you'll need:**
 
-- Audio access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio access
 - A backend that can maintain RTMS and OpenAI Realtime WebSocket sessions
 - Access to an [OpenAI Realtime model](https://developers.openai.com/api/docs/guides/realtime)
 - A user-authorized Zoom OAuth token when Zoom MCP tools are enabled
@@ -47,6 +46,13 @@ The current implementation listens to speech and returns text and tool results. 
 It does not send text to a user interface or play assistant audio into the meeting.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+The reference implementation reports the OpenAI Realtime session, text
+responses, approved Zoom MCP tool calls, and bounded usage metadata through
+server logs.
+
 
 ## Architecture
 
@@ -247,15 +253,26 @@ Test people talking over each other, silence, interruptions, different accents, 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory is a candidate Zoom General App manifest and pre-configures a listening agent: RTMS audio scope, selected Zoom MCP scopes, an OAuth callback placeholder, and RTMS lifecycle subscriptions. Import it when creating the app, removing unused scopes and replacing `YOUR_DOMAIN` first.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures a listening agent: the RTMS audio scope, selected Zoom MCP scopes, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Remove unused scopes and replace `your-development-domain` and `your-production-domain` before importing it.
 
 ### RTMS scope
 
 - `meeting:read:meeting_audio`
 
-### Optional MCP scopes
+### MCP scopes
 
 The manifest lists the granular scopes used by the reference implementation's full default tool allowlist. Remove scopes for tools you disable. Read-only meeting, recording, and Zoom Docs scopes should stay separate from `docs:write:import`.
+
+| Scope | Default tool use |
+| --- | --- |
+| `meeting:read:search` | `search_meetings` |
+| `meeting:read:assets` | `get_meeting_assets` |
+| `cloud_recording:read:list_user_recordings` | `recordings_list` |
+| `cloud_recording:read:content` | `get_recording_resource` |
+| `docs:read:export` | `get_file_content` |
+| `docs:write:import` | `create_new_file_with_markdown` |
+
+The `search_zoom` tool searches more than one Zoom product. Its additional scope requirements depend on the entity types enabled for the deployment and are not guessed in this manifest. Add only the entity-specific scopes returned by Marketplace or the live MCP authorization error, or remove `search_zoom` from `ZOOM_MCP_ALLOWED_TOOLS`.
 
 ### Event subscriptions
 

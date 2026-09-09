@@ -6,18 +6,17 @@ description: >-
   RTMS media to a commercial or customer-hosted model and show cues in a Zoom App.
 products: ["rtms", "zoom-apps"]
 verticals: ["enterprise", "finance"]
-difficulty: "advanced"
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
 seo_title: "Detect Audio and Video Deepfakes in Zoom Meetings"
 seo_keywords: ["zoom deepfake detection", "meeting deepfake detection", "live audio video fraud detection"]
 license_required: true
-license_note: "Requires RTMS and a Zoom App configured for the in-meeting experience."
+license_note: "Requires a Zoom Developer Pack with RTMS access and an in-meeting Zoom App."
 stack: "Zoom Apps SDK · Node.js · RTMS · Customer inference service · HLS"
 ---
 
@@ -29,7 +28,7 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 
 **What you'll need:**
 
-- Audio and video access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio and video access
 - A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) for the in-meeting review experience
 - A commercial detection service or customer-hosted audio and video models
 - FFmpeg and temporary media storage on the backend
@@ -44,6 +43,12 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 - Keep final decisions within the approved fraud-review policy.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+The in-meeting Zoom App shows the selected participant, separate audio and
+video service states, and the latest normalized inference result.
+
 
 ## Architecture
 
@@ -250,7 +255,7 @@ Choose the production threshold from those test results and your organization's 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory is a candidate Zoom App manifest and pre-configures the in-meeting review: Zoom App, audio, and video scopes plus RTMS lifecycle subscriptions. Import it when creating the app, replacing `YOUR_DOMAIN` first. It cannot encode the complete organizational approval, Zoom App capability configuration, inference-provider contract, or model-risk policy.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the in-meeting review: Zoom App, audio, and video scopes; the SDK APIs used by the frontend; domain placeholders; and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it. The manifest cannot encode the complete organizational approval, inference-provider contract, or model-risk policy.
 
 ### Scopes
 
@@ -265,7 +270,7 @@ The [`manifest.json`](manifest.json) in this directory is a candidate Zoom App m
 
 ### Zoom Apps configuration
 
-Enable the SDK capabilities used by the frontend and allow the app domain plus `https://appssdk.zoom.us/`. The manifest is a starting point; Marketplace capability and domain settings require separate verification.
+Enable the SDK capabilities used by the frontend and allow the app domain plus `https://appssdk.zoom.us/`. The configured APIs are `getSupportedJsApis`, `getAppContext`, `getMeetingContext`, `getMeetingUUID`, `getMeetingParticipants`, `getRunningContext`, `getUserContext`, `onRTMSStatusChange`, `startRTMS`, `stopRTMS`, `showNotification`, `onParticipantChange`, and `clearWebView`. Marketplace capability and domain settings still require verification after import.
 
 The app owner must verify the current Marketplace schema, exact scopes, in-client APIs, redirect and webhook URLs, and domain allowlist. Security, privacy, legal, and AI-risk reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before publication or production deployment.
 
