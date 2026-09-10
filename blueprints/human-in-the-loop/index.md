@@ -4,21 +4,41 @@ slug: "human-in-the-loop"        # MUST match this directory's name
 description: >-
   A Zoom Workplace agent that turns meeting context into suggested follow-up actions, while keeping a human in control before anything gets executed.
 products: ["rtms","zoom-apps","team-chat"]
-partners: ["openai"]                    
+partners: ["anthropic", "openai"]
+license_required: false
+stack: "Node · Express · NextJS · Oracle "                   
 solution_types: ["real-time-analysis", "agent-automation"]
 verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
-difficulty: "intermediate"         # beginner | intermediate | advanced
 estimated_time: "2-4 hours"        
 author: "Donte"
 status: "draft"                    # draft | review | published
-updated: 2026-08-04                # YYYY-MM-DD, bump on every edit
+updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom mcp server"]
 ---
 
-## Problem Statement
+Build a workplace agent that uses Zoom meeting and chat context to recommend follow-up actions without removing human oversight. This guide shows developers how to build an agentic workflow that observes what happened, recommends the next steps, requests approval, and takes action only after approval is provided.
 
-AI agents are only useful when they have the right context and the right guardrails. This guide explores how Zoom meeting, chat, and workflow context can help developers build agentic experiences that observe what happened, recommend next steps, ask for approval, and then take action.
+
+**What you'll need:**
+
+* [RTMS access](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer)). RTMS requires a paid Zoom Workplace plan with the appropriate entitlement.
+* A [Zoom Developer Account](https://developers.zoom.us) and a **General OAuth App** created in the [Zoom App Marketplace](https://marketplace.zoom.us/).
+* A backend that can receive webhooks, join the RTMS media stream, store meeting context, and call an LLM.
+* A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) that displays the dashboard and provides in-meeting controls for starting and stopping RTMS.
+* An [OpenAI API key](https://platform.openai.com/api-keys) for task extraction, meeting summaries, and Zoom Doc creation through the Responses API and [Zoom MCP](https://mcp.zoom.us).
+* An [Anthropic API key](https://console.anthropic.com/) for the Zoom Chat Research Assistant bot.
+* [ngrok](https://ngrok.com). A free static domain is recommended so your Marketplace URLs do not change each time ngrok restarts.
+
+## Features:
+
+* **Live transcription (Observe):** Stream meeting transcripts through RTMS using the `meeting.rtms_started` and `meeting.rtms_stopped` lifecycle webhooks. Transcript segments are sent to the browser over server-sent events (SSE) for a live in-meeting view.
+* **AI task extraction (Recommend):** After the meeting ends, OpenAI analyzes the full transcript and uses Structured Outputs with a strict JSON Schema to return predictable task suggestions.
+* **Meeting intelligence:** Generate a meeting summary and identify decisions, risks, and blockers alongside the suggested tasks.
+* **Human-in-the-loop approvals (Approve):** Each extracted task begins as a `pending` suggestion. The user can approve, edit, or reject it. Only approved suggestions become tasks.
+* **AI Actions: Follow-up Docs (Execute):** When the meeting contains enough useful context, the app recommends creating a follow-up document. The user can preview and edit the AI-generated Markdown before approving it. The backend then uses the OpenAI Responses API with **Zoom MCP** as a remote tool source to create a Zoom Doc. This action requires the `docs:write:import` scope.
+* **Share to Zoom Chat:** Post the created Zoom Doc link to the current chat using the Zoom Apps SDK’s `sendMessageToChat` API. This requires the `imchat:userapp` scope and must run inside the Zoom client.
+
 
 ## Architecture
 
@@ -47,7 +67,7 @@ AI never mutates application state or calls a Zoom execution surface on its own.
 
 ---
 
-## 1. Observe meeting context with RTMS
+## Observe meeting context with RTMS
 
 The workflow starts when Zoom fires the `meeting.rtms_started` webhook.
 
@@ -145,7 +165,7 @@ This keeps the in-progress meeting view updated while RTMS continues collecting 
 
 ---
 
-## 2. Let Zoom lifecycle events control processing
+## Let Zoom lifecycle events control processing
 
 RTMS events also determine when processing begins and ends.
 
@@ -190,7 +210,7 @@ There is no separate timer or manual "run analysis" step.
 
 ---
 
-## 3. Analyze context and generate recommendations
+## Analyze context and generate recommendations
 
 The recommendation pipeline has two layers.
 
@@ -198,7 +218,7 @@ AI interprets language and produces structured signals.
 
 Application logic decides whether those signals justify recommending an action.
 
-### 3a. Turn the transcript into structured suggestions
+### Turn the transcript into structured suggestions
 
 The completed transcript is sent to an analyzer using OpenAI Structured Outputs with JSON Schema and `strict: true`.
 
@@ -251,7 +271,7 @@ status: 'pending'
 
 That status is important. AI extraction creates something the user can review before execution is possible.
 
-### 3b. Decide when to surface an action
+### Decide when to surface an action
 
 A rule-based recommender looks at the meeting's accumulated signals and decides whether the UI should recommend a follow-up action.
 
@@ -290,7 +310,7 @@ The reasons array travels with the recommendation so the user can see what cause
 
 ---
 
-## 4. Put execution behind an approval boundary
+## Put execution behind an approval boundary
 
 Previewing an action and executing an action use separate API operations.
 
@@ -338,7 +358,7 @@ A pending suggestion becomes an executable task only after the approval endpoint
 
 ---
 
-## 5. Execute approved work with Zoom Workplace MCP
+## Execute approved work with Zoom Workplace MCP
 
 After the user approves the Markdown, the backend creates a Zoom Doc through Zoom Workplace MCP.
 
@@ -391,7 +411,7 @@ After execution, the backend parses the returned `file_id` and `file_link`, asso
 
 ---
 
-## 6. Keep the workflow inside Zoom with the Apps SDK
+## Keep the workflow inside Zoom with the Apps SDK
 
 The dashboard runs as a Zoom App inside the Zoom client.
 
@@ -432,7 +452,7 @@ with a `dialog.link`, which opens the Next.js application in a Zoom webview.
 
 `dashboardUrl` comes from `getWebviewUrl()`.
 
-The helper accepts HTTPS URLs because Zoom requires HTTPS for `dialog.link`. If it cannot produce one, it returns `null` and the card builder leaves the button out instead of sending an invalid card.
+The helper accepts only HTTPS URLs because Zoom’s in-client browser requires `dialog.link`. If it cannot produce one, it returns `null` and the card builder leaves the button out instead of sending an invalid card. 
 
 ### `backend/utils/zoom/zoom-app-urls.js`
 
@@ -468,9 +488,9 @@ function deriveKind(
 
 The Zoom Chat bot and Apps SDK have separate jobs here.
 
-The card launches the webview from chat.
+* The card launches the webview from chat.
 
-The Apps SDK runs inside that webview and handles client context, authorization, and sharing.
+* The Apps SDK runs inside that webview and handles client context, authorization, and sharing.
 
 ### Handle authorization inside the Zoom client
 
