@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "$schema": "https://marketplace.zoom.us/schemas/zoom-app-manifest.json",
   "name": "Remote Access to Live Engagements",
   "version": "1.0.0",
@@ -115,11 +114,4 @@
     "queue_assignment_required": true,
     "supervisor_initiated_capture": true
   }
-=======
-  "name": "your-app-name",
-  "description": "One-line description of the Zoom app this blueprint creates.",
-  "scopes": ["meeting:read"],
-  "redirect_url": "https://example.com/auth/callback",
-  "event_subscriptions": []
->>>>>>> cc069e5 (rehema WIP)
 }
