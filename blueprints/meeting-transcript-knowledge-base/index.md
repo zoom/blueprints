@@ -10,7 +10,7 @@ verticals: ["enterprise"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "knowledge-base", "search", "summarization", "compliance", "zoom-meetings"]
@@ -308,6 +308,12 @@ docker build -f transcript/save_transcript_js/Dockerfile -t rtms-save-transcript
 ```
 
 Mount persistent storage at `/app/recordings` when running the container. The Dockerfile packages the capture service; it does not create cloud storage, a search index, model workers, policy infrastructure, or Marketplace configuration.
+
+#### Hosted deployment
+
+The source repository includes a [Render Blueprint and Railway service configuration](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js). The Render definition creates the Docker service and a 10 GB persistent disk at `/app/recordings`. Railway requires a volume mounted at the same path. Both deployments run the transcript capture and local persistence layer only. They do not provision Azure AI Search, Amazon OpenSearch Service, object storage, summary workers, or compliance-policy infrastructure.
+
+Supply the Zoom credentials and public webhook domain. Verify restart recovery against the mounted volume before publishing a one-click deployment button.
 
 #### 10. Test a complete meeting
 
