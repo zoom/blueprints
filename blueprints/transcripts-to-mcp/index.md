@@ -430,7 +430,7 @@ Start RTMS in a test meeting and verify that the audit log records a successful 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `example.ngrok.app` and `blueprint.example.ngrok.app` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
 
 ### Scopes
 
