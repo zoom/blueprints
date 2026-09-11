@@ -9,7 +9,7 @@ verticals: ["enterprise", "finance"]
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js"
 solution_types: ["media-processing", "data-integration", "compliance-auditing"]
 tags: ["archive", "amazon-s3", "audio", "video", "zoom-meetings"]
@@ -225,7 +225,13 @@ Use a private temporary folder with a size limit. Do not put participant names i
 node index.js
 ```
 
-Expose the configured webhook path over HTTPS. The repository does not include a tested CloudFormation, Terraform, or one-click deployment template for this reference implementation. Your deployment must provide FFmpeg, persistent temporary storage, a public webhook domain, AWS identity, and restart handling.
+Expose the configured webhook path over HTTPS.
+
+#### Hosted deployment
+
+The source repository includes a [Render Blueprint and Railway service configuration](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js). The Docker image includes FFmpeg. The Render definition also creates a 20 GB disk for unfinished media and durable upload-queue state. Railway requires a volume mounted at the path declared by its service configuration.
+
+Supply the Zoom credentials, public webhook domain, S3 bucket and region, and an AWS identity limited to the required bucket operations. Test container replacement while an upload is pending before publishing a one-click deployment button. These definitions deploy the application and working storage; they do not create the S3 bucket, keys, lifecycle rules, or IAM policies.
 
 #### 7. Verify the archive workflow
 
