@@ -224,7 +224,7 @@ DEEPFAKE_REAL_THRESHOLD=YOUR_APPROVED_VIDEO_THRESHOLD
 AUDIO_DEEPFAKE_SERVICE_URL=https://YOUR_INFERENCE_DOMAIN.example.com/audio/classify
 AUDIO_DEEPFAKE_REAL_THRESHOLD=YOUR_APPROVED_AUDIO_THRESHOLD
 PORT=5050
-PUBLIC_BASE_URL=https://YOUR-NGROK-URL
+PUBLIC_BASE_URL=https://example.ngrok.app
 ```
 
 Do not send names or email addresses to the detection provider unless the service requires them and the data use is approved. Use a private internal participant ID instead when possible.
@@ -259,7 +259,7 @@ Choose the production threshold from those test results and your organization's 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the in-meeting review: Zoom App, audio, and video scopes; the SDK APIs used by the frontend; domain placeholders; and RTMS lifecycle subscriptions. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` before importing it. The manifest cannot encode the complete organizational approval, inference-provider contract, or model-risk policy.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the in-meeting review: Zoom App, audio, and video scopes; the SDK APIs used by the frontend; domain placeholders; and RTMS lifecycle subscriptions. Replace `example.ngrok.app` and `blueprint.example.ngrok.app` before importing it. The manifest cannot encode the complete organizational approval, inference-provider contract, or model-risk policy.
 
 ### Scopes
 
