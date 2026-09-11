@@ -1,5 +1,5 @@
 ---
-title: "Build a Knowledge Base from Zoom Meeting Transcripts"
+title: "Capture Zoom Meeting Transcripts for a Knowledge Base"
 slug: "meeting-transcript-knowledge-base"
 description: >-
   Build a knowledge-base foundation from live Zoom Meeting
@@ -14,7 +14,7 @@ updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "knowledge-base", "search", "summarization", "compliance", "zoom-meetings"]
-seo_title: "Build a Knowledge Base from Zoom Meeting Transcripts"
+seo_title: "Capture Zoom Meeting Transcripts for a Knowledge Base"
 seo_keywords: ["zoom meeting knowledge base", "search zoom meeting transcripts", "zoom transcript summarization", "zoom meeting compliance review"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
@@ -44,9 +44,9 @@ The reference implementation stops at durable local files. This Blueprint shows 
 - Publish completed transcript records to customer-managed storage and indexing services through an adapter you add.
 - Preserve meeting, speaker, timestamp, tenant, and policy metadata for search, summarization, review, and compliance workflows.
 
-Follow along as we walk through the architecture.
+If built-in meeting summaries meet your needs, [Zoom AI Companion](https://zoom.us/ai) provides them without a custom transcript pipeline. Build this workflow when you need customer-controlled records, search infrastructure, retention, or review policy.
 
-## Features
+Follow along as we walk through the architecture.
 
 These screenshots show the reference implementation receiving a transcript and writing the generated subtitle files. The search, summary, review, and compliance interfaces described later require customer-specific integrations and are not shown here.
 
@@ -128,7 +128,7 @@ Create a General App in the [Zoom App Marketplace](https://marketplace.zoom.us/)
 | --- | --- |
 | Scope | `meeting:read:meeting_transcript` |
 | Events | `meeting.rtms_started`, `meeting.rtms_stopped` |
-| Webhook URL | `https://YOUR_DOMAIN.example.com/webhook` |
+| Webhook URL | `https://YOUR-NGROK-URL/webhook` |
 
 Enable RTMS for the account and meeting. Use `manifest.json` as a starting point and verify it in the target Marketplace account.
 
@@ -311,7 +311,7 @@ Mount persistent storage at `/app/recordings` when running the container. The Do
 
 #### Hosted deployment
 
-The source repository includes a [Render Blueprint and Railway service configuration](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js). The Render definition creates the Docker service and a 10 GB persistent disk at `/app/recordings`. Railway requires a volume mounted at the same path. Both deployments run the transcript capture and local persistence layer only. They do not provision Azure AI Search, Amazon OpenSearch Service, object storage, summary workers, or compliance-policy infrastructure.
+[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configuration. The Render definition creates the Docker service and a 10 GB persistent disk at `/app/recordings`. Railway requires a volume mounted at the same path. Both deployments run the transcript capture and local persistence layer only. They do not provision Azure AI Search, Amazon OpenSearch Service, object storage, summary workers, or compliance-policy infrastructure. Treat these definitions as pending until the source PR is merged and tested.
 
 Supply the Zoom credentials and public webhook domain. Verify restart recovery against the mounted volume before publishing a one-click deployment button.
 
@@ -333,7 +333,7 @@ Run the service and start RTMS in two overlapping test meetings. Stop RTMS and i
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript capture: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` with HTTPS domains controlled by the app owner before importing it.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript capture: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` with HTTPS domains controlled by the app owner before importing it.
 
 ### Scopes
 
