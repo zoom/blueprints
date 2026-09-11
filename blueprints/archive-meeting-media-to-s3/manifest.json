@@ -6,11 +6,11 @@
   },
   "oauth_information": {
     "usage": "USER_OPERATION",
-    "development_redirect_uri": "https://your-development-domain.example.com/oauth/callback",
-    "production_redirect_uri": "https://your-production-domain.example.com/oauth/callback",
+    "development_redirect_uri": "https://YOUR-NGROK-URL/oauth/callback",
+    "production_redirect_uri": "https://YOUR-PRODUCTION-URL/oauth/callback",
     "oauth_allow_list": [
-      "https://your-development-domain.example.com",
-      "https://your-production-domain.example.com"
+      "https://YOUR-NGROK-URL",
+      "https://YOUR-PRODUCTION-URL"
     ],
     "strict_mode": true,
     "subdomain_strict_mode": false,
@@ -39,8 +39,8 @@
             "meeting.rtms_started",
             "meeting.rtms_stopped"
           ],
-          "development_webhook_url": "https://your-development-domain.example.com/webhook",
-          "production_webhook_url": "https://your-production-domain.example.com/webhook"
+          "development_webhook_url": "https://YOUR-NGROK-URL/webhook",
+          "production_webhook_url": "https://YOUR-PRODUCTION-URL/webhook"
         }
       ]
     }
