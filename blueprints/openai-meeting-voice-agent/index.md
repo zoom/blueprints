@@ -1,81 +1,78 @@
 ---
-title: "Analyze Zoom Meeting Audio with OpenAI Realtime"
+title: "OpenAI Voice Agent in Zoom Meetings"
 slug: "openai-meeting-voice-agent"
 description: >-
-  Build a listening agent for Zoom Meetings with the OpenAI Realtime API. Stream
-  RTMS audio, allow approved Zoom MCP tools, and return text and tool results.
-products: ["rtms", "mcp"]
+  Build a voice agent that listens to Zoom Meeting audio, uses approved Zoom MCP
+  tools, and plays OpenAI Realtime responses inside a Zoom App.
+products: ["rtms", "zoom-apps", "mcp"]
 verticals: ["agents", "enterprise"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-11
-github_repo: "https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api"
+github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["voice-agent", "openai-realtime", "audio", "mcp", "zoom-meetings"]
-seo_title: "Analyze Live Zoom Meeting Audio with OpenAI Realtime"
-seo_keywords: ["zoom meeting audio openai", "zoom rtms openai realtime", "zoom meeting listening agent"]
+seo_title: "Build an OpenAI Voice Agent in Zoom Meetings"
+seo_keywords: ["zoom meeting voice agent", "zoom rtms openai realtime", "openai voice agent zoom app"]
 partners: ["openai"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS audio access and access to the selected OpenAI Realtime model."
-stack: "Node.js · RTMS · OpenAI Realtime API · Zoom MCP"
+stack: "Zoom Apps SDK · Node.js · RTMS · OpenAI Realtime API · Zoom MCP · Web Audio"
 ---
 
-Build a listening agent that understands spoken requests in a Zoom Meeting and can search approved Zoom content while the conversation is active. It streams meeting audio to OpenAI Realtime and returns text and tool results without waiting for a recording.
+Build a voice agent that understands spoken requests in a Zoom Meeting, uses approved Zoom MCP tools, and plays OpenAI Realtime responses inside a Zoom App while the meeting is active.
 
-This Blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The reference implementation changes the audio into the format OpenAI expects, sends it to the realtime model, and lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/).
+This Blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The reference implementation converts the audio, lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/), and streams the model's PCM audio to the Zoom App over WebSocket.
 
-The current implementation listens to speech and returns text and tool results. It cannot play the assistant's voice back into the Zoom Meeting. A two-way voice agent still needs an approved way to join or speak in the meeting. Until then, this remains a listening implementation.
+The assistant audio plays inside the Zoom App webview for the person running the app. It is not injected as a participant microphone track, so other participants hear it only if the local meeting setup captures that playback. Use headphones while testing to avoid echo and self-interruption.
 
 **What you'll need:**
 
 - A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio access
-- A backend that can maintain RTMS and OpenAI Realtime WebSocket sessions
+- A Zoom App frontend and backend that can maintain RTMS, OpenAI Realtime, and browser WebSocket sessions
 - Access to an [OpenAI Realtime model](https://developers.openai.com/api/docs/guides/realtime)
 - A user-authorized Zoom OAuth token when Zoom MCP tools are enabled
-- A destination for text and tool results, if server logs are not enough
+- Headphones for testing browser playback without microphone echo
 
 **Features:**
 
 - Receive mixed meeting audio through RTMS.
 - Resample 48 kHz L16 audio to 24 kHz PCM for OpenAI Realtime.
-- Detect speech turns and produce text responses.
+- Detect speech turns and produce spoken and text responses.
 - Allowlist Zoom MCP search, retrieval, and Zoom Docs tools.
-- Log model usage, tool calls, tool results, and text responses.
+- Play 24 kHz PCM responses in the Zoom App and stop playback when the user interrupts.
+- Keep the model conversation aligned with what the user heard by sending playback truncation metadata.
 
-It does not send text to a user interface or play assistant audio into the meeting.
+If built-in meeting assistance meets your needs, [Zoom AI Companion](https://zoom.us/ai) provides native in-meeting capabilities without a custom voice pipeline. Build this agent when you need a custom voice, prompt, tool policy, or user experience.
 
 Follow along as we walk through the architecture.
 
-## Features
-
-The reference implementation reports the OpenAI Realtime session, text
-responses, approved Zoom MCP tool calls, and bounded usage metadata through
-server logs.
+The reference implementation displays connection state and spoken response text in the Zoom App while playing the assistant audio through Web Audio.
 
 
 ## Architecture
 
 ### The reusable pattern
 
-Your backend receives mixed meeting audio through RTMS, converts it to the model's required format, and keeps one model session associated with each meeting stream. The model may call a small set of tools using a user-authorized token. A separate response adapter decides where text or approved actions appear.
+Your backend receives mixed meeting audio through RTMS, converts it to the model's required format, and keeps one model session associated with each meeting stream. The model may call a small set of tools using a user-authorized token. Output audio and transcript events cross a separate WebSocket to the Zoom App, where Web Audio schedules playback.
 
 ### How the reference implementation handles it
 
-The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api) uses RTMSManager and a server-to-server WebSocket connection to OpenAI. Its default model is [`gpt-realtime-2`](https://developers.openai.com/api/docs/models/gpt-realtime-2), with text-only output and optional input transcription. It registers the Zoom MCP server as a remote tool and writes results to the server console.
+The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js) uses RTMSManager, the Zoom Apps SDK, Web Audio, and a server-to-server WebSocket connection to OpenAI. Its default model is [`gpt-realtime-2`](https://developers.openai.com/api/docs/models/gpt-realtime-2), with audio output and optional input transcription. It registers the Zoom MCP server as a remote tool and shows the assistant transcript in the app.
 
-The model supports audio output, but the reference implementation requests text and has no path for assistant audio to enter the Zoom Meeting. Treat spoken output as separate work that needs a supported Zoom design and architecture review.
+When OpenAI detects new speech, the backend tells the browser to stop queued playback and sends `conversation.item.truncate` with the last played position. This keeps interruption responsive and aligns model context with what the user actually heard.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|Mixed audio via RTMS| B[Node.js audio bridge]
     B -->|Resample 48 kHz to 24 kHz PCM| C[OpenAI Realtime session]
     C -->|Approved MCP tool call| D[Zoom hosted MCP server]
     D -->|Authorized meeting or document result| C
-    C -->|Text and tool results| E[Server console in reference implementation]
-    E -.->|Customer extension| G[Agent UI or workflow]
-    C -.->|Optional synthesized audio| F[Approved meeting audio output adapter]
-    F -.->|Not implemented by reference implementation| A
+    C -->|24 kHz PCM and response text| E[Frontend WebSocket]
+    E -->|Queued Web Audio playback| F[Zoom App webview]
+    F -->|Playback interruption position| E
+    E -->|conversation.item.truncate| C
 ```
 
 ### Agent integration map
@@ -90,17 +87,16 @@ Check what your application already provides before adding components:
 | Audio conversion | Existing media pipeline | 48 kHz L16 to 24 kHz PCM conversion |
 | Realtime client | Existing OpenAI connection manager | One server-side session per RTMS stream |
 | MCP authorization | Existing user OAuth and policy layer | Tool allowlist and approval boundary |
-| Result delivery | Existing UI or workflow adapter | Text and tool-result destination |
+| Zoom App frontend | Existing in-meeting app | RTMS controls, status, and assistant transcript UI |
+| Audio playback | Existing browser audio layer | PCM queue, Web Audio scheduling, and interruption handling |
 
 ## Implementation Guide
 
 ### Part 1: Build the live audio bridge
 
-#### 1. Start with the supported reference boundary
+#### 1. Keep one voice session per stream
 
-Start with voice input, text output, and tool calls. Test those parts before adding spoken replies. Do not describe the app as a two-way voice agent until an approved audio-output path works in a real meeting.
-
-[`openaiRealtime.js`](https://github.com/zoom/rtms-samples/blob/main/audio/send_audio_to_openai_realtime_api/openaiRealtime.js) keeps buffered source audio with the meeting session, slices fixed-size chunks, resamples each chunk, and sends it to the matching OpenAI session. The same meeting-to-session boundary is required if the audio transport or model provider changes.
+[`openaiRealtime.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/openaiRealtime.js) keeps buffered source audio with the meeting session, slices fixed-size chunks, resamples each chunk, and sends it to the matching OpenAI session. It also routes OpenAI audio deltas and transcript events to the frontend callback for that session.
 
 **Input:** Timestamped 48 kHz L16 mixed audio associated with an RTMS stream
 
@@ -116,10 +112,11 @@ Start with voice input, text output, and tool calls. Test those parts before add
 
 #### 2. Create the Zoom app
 
-Create a Zoom General App in the [Zoom App Marketplace](https://marketplace.zoom.us/) with permission to read RTMS audio. Add only the user permissions needed by the Zoom MCP tools you plan to use.
+Create a Zoom General App in the [Zoom App Marketplace](https://marketplace.zoom.us/) with Zoom Apps SDK access and permission to read RTMS audio. Add only the user permissions needed by the Zoom MCP tools you plan to use.
 
 | Capability | Candidate scopes |
 | --- | --- |
+| In-meeting Zoom App | `zoomapp:inmeeting` |
 | Live meeting audio | `meeting:read:meeting_audio` |
 | Search meetings | `meeting:read:search` |
 | Read meeting assets | `meeting:read:assets` |
@@ -155,24 +152,25 @@ Set a maximum queue size. If the service falls behind, drop old audio instead of
 
 ### Part 2: Configure the agent and tools
 
-#### 4. Configure turns and response modalities
+#### 4. Configure turns, voice, and playback
 
-The reference implementation uses server-side voice detection with a 600 ms silence duration, 300 ms prefix padding, and text-only output. Treat those values as reference settings. Test them with the languages, microphones, overlap, and room noise expected in your meetings.
+The reference implementation uses server-side voice detection with a 500 ms silence duration, 300 ms prefix padding, and audio output. Treat those values as reference settings. Test them with the languages, microphones, overlap, and room noise expected in your meetings.
 
-These values are source-backed in `buildSessionUpdateEvent()`, which sets `output_modalities: ['text']`, 24 kHz PCM input, server VAD, and automatic response creation. The configured model defaults to `gpt-realtime-2`. Official OpenAI documentation confirms that this model accepts and returns text and audio and supports tool use; this Blueprint describes only the modalities enabled by the linked code.
+These values are source-backed in `buildSessionUpdateEvent()`, which configures 24 kHz PCM input and output, server VAD, automatic response creation, interruption, and the selected voice. The configured model defaults to `gpt-realtime-2`.
 
 Make it clear when the agent is listening, and give participants a simple way to stop it.
 
-For a later spoken-answer test, turn on audio output in OpenAI and capture the returned audio. This proves that OpenAI can create speech. It still does not provide a supported way to play that speech in the Zoom Meeting.
+The browser queues PCM chunks through Web Audio. When new speech interrupts a response, stop active and queued audio immediately, report the last played position, and truncate the corresponding model item.
 
 **Input:** Realtime session configuration, converted audio, and turn-detection settings
 
-**Output:** Text response events and optional tool requests for the matching meeting stream
+**Output:** Audio response chunks, response transcript events, and optional tool requests for the matching meeting stream
 
 **Invariants:**
 
 - The configured input format matches the bytes sent by the audio bridge
-- Output remains text-only until a supported meeting audio-output path is implemented
+- Output audio is routed only to the Zoom App session associated with the stream
+- Browser playback never claims to be a participant microphone track
 - Turn settings are tested for the expected languages, overlap, and room noise
 - Session errors close or replace only the affected stream session
 - Model name, duration, rate, and spend limits come from deployment configuration
@@ -197,11 +195,9 @@ Do not blindly trust tool descriptions, inputs, or results. Check IDs and permis
 - Write tools require the selected approval policy
 - Token expiry or tool failure does not interrupt RTMS audio ingestion
 
-#### 6. Design the response experience
+#### 6. Deliver and interrupt spoken responses
 
-The reference implementation logs text and tool results. Add a response adapter if the customer needs a dashboard, CRM, automation, or separate Zoom App. If the agent must speak in the meeting, choose the design with Zoom product and security owners. Decide how the agent appears, how it tells people what it is, how it avoids echo, how people interrupt it, what it can do, and what happens when it fails.
-
-Do not call the agent complete by using an undocumented or unsupported audio trick.
+[`frontendWss.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/frontendWss.js) carries assistant audio and status events to the app. [`public/audio-client.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/public/audio-client.js) schedules PCM chunks, clears them on interruption, and reports the played position. Keep playback scoped to the intended app instance and stop it when RTMS or the frontend disconnects.
 
 ### Part 3: Run the reference implementation
 
@@ -209,7 +205,7 @@ Do not call the agent complete by using an undocumented or unsupported audio tri
 
 ```bash
 git clone https://github.com/zoom/rtms-samples.git
-cd rtms-samples/audio/send_audio_to_openai_realtime_api
+cd rtms-samples/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js
 npm install
 cp .env.example .env
 ```
@@ -225,10 +221,11 @@ ZOOM_MCP_ALLOWED_TOOLS=search_meetings,get_meeting_assets
 ZOOM_MCP_REQUIRE_APPROVAL=never
 OPENAI_API_KEY=YOUR_OPENAI_API_KEY
 OPENAI_REALTIME_MODEL=gpt-realtime-2
+OPENAI_REALTIME_VOICE=marin
 AUDIO_SAMPLE_RATE=48000
 OPENAI_AUDIO_SAMPLE_RATE=24000
 PORT=5050
-WEBHOOK_PATH=/
+WEBHOOK_PATH=/webhook
 ```
 
 The Zoom MCP token acts for a user, so obtain it through the approved OAuth sign-in flow. Never log it or put it in browser code. Keep the allowed-tool list as small as the workflow permits. Then run:
@@ -241,9 +238,9 @@ Expose port `5050` over HTTPS and set the Marketplace event endpoint to the conf
 
 #### Hosted deployment
 
-The source repository includes a [Render Blueprint and Railway service configuration](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api). They build one public Docker service from the monorepo root, expose port `5050`, and use `/health` for deployment checks. Supply the Zoom and OpenAI credentials, webhook domain, and optional user-authorized Zoom MCP token.
+[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configuration for the Zoom App voice agent. They build one public Docker service from the monorepo root, expose port `5050`, and use `/health` for deployment checks. Supply the Zoom and OpenAI credentials, app domain, frontend WebSocket URL, and optional user-authorized Zoom MCP token. Treat these definitions as pending until the source PR is merged and tested.
 
-These definitions deploy the listening implementation. They do not add a user-facing response application or a supported path for assistant audio to enter the meeting. Test RTMS audio, OpenAI Realtime reconnection, MCP authorization, and webhook delivery before publishing a one-click deployment button.
+These definitions deploy the backend and Zoom App webview. Test RTMS audio, browser playback and interruption, OpenAI Realtime reconnection, MCP authorization, and webhook delivery before publishing a one-click deployment button.
 
 #### 8. Test end to end
 
@@ -259,7 +256,7 @@ Test people talking over each other, silence, interruptions, different accents, 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures a listening agent: the RTMS audio scope, selected Zoom MCP scopes, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Remove unused scopes and replace `your-development-domain` and `your-production-domain` before importing it.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the Zoom App APIs, RTMS audio scope, selected Zoom MCP scopes, development and production URL placeholders, and RTMS lifecycle subscriptions. Remove unused scopes and replace the URL placeholders before importing it.
 
 ### RTMS scope
 
@@ -285,19 +282,20 @@ The `search_zoom` tool searches more than one Zoom product. Its additional scope
 - `meeting.rtms_started`
 - `meeting.rtms_stopped`
 
-The app owner must verify the current Zoom Marketplace schema, the app type and OAuth flow, each granular scope, endpoint validation, and the hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model and data controls. Any mechanism intended to deliver synthesized audio into a Zoom Meeting requires Zoom architecture approval because that path is not implemented by the linked reference implementation.
+The app owner must verify the current Zoom Marketplace schema, the app type and OAuth flow, each granular scope, Zoom Apps SDK capability, endpoint validation, and hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model, voice, and data controls. The browser playback path must not be represented as participant audio injection.
 
 ## Acceptance Criteria
 
 - [ ] Invalid or stale Zoom webhook signatures are rejected before audio processing begins.
 - [ ] Each RTMS stream has its own audio buffer and OpenAI Realtime session.
 - [ ] 48 kHz L16 input is converted to the configured 24 kHz PCM format without unbounded buffering.
-- [ ] Speech produces a text response while the reference implementation remains text-only.
+- [ ] Speech produces response text and audible playback in the intended Zoom App webview.
+- [ ] New speech stops queued playback and truncates the model item at the reported playback position.
 - [ ] The model cannot call a Zoom MCP tool outside the configured allowlist.
 - [ ] Expired OAuth tokens, slow tools, and model disconnects do not close the RTMS stream unexpectedly.
 - [ ] Session, audio buffer, and token state is removed when a meeting stream ends.
 - [ ] Participant notice, provider data handling, tool permissions, rate limits, and spend limits match the target policy.
-- [ ] The implementation is not described as a two-way voice agent unless a supported meeting audio-output path is tested.
+- [ ] Documentation and UI explain that playback occurs in the Zoom App, not through a participant microphone track.
 
 ## Related Resources
 
@@ -305,4 +303,4 @@ The app owner must verify the current Zoom Marketplace schema, the app type and 
 - [OpenAI Realtime guide](https://developers.openai.com/api/docs/guides/realtime)
 - [GPT-Realtime-2 model reference](https://developers.openai.com/api/docs/models/gpt-realtime-2)
 - [Zoom MCP Server documentation](https://developers.zoom.us/docs/mcp/zoom-mcp-server/)
-- [Meeting-audio reference implementation](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api)
+- [Zoom App voice-agent reference implementation](https://github.com/zoom/rtms-samples/tree/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js)
