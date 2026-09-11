@@ -11,7 +11,7 @@ verticals: ["agents", "enterprise"]
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-03
+updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
@@ -396,7 +396,9 @@ docker build \
   -t zoom-rtms-mcp-client .
 ```
 
-The repository does not include Render, Railway, or Docker Compose configuration. Supply the two environment files, connect both containers through a private network, expose only the client webhook, and keep bearer authentication enabled.
+The repository includes a [Render Blueprint and Railway service configurations](https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client). The Render definition creates a public RTMS client and a private LLM router, connects them through Render's private network, and generates their shared bearer token. Railway requires two services configured from the repository root, one shared generated token, and a private router URL assigned to `LLM_MCP_SERVER_URL`.
+
+Supply the Zoom credentials, selected model-provider key, `MCP_SERVERS_JSON`, and each token variable referenced by that registry. Expose only the RTMS client. Publish a Railway template button after private networking, token sharing, provider calls, and MCP discovery have been tested in the Zoom-owned Railway workspace.
 
 #### Verify the services
 
