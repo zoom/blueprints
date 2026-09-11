@@ -54,8 +54,6 @@ If you prefer built-in meeting assistance, [Zoom AI Companion](https://zoom.us/a
 
 Follow along as we walk through the architecture.
 
-## Features
-
 The reference implementation reports RTMS transcript batching, environment-configured MCP server discovery, allowlisted tool calls, and responses through structured service logs. The screenshot shows a transcript asking for Zoom's stock price and the model response returned through the router with local content logging enabled.
 
 ![RTMS transcript request and model response in structured service logs](images/request-response-to-llm.png)
@@ -83,7 +81,7 @@ The [reference implementation](https://github.com/zoom/rtms-samples/tree/main/rt
 | Audit logging | Record request IDs, outcomes, durations, and safe error codes | Structured JSON logs in both services |
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
     Z[Zoom lifecycle webhook] -->|Authenticated start and stop events| B
     B -->|Five-second transcript batch| C[Private LLM router]
@@ -396,7 +394,7 @@ docker build \
   -t zoom-rtms-mcp-client .
 ```
 
-The repository includes a [Render Blueprint and Railway service configurations](https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client). The Render definition creates a public RTMS client and a private LLM router, connects them through Render's private network, and generates their shared bearer token. Railway requires two services configured from the repository root, one shared generated token, and a private router URL assigned to `LLM_MCP_SERVER_URL`.
+[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configurations. The Render definition creates a public RTMS client and a private LLM router, connects them through Render's private network, and generates their shared bearer token. Railway requires two services configured from the repository root, one shared generated token, and a private router URL assigned to `LLM_MCP_SERVER_URL`. Treat these definitions as pending until the source PR is merged and tested.
 
 Supply the Zoom credentials, selected model-provider key, `MCP_SERVERS_JSON`, and each token variable referenced by that registry. Expose only the RTMS client. Publish a Railway template button after private networking, token sharing, provider calls, and MCP discovery have been tested in the Zoom-owned Railway workspace.
 
@@ -432,7 +430,7 @@ Start RTMS in a test meeting and verify that the audit log records a successful 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `your-development-domain` and `your-production-domain` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
 
 ### Scopes
 
