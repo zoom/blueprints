@@ -9,7 +9,7 @@ verticals: ["enterprise", "agents"]
 estimated_time: "2-4 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "llm", "real-time", "zoom-meetings"]
@@ -242,7 +242,11 @@ Start the service, expose the webhook over HTTPS, start RTMS in a test meeting, 
 - No transcript or credential appears in unrestricted logs.
 - The selected destination receives a useful, bounded response.
 
-The repository does not include a tested deployment template for these two implementations. Deploy the Node.js service on a platform that supports a long-running HTTPS webhook process, then supply the Zoom credentials, provider key, public domain, and secret storage for that environment.
+#### Hosted deployment
+
+The source repository includes separate Render and Railway configurations for the [OpenAI implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_openai_js) and the [Claude implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_claude_js). Each configuration builds one public Docker service from the monorepo root and uses `/health` for deployment checks.
+
+On Render, register the `render.yaml` beneath the selected implementation as the Blueprint path. On Railway, create the service from the repository root and apply that implementation's `railway.json`. Supply the Zoom credentials, selected provider key, public domain, and production secret storage. Publish a one-click button only after the provider-specific deployment has been tested in the Zoom-owned platform account.
 
 ### Production considerations
 
