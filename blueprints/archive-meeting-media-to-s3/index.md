@@ -126,7 +126,7 @@ Create a Zoom General App in the [Zoom App Marketplace](https://marketplace.zoom
 | --- | --- |
 | Scopes | `meeting:read:meeting_audio`, `meeting:read:meeting_video` |
 | Events | `meeting.rtms_started`, `meeting.rtms_stopped` |
-| Webhook URL | `https://YOUR-NGROK-URL/webhook` |
+| Webhook URL | `https://example.ngrok.app/webhook` |
 
 Enable RTMS for the account and meeting. Import `manifest.json` as a candidate configuration and verify it in Marketplace.
 
@@ -253,7 +253,7 @@ Test short and long meetings, interrupted RTMS sessions, an unavailable S3 endpo
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the media archive: audio and video scopes, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` before importing it.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the media archive: audio and video scopes, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `example.ngrok.app` and `blueprint.example.ngrok.app` before importing it.
 
 ### Scopes
 
