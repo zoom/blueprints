@@ -9,7 +9,7 @@ verticals: ["enterprise", "finance"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
@@ -237,7 +237,11 @@ npm start
 
 Open the app inside a Zoom Meeting. Start RTMS, choose a participant whose video is on, load that participant's video, and start video or audio verification. The HLS preview requires FFmpeg on the backend host.
 
-The linked repository does not include the inference service, a tested one-click deployment, or a production identity and audit system. Deploy and operate those parts in your environment.
+#### Hosted deployment
+
+The linked repository includes a [Render Blueprint and Railway service configuration](https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js). They deploy the Zoom App backend, RTMS media processing, HLS preview, and inference adapters as one Docker service. Supply the Zoom credentials, public app domain, and reachable video and audio inference endpoints.
+
+The deployment does not provision a commercial detection service, a Hugging Face model endpoint, production reviewer authorization, or an audit system. Test the chosen inference services, Zoom App URLs, WebSocket delivery, HLS output, and data-deletion behavior before publishing a one-click deployment button.
 
 #### 6. Test under realistic conditions
 
