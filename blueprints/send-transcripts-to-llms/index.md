@@ -39,13 +39,13 @@ The transcript is only the starting point. Change the prompt, send the answer to
 - Receive live transcript segments without adding a meeting participant.
 - Keep Zoom and model-provider credentials on the backend.
 - Send each OpenAI request with a defined prompt and one transcript segment.
-- Preserve Claude conversation history when that behavior is wanted and bound it before production use.
+- Keep Claude conversation history isolated by RTMS stream and within configured size limits.
 - Keep model errors from interrupting the RTMS stream.
 - Route the answer to a destination the customer controls.
 
-Follow along as we walk through the architecture.
+If you need built-in meeting summaries and questions answered from meeting content, [Zoom AI Companion](https://zoom.us/ai) may meet the need without a custom model pipeline. Build this workflow when you need your own provider, prompt, destination, or data policy.
 
-## Features
+Follow along as we walk through the architecture.
 
 The reference implementations show the live Zoom Meeting transcript and the
 model response produced from that transcript.
@@ -65,12 +65,12 @@ Keep provider credentials on the server. Never expose them in a browser or commi
 
 ### How the reference implementation handles it
 
-The linked [RTMS reference implementations](https://github.com/zoom/rtms-samples) use Node.js, Express, and RTMSManager. Both call the provider for each incoming transcript event and write the answer to the server console. The OpenAI path sends one segment without history. The Anthropic path appends every user segment and assistant response to a process-wide `chatHistory` array with no size limit. Neither path delivers answers to a CRM, dashboard, automation, or frontend.
+The linked [RTMS reference implementations](https://github.com/zoom/rtms-samples) use Node.js, Express, and RTMSManager. Both call the provider for each incoming transcript event and write the answer to the server console. The OpenAI path sends one segment without history. The Anthropic path keeps bounded conversation history for each RTMS stream. Neither path delivers answers to a CRM, dashboard, automation, or frontend.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|Live transcript via RTMS| B[Node.js RTMS service]
-    B -->|Transcript event| C[Provider context: one segment or process history]
+    B -->|Transcript event| C[Provider context: one segment or bounded stream history]
     C -->|Provider request| D{Configured LLM}
     D -->|OpenAI or Anthropic response| E[Server console in reference implementation]
     E -.->|Customer extension| F[CRM, dashboard, automation, or app]
@@ -112,7 +112,7 @@ Create a General App in the [Zoom App Marketplace](https://marketplace.zoom.us/)
 | --- | --- |
 | Scope | `meeting:read:meeting_transcript` |
 | Events | `meeting.rtms_started`, `meeting.rtms_stopped` |
-| Webhook URL | `https://YOUR_DOMAIN.example.com/webhook` |
+| Webhook URL | `https://YOUR-NGROK-URL/webhook` |
 
 Enable RTMS for the account and for the meeting used in the test. Import `manifest.json` as a starting point, then verify it in Marketplace before publishing.
 
@@ -146,7 +146,7 @@ Use the raw request bytes, handle endpoint validation separately, and compare si
 
 #### 4. Receive transcript segments
 
-Configure RTMSManager to receive transcripts. Both paths pass the `text` field directly to the model call without speaker or timestamp metadata. OpenAI sends only that segment. Anthropic adds it to process-wide conversation history before making the request.
+Configure RTMSManager to receive transcripts. Both paths pass the `text` field directly to the model call without speaker or timestamp metadata. OpenAI sends only that segment. Anthropic adds it to conversation history keyed by `rtms_stream_id` before making the request.
 
 Before using this pattern for meeting-wide analysis, decide which transcript events are final enough for your use case. Add the speaker name and timestamp when they help, and prevent duplicate or still-changing segments from starting repeated requests.
 
@@ -158,7 +158,7 @@ Limit the context by time, number of turns, or tokens. Without a limit, every re
 
 **Invariants:**
 
-- Key state by `rtms_stream_id`, not by a process-wide array
+- Key state by `rtms_stream_id`
 - Deduplicate repeated events before calling a model
 - Preserve speaker and timing metadata needed by the use case
 - Bound context by time, turns, tokens, or a combination of them
@@ -168,7 +168,7 @@ Limit the context by time, number of turns, or tokens. Without a limit, every re
 
 #### 5. Call the selected model safely
 
-The OpenAI implementation uses the Chat Completions API and hardcodes `gpt-4o` in [`chatWithOpenAI.js`](https://github.com/zoom/rtms-samples/blob/5c39fca2ed97d75bcbdb318cf246a037835f7d37/transcript/send_transcript_to_openai_js/chatWithOpenAI.js). The Anthropic implementation sends its full process-wide history and hardcodes `claude-3-5-sonnet-20241022` in [`chatWithClaude.js`](https://github.com/zoom/rtms-samples/blob/5c39fca2ed97d75bcbdb318cf246a037835f7d37/transcript/send_transcript_to_claude_js/chatWithClaude.js). Move the model name, prompt, timeout, output limit, and history bound into configuration before adapting either implementation.
+The OpenAI implementation uses the Responses API and defaults to `gpt-4.1-mini` in [`chatWithOpenAI.js`](https://github.com/zoom/rtms-samples/blob/main/transcript/send_transcript_to_openai_js/chatWithOpenAI.js). The Anthropic implementation keeps bounded per-stream history in [`chatWithClaude.js`](https://github.com/zoom/rtms-samples/blob/main/transcript/send_transcript_to_claude_js/chatWithClaude.js). Both read the model name, timeout, and output limit from configuration. Review those defaults for the deployment's latency, quality, and cost requirements.
 
 Give the model a clear task and ask for a predictable response format. Retry temporary failures only. If an answer can trigger an action, check it against a list of allowed actions first.
 
@@ -244,7 +244,7 @@ Start the service, expose the webhook over HTTPS, start RTMS in a test meeting, 
 
 #### Hosted deployment
 
-The source repository includes separate Render and Railway configurations for the [OpenAI implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_openai_js) and the [Claude implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_claude_js). Each configuration builds one public Docker service from the monorepo root and uses `/health` for deployment checks.
+[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds separate Render and Railway configurations for the OpenAI and Claude implementations. Each configuration builds one public Docker service from the monorepo root and uses `/health` for deployment checks. Treat these definitions as pending until that source PR is merged and tested.
 
 On Render, register the `render.yaml` beneath the selected implementation as the Blueprint path. On Railway, create the service from the repository root and apply that implementation's `railway.json`. Supply the Zoom credentials, selected provider key, public domain, and production secret storage. Publish a one-click button only after the provider-specific deployment has been tested in the Zoom-owned platform account.
 
@@ -258,7 +258,7 @@ On Render, register the `render.yaml` beneath the selected implementation as the
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript analysis: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript analysis: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` before importing it.
 
 ### Scopes
 
