@@ -1,5 +1,5 @@
 ---
-title: "Archive Zoom Meeting Audio and Video"
+title: "Archive Zoom Meeting Media to Amazon S3"
 slug: "archive-meeting-media-to-s3"
 description: >-
   Build a customer-controlled archive for Zoom Meeting audio and video. Capture
@@ -43,9 +43,9 @@ Archive only the meetings and media your use case requires. Tell participants, g
 - Leave local media recoverable when an upload fails.
 - Upload objects into a bucket where the customer configures access, encryption, and retention.
 
-Follow along as we walk through the architecture.
+If Zoom-managed storage and retention meet your requirements, [Zoom cloud recording](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0062627) may avoid a custom media pipeline. Build this archive when you need customer-controlled object storage, keys, paths, processing, or retention policy.
 
-## Features
+Follow along as we walk through the architecture.
 
 The reference implementation produces playable media and uploads the finalized
 objects to the configured customer-controlled S3 bucket.
@@ -59,16 +59,16 @@ Zoom calls your webhook when RTMS starts. A media worker receives audio and vide
 
 ### How the reference implementation handles it
 
-The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js) uses Express, RTMSManager, FFmpeg, and the AWS SDK. It captures mixed 16 kHz mono audio and a single active H.264 video stream at 25 frames per second. After `meeting.rtms_stopped`, it waits two seconds, converts and muxes the local media, then uploads allowed file types with `PutObject`.
+The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js) uses Express, RTMSManager, FFmpeg, and the AWS SDK. It captures mixed 16 kHz mono audio and a single active H.264 video stream at 25 frames per second. After `meeting.rtms_stopped`, it finalizes the local media and adds the stream directory to a durable upload queue.
 
-The reference implementation reads each file into memory, uses static AWS credentials from environment variables, and leaves local files in place. It does not implement multipart upload, a durable job queue, upload recovery after a restart, automatic cleanup, or per-object encryption settings.
+The upload worker streams each file through the AWS multipart upload helper, retries temporary failures, restores unfinished jobs after restart, and supports configurable cleanup. It sets server-side encryption on each object and uses the AWS SDK credential chain. The deployment still needs an approved workload identity, persistent queue storage, bucket policy, and tested retention settings.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|RTMS audio and video| B[Node.js media receiver]
     B -->|Temporary stream files| C[FFmpeg processor]
     C -->|Playable media artifacts| D[S3 uploader]
-    D -->|PutObject upload| E[Customer Amazon S3 bucket]
+    D -->|Durable multipart upload| E[Customer Amazon S3 bucket]
     E -->|Lifecycle, analytics, or review| F[Customer-controlled workflows]
 ```
 
@@ -126,7 +126,7 @@ Create a Zoom General App in the [Zoom App Marketplace](https://marketplace.zoom
 | --- | --- |
 | Scopes | `meeting:read:meeting_audio`, `meeting:read:meeting_video` |
 | Events | `meeting.rtms_started`, `meeting.rtms_stopped` |
-| Webhook URL | `https://YOUR_DOMAIN.example.com/webhook` |
+| Webhook URL | `https://YOUR-NGROK-URL/webhook` |
 
 Enable RTMS for the account and meeting. Import `manifest.json` as a candidate configuration and verify it in Marketplace.
 
@@ -175,9 +175,9 @@ Handle Zoom endpoint validation separately because that request follows a differ
 
 #### 5. Upload and recover
 
-[`S3StorageHelper.js`](https://github.com/zoom/rtms-samples/blob/5c39fca2ed97d75bcbdb318cf246a037835f7d37/storage/save_audio_and_video_to_aws_s3_storage_js/S3StorageHelper.js) uploads WAV, MP4, VTT, SRT, and TXT files and sets a content type for each. It constructs the key as `rtms/<meeting-uuid>/<stream-id>/<filename>`, sends a `PutObjectCommand`, and counts failures before returning. It relies on the bucket's default encryption and does not delete local files. Confirm the object exists before adding cleanup. A retry must never delete a file that has not been stored safely.
+[`S3StorageHelper.js`](https://github.com/zoom/rtms-samples/blob/main/storage/save_audio_and_video_to_aws_s3_storage_js/S3StorageHelper.js) uploads WAV, MP4, VTT, SRT, and TXT files with streaming multipart upload. It builds keys beneath the configured prefix, sets content type and server-side encryption, and aborts incomplete multipart uploads on error. [`DurableUploadQueue.js`](https://github.com/zoom/rtms-samples/blob/main/storage/save_audio_and_video_to_aws_s3_storage_js/DurableUploadQueue.js) persists job state, retries with bounded backoff, restores interrupted jobs, and applies configurable cleanup periods.
 
-For large files, replace the reference implementation's whole-file `PutObject` path with streaming or multipart upload. Add a durable queue and clean up multipart uploads that never finish.
+Mount the recordings and queue directory on persistent storage. Use an IAM role or another approved workload identity instead of long-lived access keys. Test restart recovery and confirm the configured cleanup period never removes media before upload succeeds.
 
 **Input:** Verified artifact, destination bucket, safe object key, and content type
 
@@ -229,7 +229,7 @@ Expose the configured webhook path over HTTPS.
 
 #### Hosted deployment
 
-The source repository includes a [Render Blueprint and Railway service configuration](https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js). The Docker image includes FFmpeg. The Render definition also creates a 20 GB disk for unfinished media and durable upload-queue state. Railway requires a volume mounted at the path declared by its service configuration.
+[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configuration. The Docker image includes FFmpeg. The Render definition also creates a 20 GB disk for unfinished media and durable upload-queue state. Railway requires a volume mounted at the path declared by its service configuration. Treat these definitions as pending until the source PR is merged and tested.
 
 Supply the Zoom credentials, public webhook domain, S3 bucket and region, and an AWS identity limited to the required bucket operations. Test container replacement while an upload is pending before publishing a one-click deployment button. These definitions deploy the application and working storage; they do not create the S3 bucket, keys, lifecycle rules, or IAM policies.
 
@@ -253,7 +253,7 @@ Test short and long meetings, interrupted RTMS sessions, an unavailable S3 endpo
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the media archive: audio and video scopes, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the media archive: audio and video scopes, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` before importing it.
 
 ### Scopes
 
