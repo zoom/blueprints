@@ -9,7 +9,7 @@ verticals: ["agents", "enterprise"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["voice-agent", "openai-realtime", "audio", "mcp", "zoom-meetings"]
@@ -237,7 +237,13 @@ The Zoom MCP token acts for a user, so obtain it through the approved OAuth sign
 npm start
 ```
 
-Expose port `5050` over HTTPS and set the Marketplace event endpoint to the configured webhook path. The repository does not include a tested deployment template or a user-facing response application.
+Expose port `5050` over HTTPS and set the Marketplace event endpoint to the configured webhook path.
+
+#### Hosted deployment
+
+The source repository includes a [Render Blueprint and Railway service configuration](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api). They build one public Docker service from the monorepo root, expose port `5050`, and use `/health` for deployment checks. Supply the Zoom and OpenAI credentials, webhook domain, and optional user-authorized Zoom MCP token.
+
+These definitions deploy the listening implementation. They do not add a user-facing response application or a supported path for assistant audio to enter the meeting. Test RTMS audio, OpenAI Realtime reconnection, MCP authorization, and webhook delivery before publishing a one-click deployment button.
 
 #### 8. Test end to end
 
