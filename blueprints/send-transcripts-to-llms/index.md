@@ -112,7 +112,7 @@ Create a General App in the [Zoom App Marketplace](https://marketplace.zoom.us/)
 | --- | --- |
 | Scope | `meeting:read:meeting_transcript` |
 | Events | `meeting.rtms_started`, `meeting.rtms_stopped` |
-| Webhook URL | `https://YOUR-NGROK-URL/webhook` |
+| Webhook URL | `https://example.ngrok.app/webhook` |
 
 Enable RTMS for the account and for the meeting used in the test. Import `manifest.json` as a starting point, then verify it in Marketplace before publishing.
 
@@ -258,7 +258,7 @@ On Render, register the `render.yaml` beneath the selected implementation as the
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript analysis: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `YOUR-NGROK-URL` and `YOUR-PRODUCTION-URL` before importing it.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript analysis: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `example.ngrok.app` and `blueprint.example.ngrok.app` before importing it.
 
 ### Scopes
 
