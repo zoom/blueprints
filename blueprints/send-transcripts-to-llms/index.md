@@ -11,6 +11,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-14
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_openai_js"
+demo_url: "https://success.zoom.us/clips/share/dKKgOJ7GR3uKIEtrCkNgOA"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "llm", "real-time", "zoom-meetings"]
 seo_title: "Send Live Zoom Meeting Transcripts to OpenAI or Claude"
