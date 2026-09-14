@@ -9,8 +9,8 @@ verticals: ["enterprise", "agents"]
 estimated_time: "2-4 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-11
-github_repo: "https://github.com/zoom/rtms-samples"
+updated: 2026-09-14
+github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/send_transcript_to_openai_js"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "llm", "real-time", "zoom-meetings"]
 seo_title: "Send Live Zoom Meeting Transcripts to OpenAI or Claude"
