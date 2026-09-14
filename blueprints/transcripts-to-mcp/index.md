@@ -21,6 +21,8 @@ partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
 stack: "Node.js · TypeScript · Zoom RTMS · MCP · Anthropic, OpenAI, or OpenRouter"
+deploy:
+  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcripts-to-mcp" }
 ---
 
 Build a two-service meeting agent that turns live Zoom Meeting transcripts into context-aware responses backed by approved Zoom content. The public RTMS client batches each transcript stream and sends it through an authenticated private MCP connection to an isolated LLM router.
@@ -394,9 +396,9 @@ docker build \
   -t zoom-rtms-mcp-client .
 ```
 
-[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configurations. The Render definition creates a public RTMS client and a private LLM router, connects them through Render's private network, and generates their shared bearer token. Railway requires two services configured from the repository root, one shared generated token, and a private router URL assigned to `LLM_MCP_SERVER_URL`. Treat these definitions as pending until the source PR is merged and tested.
+The Render deployment card creates a public RTMS client and a private LLM router, connects them through Render's private network, and generates their shared bearer token. Supply the Zoom credentials, selected model-provider key, `MCP_SERVERS_JSON`, and each token variable referenced by that registry. Expose only the RTMS client.
 
-Supply the Zoom credentials, selected model-provider key, `MCP_SERVERS_JSON`, and each token variable referenced by that registry. Expose only the RTMS client. Publish a Railway template button after private networking, token sharing, provider calls, and MCP discovery have been tested in the Zoom-owned Railway workspace.
+The deployment definition is ready for platform testing but has not been verified with a production Zoom account. For Railway, deploy the private LLM router first and wait for its health check. Then deploy the public RTMS client with `LLM_MCP_SERVER_URL` referencing the router's `RAILWAY_PRIVATE_DOMAIN`. That reference enforces router-first ordering during template deployments and staged multi-service changes. Railway is omitted from the deployment cards until a published two-service template can configure private networking and the shared token.
 
 #### Verify the services
 
@@ -469,7 +471,7 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 - Unexpected RTMS socket closures do not trigger general reconnection.
 - Health endpoints report configured connections as available without active probes.
 - The RTMS client exposes the returned text only through local structured logs when `LOG_CONTENT=true`; it does not include a UI, API, CRM, or persistent response adapter.
-- The external repository includes a Marketplace manifest but does not yet include Render configuration, Railway configuration, or a Compose file.
+- The external repository includes a Marketplace manifest and deployment configuration. A Compose file is not included.
 
 </details>
 
