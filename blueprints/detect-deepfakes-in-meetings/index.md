@@ -9,7 +9,7 @@ verticals: ["enterprise", "finance"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-11
+updated: 2026-09-14
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
@@ -43,6 +43,8 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 - Keep final decisions within the approved fraud-review policy.
 
 This use case requires a customer-selected inference service and review policy. The Zoom components provide live media access and the in-meeting review surface; they do not determine whether media is authentic.
+
+For hiring interviews, [BrightHire](https://www.zoom.com/en/blog/zoom-and-brighthire-take-on-rising-candidate-fraud/), a Zoom company, offers candidate fraud detection with deepfake signals built into Zoom interviews. Build this workflow when you need customer-selected inference models, a use case outside hiring, or control over thresholds and result handling.
 
 Follow along as we walk through the architecture.
 
