@@ -19,6 +19,9 @@ seo_keywords: ["zoom meeting knowledge base", "search zoom meeting transcripts",
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
 stack: "Node.js · Express · RTMSManager"
+deploy:
+  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcript-knowledge-base" }
+  - { label: "Deploy to Railway", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcript-knowledge-base" }
 ---
 
 Build a knowledge base that turns live Zoom Meeting conversations into searchable, reviewable records. Teams can use those records to find past decisions, summarize customer conversations, review service quality, and support retention or supervision workflows.
@@ -311,9 +314,9 @@ Mount persistent storage at `/app/recordings` when running the container. The Do
 
 #### Hosted deployment
 
-[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configuration. The Render definition creates the Docker service and a 10 GB persistent disk at `/app/recordings`. Railway requires a volume mounted at the same path. Both deployments run the transcript capture and local persistence layer only. They do not provision Azure AI Search, Amazon OpenSearch Service, object storage, summary workers, or compliance-policy infrastructure. Treat these definitions as pending until the source PR is merged and tested.
+The Render deployment card creates the Docker service and a 10 GB persistent disk at `/app/recordings`. It runs the transcript capture and local persistence layer only. It does not provision Azure AI Search, Amazon OpenSearch Service, object storage, summary workers, or compliance-policy infrastructure.
 
-Supply the Zoom credentials and public webhook domain. Verify restart recovery against the mounted volume before publishing a one-click deployment button.
+Supply the Zoom credentials and public webhook domain. The deployment definitions are ready for platform testing but have not been verified with a production Zoom account. Render creates its persistent disk from `render.yaml`. On Railway, attach a volume at `/app/recordings`; the application recognizes `RAILWAY_VOLUME_MOUNT_PATH` automatically. Verify webhook delivery and restart recovery against the mounted volume before using it for production. A published Railway template is still needed to make volume creation part of the one-click flow.
 
 #### 10. Test a complete meeting
 
