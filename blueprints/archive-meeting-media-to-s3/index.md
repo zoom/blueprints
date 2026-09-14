@@ -11,6 +11,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js"
+demo_url: "https://success.zoom.us/clips/share/S-E746bCSECT2MTGNaQ7CQ"
 solution_types: ["media-processing", "data-integration", "compliance-auditing"]
 tags: ["archive", "amazon-s3", "audio", "video", "zoom-meetings"]
 seo_title: "Archive Live Zoom Meeting Audio and Video to Amazon S3"
