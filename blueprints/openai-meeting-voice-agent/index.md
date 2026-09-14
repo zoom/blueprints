@@ -19,6 +19,9 @@ partners: ["openai"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS audio access and access to the selected OpenAI Realtime model."
 stack: "Zoom Apps SDK · Node.js · RTMS · OpenAI Realtime API · Zoom MCP · Web Audio"
+deploy:
+  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-openai-meeting-voice-agent" }
+  - { label: "Deploy to Railway", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-openai-meeting-voice-agent" }
 ---
 
 Build a voice agent that understands spoken requests in a Zoom Meeting, uses approved Zoom MCP tools, and plays OpenAI Realtime responses inside a Zoom App while the meeting is active.
@@ -238,9 +241,9 @@ Expose port `5050` over HTTPS and set the Marketplace event endpoint to the conf
 
 #### Hosted deployment
 
-[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configuration for the Zoom App voice agent. They build one public Docker service from the monorepo root, expose port `5050`, and use `/health` for deployment checks. Supply the Zoom and OpenAI credentials, app domain, frontend WebSocket URL, and optional user-authorized Zoom MCP token. Treat these definitions as pending until the source PR is merged and tested.
+The Render and Railway deployment cards build one public Docker service from the monorepo root, expose port `5050`, and use `/health` for deployment checks. Supply the Zoom and OpenAI credentials, app domain, frontend WebSocket URL, and optional user-authorized Zoom MCP token.
 
-These definitions deploy the backend and Zoom App webview. Test RTMS audio, browser playback and interruption, OpenAI Realtime reconnection, MCP authorization, and webhook delivery before publishing a one-click deployment button.
+The deployment definitions are ready for platform testing but have not been verified with a production Zoom account. They deploy the backend and Zoom App webview. Test RTMS audio, browser playback and interruption, OpenAI Realtime reconnection, MCP authorization, and webhook delivery before using them for production.
 
 #### 8. Test end to end
 
