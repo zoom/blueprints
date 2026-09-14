@@ -12,6 +12,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
+demo_url: "https://success.zoom.us/clips/share/VVnOIAFnQxiNbjy_LfGcug"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "knowledge-base", "search", "summarization", "compliance", "zoom-meetings"]
 seo_title: "Capture Zoom Meeting Transcripts for a Knowledge Base"
