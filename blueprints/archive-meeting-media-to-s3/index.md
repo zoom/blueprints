@@ -19,6 +19,9 @@ partners: ["aws"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS audio and video access."
 stack: "Node.js · Express · RTMSManager · FFmpeg · Amazon S3"
+deploy:
+  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-meeting-media-s3" }
+  - { label: "Deploy to Railway", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-meeting-media-s3" }
 ---
 
 Build a customer-controlled meeting archive that turns live RTMS audio and video into playable files in Amazon S3. The archive can feed retention, quality review, media processing, or an existing data platform while the customer controls access and lifecycle policy.
@@ -229,9 +232,9 @@ Expose the configured webhook path over HTTPS.
 
 #### Hosted deployment
 
-[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configuration. The Docker image includes FFmpeg. The Render definition also creates a 20 GB disk for unfinished media and durable upload-queue state. Railway requires a volume mounted at the path declared by its service configuration. Treat these definitions as pending until the source PR is merged and tested.
+The Render deployment card builds a Docker image with FFmpeg and creates a 20 GB disk for unfinished media and durable upload-queue state. Supply the Zoom credentials, public webhook domain, S3 bucket and region, and an AWS identity limited to the required bucket operations.
 
-Supply the Zoom credentials, public webhook domain, S3 bucket and region, and an AWS identity limited to the required bucket operations. Test container replacement while an upload is pending before publishing a one-click deployment button. These definitions deploy the application and working storage; they do not create the S3 bucket, keys, lifecycle rules, or IAM policies.
+The deployment definitions are ready for platform testing but have not been verified with a production Zoom account. The service uploads finalized media when RTMS stops. Railway can use ephemeral storage for that normal path. A restart before upload completes can lose unfinished media unless persistent storage is attached. The deployments do not create the S3 bucket, keys, lifecycle rules, or IAM policies.
 
 #### 7. Verify the archive workflow
 
