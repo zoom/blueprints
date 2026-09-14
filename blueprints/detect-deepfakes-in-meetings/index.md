@@ -18,6 +18,9 @@ seo_keywords: ["zoom deepfake detection", "meeting deepfake detection", "live au
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS access and an in-meeting Zoom App."
 stack: "Zoom Apps SDK · Node.js · RTMS · Customer inference service · HLS"
+deploy:
+  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-deepfake-detection" }
+  - { label: "Deploy to Railway", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-deepfake-detection" }
 ---
 
 Build an in-meeting review experience that sends selected audio and video to a customer-controlled detection service and shows the resulting risk signal in a Zoom App. Fraud and security teams can investigate suspicious media while the meeting is still active.
@@ -241,9 +244,9 @@ Open the app inside a Zoom Meeting. Start RTMS, choose a participant whose video
 
 #### Hosted deployment
 
-[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds a Render Blueprint and Railway service configuration. They deploy the Zoom App backend, RTMS media processing, HLS preview, and inference adapters as one Docker service. They do not deploy the customer-owned inference services. Supply the Zoom credentials, public app domain, and reachable video and audio inference endpoints. Treat these definitions as pending until the source PR is merged and tested.
+The Render and Railway deployment cards deploy the Zoom App backend, RTMS media processing, HLS preview, and inference adapters as one Docker service. They do not deploy the customer-owned inference services. Supply the Zoom credentials, public app domain, and reachable video and audio inference endpoints.
 
-The deployment does not provision a commercial detection service, a Hugging Face model endpoint, production reviewer authorization, or an audit system. Test the chosen inference services, Zoom App URLs, WebSocket delivery, HLS output, and data-deletion behavior before publishing a one-click deployment button.
+The deployment definitions are ready for platform testing but have not been verified with a production Zoom account. They do not provision a commercial detection service, a Hugging Face model endpoint, production reviewer authorization, or an audit system. Test the chosen inference services, Zoom App URLs, WebSocket delivery, HLS output, and data-deletion behavior before using them for production.
 
 #### 6. Test under realistic conditions
 
