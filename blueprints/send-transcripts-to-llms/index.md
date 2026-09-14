@@ -19,6 +19,11 @@ partners: ["openai", "anthropic"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
 stack: "Node.js · Express · RTMSManager · OpenAI or Anthropic"
+deploy:
+  - { label: "Deploy to Render (OpenAI)", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcripts-openai" }
+  - { label: "Deploy to Railway (OpenAI)", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcripts-openai" }
+  - { label: "Deploy to Render (Anthropic)", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcripts-claude" }
+  - { label: "Deploy to Railway (Anthropic)", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcripts-claude" }
 ---
 
 Build a live analysis path that turns meeting speech into useful answers while the conversation is still happening. A support lead can investigate an objection immediately. An operations team can flag a risk while the people in the meeting can still explain it.
@@ -244,9 +249,9 @@ Start the service, expose the webhook over HTTPS, start RTMS in a test meeting, 
 
 #### Hosted deployment
 
-[The source deployment PR](https://github.com/zoom/rtms-samples/pull/11) adds separate Render and Railway configurations for the OpenAI and Claude implementations. Each configuration builds one public Docker service from the monorepo root and uses `/health` for deployment checks. Treat these definitions as pending until that source PR is merged and tested.
+The deployment cards use separate branches for the OpenAI and Anthropic implementations. Each branch places `render.yaml` and `railway.json` at the repository root while building the selected Docker service from its existing monorepo directory. Supply the Zoom credentials, selected provider key, public domain, and production secret storage.
 
-On Render, register the `render.yaml` beneath the selected implementation as the Blueprint path. On Railway, create the service from the repository root and apply that implementation's `railway.json`. Supply the Zoom credentials, selected provider key, public domain, and production secret storage. Publish a one-click button only after the provider-specific deployment has been tested in the Zoom-owned platform account.
+These deployment definitions are ready for platform testing but have not been verified with a production Zoom account. Test webhook delivery, RTMS transcript ingestion, provider responses, restart behavior, and secret handling before using them for production.
 
 ### Production considerations
 
