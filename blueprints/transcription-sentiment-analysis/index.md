@@ -86,7 +86,7 @@ graph LR
      orchestration, coaching-cue loop), per docs/ARCHITECTURE.md in the
      arlo repo. -->
 
-## Implementation Guide (Work in Progress)
+## Implementation Guide
 
 Reference this [Sentiment Analysis Walkthrough](https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/) to access the GitHub repository and set up the app.
 
@@ -344,4 +344,3 @@ The sample app trains a simple model on server startup using TensorFlow.js, base
 - [ ] Check `payload.done` before sending the transcript to the sentiment worker.
 - [ ] Release and tear down the web worker.
 - [ ] Properly delete transcription data from browser storage.
-
