@@ -11,6 +11,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-14
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
+demo_url: "https://success.zoom.us/clips/share/zjPVZV0HTeKjfm2i-p2row"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
 seo_title: "Detect Audio and Video Deepfakes in Zoom Meetings"
@@ -54,6 +55,7 @@ Follow along as we walk through the architecture.
 The in-meeting Zoom App shows the selected participant, separate audio and
 video service states, and the latest normalized inference result.
 
+**See it in action:** [Demo video](https://success.zoom.us/clips/share/zjPVZV0HTeKjfm2i-p2row)
 
 ## Architecture
 
