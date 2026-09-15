@@ -11,6 +11,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-15
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js"
+demo_url: "https://success.zoom.us/clips/share/lmjrVPnuTsKKRiKXk8-tQA"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["voice-agent", "openai-realtime", "audio", "mcp", "zoom-meetings"]
 seo_title: "Build an OpenAI Voice Agent in Zoom Meetings"
@@ -54,6 +55,7 @@ Follow along as we walk through the architecture.
 
 The reference implementation displays connection state and spoken response text in the Zoom App while playing the assistant audio through Web Audio.
 
+**See it in action:** [Demo video](https://success.zoom.us/clips/share/lmjrVPnuTsKKRiKXk8-tQA)
 
 ## Architecture
 
