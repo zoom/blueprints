@@ -26,14 +26,14 @@ deploy:
 
 Build a voice agent that understands spoken requests in a Zoom Meeting, uses approved Zoom MCP tools, and plays OpenAI Realtime responses inside a Zoom App while the meeting is active.
 
-This Blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The reference implementation converts the audio, lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/), and delivers the model's PCM audio and response text to the Zoom App.
+This Blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The reference implementation converts the audio, lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/), and streams the model's PCM audio to the Zoom App over WebSocket.
 
 The assistant audio plays inside the Zoom App webview for the person running the app. It is not injected as a participant microphone track, so other participants hear it only if the local meeting setup captures that playback. Use headphones while testing to avoid echo and self-interruption.
 
 **What you'll need:**
 
 - A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio access
-- A Zoom App frontend and a Node.js backend that can maintain RTMS and OpenAI Realtime sessions
+- A Zoom App frontend and backend that can maintain RTMS, OpenAI Realtime, and browser WebSocket sessions
 - Access to an [OpenAI Realtime model](https://developers.openai.com/api/docs/guides/realtime)
 - A user-authorized Zoom OAuth token when Zoom MCP tools are enabled
 - Headphones for testing browser playback without microphone echo
@@ -58,7 +58,7 @@ The reference implementation displays connection state and spoken response text 
 
 ### The reusable pattern
 
-Your backend receives mixed meeting audio through RTMS, converts it to the model's required format, and keeps one model session associated with each meeting stream. The model may call a small set of tools using a user-authorized token. The backend delivers response audio, text, and status events to the Zoom App, where Web Audio schedules playback.
+Your backend receives mixed meeting audio through RTMS, converts it to the model's required format, and keeps one model session associated with each meeting stream. The model may call a small set of tools using a user-authorized token. Output audio and transcript events cross a separate WebSocket to the Zoom App, where Web Audio schedules playback.
 
 ### How the reference implementation handles it
 
@@ -72,10 +72,10 @@ flowchart TB
     B -->|Resample 48 kHz to 24 kHz PCM| C[OpenAI Realtime session]
     C -->|Approved MCP tool call| D[Zoom hosted MCP server]
     D -->|Authorized meeting or document result| C
-    C -->|24 kHz PCM and response text| B
-    B -->|Response audio, text, and status| E[Zoom App webview]
-    E -->|Playback interruption position| B
-    B -->|conversation.item.truncate| C
+    C -->|24 kHz PCM and response text| E[Frontend WebSocket]
+    E -->|Queued Web Audio playback| F[Zoom App webview]
+    F -->|Playback interruption position| E
+    E -->|conversation.item.truncate| C
 ```
 
 ### Agent integration map
@@ -90,7 +90,7 @@ Check what your application already provides before adding components:
 | Audio conversion | Existing media pipeline | 48 kHz L16 to 24 kHz PCM conversion |
 | Realtime client | Existing OpenAI connection manager | One server-side session per RTMS stream |
 | MCP authorization | Existing user OAuth and policy layer | Tool allowlist and approval boundary |
-| Zoom App interface | Existing in-meeting app | RTMS controls, status, response text, and audio playback |
+| Zoom App frontend | Existing in-meeting app | RTMS controls, status, and assistant transcript UI |
 | Audio playback | Existing browser audio layer | PCM queue, Web Audio scheduling, and interruption handling |
 
 ## Implementation Guide
@@ -200,7 +200,7 @@ Do not blindly trust tool descriptions, inputs, or results. Check IDs and permis
 
 #### 6. Deliver and interrupt spoken responses
 
-The response delivery component carries assistant audio, text, and status events to the app. [`public/audio-client.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/public/audio-client.js) schedules PCM chunks, clears them on interruption, and reports the played position. Keep playback scoped to the intended app instance and stop it when RTMS or the app disconnects.
+[`frontendWss.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/frontendWss.js) carries assistant audio and status events to the app. [`public/audio-client.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/public/audio-client.js) schedules PCM chunks, clears them on interruption, and reports the played position. Keep playback scoped to the intended app instance and stop it when RTMS or the frontend disconnects.
 
 ### Part 3: Run the reference implementation
 
@@ -241,7 +241,7 @@ Expose port `5050` over HTTPS and set the Marketplace event endpoint to the conf
 
 #### Hosted deployment
 
-The Render and Railway deployment cards build one public Docker service from the monorepo root, expose port `5050`, and use `/health` for deployment checks. Supply the Zoom and OpenAI credentials, app domain, and optional user-authorized Zoom MCP token. The service derives its response-delivery endpoint from the incoming app request unless you override it in deployment configuration.
+The Render and Railway deployment cards build one public Docker service from the monorepo root, expose port `5050`, and use `/health` for deployment checks. Supply the Zoom and OpenAI credentials, app domain, frontend WebSocket URL, and optional user-authorized Zoom MCP token.
 
 The deployment definitions are ready for platform testing but have not been verified with a production Zoom account. They deploy the backend and Zoom App webview. Test RTMS audio, browser playback and interruption, OpenAI Realtime reconnection, MCP authorization, and webhook delivery before using them for production.
 
