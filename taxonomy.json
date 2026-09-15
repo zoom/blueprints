@@ -19,7 +19,8 @@
     { "id": "customer-support", "label": "Customer Support & Contact Center" },
     { "id": "enterprise", "label": "Enterprise" },
     { "id": "sales", "label": "Sales" },
-    { "id": "agents", "label": "AI Agents & Automation" }
+    { "id": "agents", "label": "AI Agents & Automation" },
+    { "id": "education", "label": "Education" }
   ],
   "solution_types": [
     { "id": "transcription-summarization", "label": "Transcription & Summarization" },

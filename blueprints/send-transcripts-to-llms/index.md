@@ -6,11 +6,10 @@ description: >-
   to OpenAI or Anthropic and returns useful answers while the meeting is active.
 products: ["rtms"]
 verticals: ["enterprise", "agents"]
-difficulty: "intermediate"
 estimated_time: "2-4 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-08-19
+updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "llm", "real-time", "zoom-meetings"]
@@ -18,7 +17,7 @@ seo_title: "Send Live Zoom Meeting Transcripts to OpenAI or Claude"
 seo_keywords: ["zoom transcript llm", "zoom openai transcript", "zoom claude transcript"]
 partners: ["openai", "anthropic"]
 license_required: true
-license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
+license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
 stack: "Node.js · Express · RTMSManager · OpenAI or Anthropic"
 ---
 
@@ -30,7 +29,7 @@ The transcript is only the starting point. Change the prompt, send the answer to
 
 **What you'll need:**
 
-- Transcript access through [RTMS](https://developers.zoom.us/docs/rtms/)
+- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS transcript access
 - A backend that can receive webhooks and maintain one session per RTMS stream
 - An OpenAI or Anthropic account, or another approved model provider
 - A destination for the results, such as a dashboard, CRM, or automation
@@ -45,6 +44,16 @@ The transcript is only the starting point. Change the prompt, send the answer to
 - Route the answer to a destination the customer controls.
 
 Follow along as we walk through the architecture.
+
+## Features
+
+The reference implementations show the live Zoom Meeting transcript and the
+model response produced from that transcript.
+
+<div align="center">
+  <img src="images/zoom-client.png" alt="Zoom client showing a live meeting transcript" width="640" />
+  <img src="images/llm-response-in-console.png" alt="LLM response produced from the live transcript" width="640" />
+</div>
 
 ## Architecture
 
@@ -245,7 +254,7 @@ The repository does not include a tested deployment template for these two imple
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory is a candidate Zoom General App manifest and pre-configures live transcript analysis: transcript scope, an OAuth callback placeholder, and RTMS lifecycle subscriptions. Import it when creating the app, replacing `YOUR_DOMAIN` first.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures live transcript analysis: the transcript scope, development and production OAuth callback placeholders, and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it.
 
 ### Scopes
 
