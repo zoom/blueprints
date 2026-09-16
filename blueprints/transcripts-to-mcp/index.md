@@ -85,14 +85,13 @@ The [reference implementation](https://github.com/zoom/rtms-samples/tree/main/rt
 
 ```mermaid
 flowchart TB
-    A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
-    Z[Zoom lifecycle webhook] -->|Authenticated start and stop events| B
-    B -->|Five-second transcript batch| C[Private LLM router]
-    C -->|Transcript and approved tool schemas| D[Configured AI provider]
-    D -->|Tool request| C
-    C -->|Allowlisted tools/list and tools/call| E[Configured MCP servers]
-    E -->|Meeting, recording, or document result| C
-    C -->|Text response| B
+    A[Zoom Meeting] -->|Live transcript via RTMS| B[mcp_client]
+    B -->|Bearer-authenticated MCP request| C[llm-router-server]
+    C -->|Selected AI provider| D[Anthropic, OpenAI or OpenRouter]
+    D -->|Model Response| C
+    C -->|tools/list and tools/call| E[Configured MCP servers]
+    E -->|Tool result| C
+    C -->|Response| B
 ```
 
 The router returns the model's text response to the RTMS client. With `LOG_CONTENT=false`, the client records only the request outcome. Set `LOG_CONTENT=true` in both services during local testing to print transcript and response text. Add an output adapter if the response needs to appear in a UI, API, CRM, or persistent store.
