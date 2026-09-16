@@ -1,8 +1,8 @@
 {
   "display_information": {
-    "display_name": "Send Meeting Transcripts to MCP Servers",
-    "description": "Route live Zoom Meeting transcripts to a guarded MCP tool pipeline.",
-    "long_description": "A user-managed Zoom app that batches live RTMS transcript data, sends it to an isolated LLM router, and permits a reviewed set of read-only Zoom MCP tools."
+    "display_name": "Meeting Transcript Knowledge Base",
+    "description": "Capture live Zoom Meeting transcripts and save VTT, SRT, text, and JSONL files.",
+    "long_description": "A user-managed Zoom app that receives live transcript data through RTMS and stores each meeting stream in common caption, text, and event-log formats."
   },
   "oauth_information": {
     "usage": "USER_OPERATION",
@@ -18,29 +18,9 @@
       {
         "scope": "meeting:read:meeting_transcript",
         "optional": false
-      },
-      {
-        "scope": "meeting:read:search",
-        "optional": false
-      },
-      {
-        "scope": "meeting:read:assets",
-        "optional": false
-      },
-      {
-        "scope": "cloud_recording:read:list_user_recordings",
-        "optional": false
-      },
-      {
-        "scope": "cloud_recording:read:content",
-        "optional": false
-      },
-      {
-        "scope": "docs:read:export",
-        "optional": false
       }
     ],
-    "scope_description": "Receive live meeting transcripts and let the configured read-only Zoom MCP tools search meetings and retrieve permitted assets, recordings, and document content."
+    "scope_description": "Receive live Zoom Meeting transcript data through RTMS."
   },
   "features": {
     "products": [

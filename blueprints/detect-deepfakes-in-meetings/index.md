@@ -9,8 +9,9 @@ verticals: ["enterprise", "finance"]
 estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-02
+updated: 2026-09-14
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
+demo_url: "https://success.zoom.us/clips/share/zjPVZV0HTeKjfm2i-p2row"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
 seo_title: "Detect Audio and Video Deepfakes in Zoom Meetings"
@@ -18,6 +19,9 @@ seo_keywords: ["zoom deepfake detection", "meeting deepfake detection", "live au
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS access and an in-meeting Zoom App."
 stack: "Zoom Apps SDK · Node.js · RTMS · Customer inference service · HLS"
+deploy:
+  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-deepfake-detection" }
+  - { label: "Deploy to Railway", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-deepfake-detection" }
 ---
 
 Build an in-meeting review experience that sends selected audio and video to a customer-controlled detection service and shows the resulting risk signal in a Zoom App. Fraud and security teams can investigate suspicious media while the meeting is still active.
@@ -42,13 +46,20 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 - Distinguish an unavailable model from a low-confidence result.
 - Keep final decisions within the approved fraud-review policy.
 
-Follow along as we walk through the architecture.
+This use case requires a customer-selected inference service and review policy. The Zoom components provide live media access and the in-meeting review surface; they do not determine whether media is authentic.
 
-## Features
+For hiring interviews, [BrightHire](https://www.zoom.com/en/blog/zoom-and-brighthire-take-on-rising-candidate-fraud/), a Zoom company, offers candidate fraud detection with deepfake signals built into Zoom interviews. Build this workflow when you need customer-selected inference models, a use case outside hiring, or control over thresholds and result handling.
+
+Follow along as we walk through the architecture.
 
 The in-meeting Zoom App shows the selected participant, separate audio and
 video service states, and the latest normalized inference result.
 
+The participant-selection view lets the reviewer choose an RTMS video/audio participant and load that participant's individual video stream before starting verification.
+
+![Zoom App showing RTMS video and audio participant selection and the Load Individual Video control](images/participant-selection.png)
+
+**See it in action:** [Demo video](https://success.zoom.us/clips/share/zjPVZV0HTeKjfm2i-p2row)
 
 ## Architecture
 
@@ -63,7 +74,7 @@ The linked [Node.js reference implementation](https://github.com/zoom/rtms-sampl
 By default, the reference implementation cuts video into two-second clips at five frames per second and audio into four-second PCM windows. It expects a separate inference service. The linked README names `Naman712/Deep-fake-detection` for video and `MelodyMachine/Deepfake-audio-detection-V2` for audio as examples. The customer owns the model or commercial service, hosting, credentials, evaluation, threshold, and data policy. Neither model service is included in this Blueprint repository.
 
 ```mermaid
-flowchart LR
+flowchart TB
     B[In-meeting Zoom App] -->|startRTMS and stopRTMS| A[Zoom Meeting]
     A -->|Selected video and multi-stream audio| C[RTMS media service]
     B <-->|Selection, status, and results| C
@@ -185,6 +196,12 @@ Send short clips instead of an endless stream. Process audio and video separatel
 
 Check that every response has the expected fields and valid scores. Show which model ran, which part of the meeting it checked, how confident it was, and whether the service is healthy. Never turn a score directly into an accusation.
 
+These example Zoom App views show separate video and audio verification results, including clip details, processing time, and model scores. The scores describe the configured model's output for these test clips; they are not proof that a participant's media is authentic.
+
+![Zoom App showing video verification clip details, processing time, and real and fake model scores](images/video-verification.png)
+
+![Zoom App showing audio verification model, clip details, processing time, and real and fake model scores](images/audio-verification.png)
+
 **Input:** Authorized participant selection and timestamped RTMS media frames
 
 **Output:** Bounded audio and video clips associated with one review window
@@ -224,7 +241,7 @@ DEEPFAKE_REAL_THRESHOLD=YOUR_APPROVED_VIDEO_THRESHOLD
 AUDIO_DEEPFAKE_SERVICE_URL=https://YOUR_INFERENCE_DOMAIN.example.com/audio/classify
 AUDIO_DEEPFAKE_REAL_THRESHOLD=YOUR_APPROVED_AUDIO_THRESHOLD
 PORT=5050
-PUBLIC_BASE_URL=https://YOUR_DOMAIN.example.com
+PUBLIC_BASE_URL=https://example.ngrok.app
 ```
 
 Do not send names or email addresses to the detection provider unless the service requires them and the data use is approved. Use a private internal participant ID instead when possible.
@@ -237,7 +254,11 @@ npm start
 
 Open the app inside a Zoom Meeting. Start RTMS, choose a participant whose video is on, load that participant's video, and start video or audio verification. The HLS preview requires FFmpeg on the backend host.
 
-The linked repository does not include the inference service, a tested one-click deployment, or a production identity and audit system. Deploy and operate those parts in your environment.
+#### Hosted deployment
+
+The Render and Railway deployment cards deploy the Zoom App backend, RTMS media processing, HLS preview, and inference adapters as one Docker service. They do not deploy the customer-owned inference services. Supply the Zoom credentials, public app domain, and reachable video and audio inference endpoints.
+
+The deployment definitions are ready for platform testing but have not been verified with a production Zoom account. They do not provision a commercial detection service, a Hugging Face model endpoint, production reviewer authorization, or an audit system. Test the chosen inference services, Zoom App URLs, WebSocket delivery, HLS output, and data-deletion behavior before using them for production.
 
 #### 6. Test under realistic conditions
 
@@ -255,7 +276,7 @@ Choose the production threshold from those test results and your organization's 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the in-meeting review: Zoom App, audio, and video scopes; the SDK APIs used by the frontend; domain placeholders; and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it. The manifest cannot encode the complete organizational approval, inference-provider contract, or model-risk policy.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the in-meeting review: Zoom App, audio, and video scopes; the SDK APIs used by the frontend; domain placeholders; and RTMS lifecycle subscriptions. Replace `example.ngrok.app` and `blueprint.example.ngrok.app` before importing it. The manifest cannot encode the complete organizational approval, inference-provider contract, or model-risk policy.
 
 ### Scopes
 
