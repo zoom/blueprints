@@ -76,7 +76,7 @@ The store suppresses recent duplicate events, repairs an incomplete JSONL tail, 
 flowchart TB
     A[Zoom Meeting] -->|RTMS transcript stream| B[Node.js transcript receiver]
     B -->|Normalized events| C[Canonical JSONL record]
-    C -->|Rebuildable projections| D[VTT SRT TXT and metadata]
+    C -->|Generate transcript files| D[VTT, SRT, TXT, and metadata]
     C -->|Completed transcript event| E[Customer-managed storage]
     E --> F[Permission-aware search index]
     E --> G[Summary and review workers]
