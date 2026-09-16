@@ -73,16 +73,15 @@ The linked [Node.js reference implementation](https://github.com/zoom/rtms-sampl
 The store suppresses recent duplicate events, repairs an incomplete JSONL tail, rebuilds projections after restart, and removes inactive stream folders according to a configurable retention period. It still uses local disk and one configured Zoom app. It does not upload records, build a search index, call a model, provide a review UI, enforce legal holds, or prove compliance with a regulation.
 
 ```mermaid
-flowchart TB
+flowchart LR
     A[Zoom Meeting] -->|RTMS transcript stream| B[Node.js transcript receiver]
-    B -->|Normalized events| C[Canonical JSONL record]
-    C -->|Generate transcript files| D[VTT, SRT, TXT, and metadata]
-    C -->|Completed transcript event| E[Customer-managed storage]
-    E --> F[Permission-aware search index]
-    E --> G[Summary and review workers]
-    E --> H[Retention hold deletion and audit policy]
-    F --> I[Authorized search experience]
-    G --> I
+    B -->|Transcript events and timestamps| C[Transcript formatter]
+    C -->|WebVTT| D[VTT file]
+    C -->|SubRip| E[SRT file]
+    C -->|Readable transcript| F[TXT file]
+    D --> G[Customer storage or processing]
+    E --> G
+    F --> G
 ```
 
 The transcript receiver and local record are implemented by the linked repository. The storage adapter, completion event, search index, model workers, policy engine, and user experience are the knowledge-base extension described in this Blueprint.
