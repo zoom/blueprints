@@ -2,9 +2,9 @@
 title: "Capture Zoom Meeting Transcripts for a Knowledge Base"
 slug: "meeting-transcript-knowledge-base"
 description: >-
-  Build a knowledge-base foundation from live Zoom Meeting
-  transcripts. Capture canonical meeting records, then connect them to search,
-  summarization, review, and compliance workflows.
+  Build a foundation for a knowledge base from live Zoom Meeting transcripts.
+  Capture canonical meeting records for search, summarization, review, and
+  compliance workflows. The knowledge-base application is not included.
 products: ["rtms"]
 verticals: ["enterprise"]
 estimated_time: "1-2 days"
@@ -25,7 +25,7 @@ deploy:
   - { label: "Deploy to Railway", url: "https://railway.com/new?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcript-knowledge-base" }
 ---
 
-Build a knowledge base that turns live Zoom Meeting conversations into searchable, reviewable records. Teams can use those records to find past decisions, summarize customer conversations, review service quality, and support retention or supervision workflows.
+Build the transcript foundation for a knowledge base that can turn live Zoom Meeting conversations into searchable, reviewable records. Teams can use those records to find past decisions, summarize customer conversations, review service quality, and support retention or supervision workflows. The linked implementation does not include the knowledge-base application.
 
 [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) sends transcript text while the meeting is running. The reference implementation stores a canonical JSON Lines event log plus [WebVTT](https://www.w3.org/TR/webvtt1/), SubRip (SRT), and plain-text projections. It preserves meeting, stream, speaker, and timing context without adding a bot participant.
 
