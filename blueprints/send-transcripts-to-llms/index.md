@@ -76,7 +76,7 @@ The linked [RTMS reference implementations](https://github.com/zoom/rtms-samples
 ```mermaid
 flowchart TB
     A[Zoom Meeting] -->|Live transcript via RTMS| B[Node.js RTMS service]
-    B -->|Transcript event| C[Provider context: one segment or bounded stream history]
+    B -->|Transcript event| C[Prepare transcript context]
     C -->|Provider request| D{OpenAI / Anthropic / Others}
     D -->|OpenAI or Anthropic response| E[Server console]
     E -.->|Future extension| F[CRM, dashboard, automation, or app]
