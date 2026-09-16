@@ -11,8 +11,9 @@ verticals: ["agents", "enterprise"]
 estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
 status: "draft"
-updated: 2026-09-03
+updated: 2026-09-11
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
+demo_url: "https://success.zoom.us/clips/share/j-KWnfhuQj-EhIAN4M-jOA"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
 seo_title: "Send Zoom Meeting Transcripts to MCP Servers"
@@ -21,6 +22,8 @@ partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
 stack: "Node.js · TypeScript · Zoom RTMS · MCP · Anthropic, OpenAI, or OpenRouter"
+deploy:
+  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-samples/tree/tanchunsiong/deploy-transcripts-to-mcp" }
 ---
 
 Build a two-service meeting agent that turns live Zoom Meeting transcripts into context-aware responses backed by approved Zoom content. The public RTMS client batches each transcript stream and sends it through an authenticated private MCP connection to an isolated LLM router.
@@ -54,8 +57,6 @@ If you prefer built-in meeting assistance, [Zoom AI Companion](https://zoom.us/a
 
 Follow along as we walk through the architecture.
 
-## Features
-
 The reference implementation reports RTMS transcript batching, environment-configured MCP server discovery, allowlisted tool calls, and responses through structured service logs. The screenshot shows a transcript asking for Zoom's stock price and the model response returned through the router with local content logging enabled.
 
 ![RTMS transcript request and model response in structured service logs](images/request-response-to-llm.png)
@@ -83,15 +84,14 @@ The [reference implementation](https://github.com/zoom/rtms-samples/tree/main/rt
 | Audit logging | Record request IDs, outcomes, durations, and safe error codes | Structured JSON logs in both services |
 
 ```mermaid
-flowchart LR
-    A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
-    Z[Zoom lifecycle webhook] -->|Authenticated start and stop events| B
-    B -->|Five-second transcript batch| C[Private LLM router]
-    C -->|Transcript and approved tool schemas| D[Configured AI provider]
-    D -->|Tool request| C
-    C -->|Allowlisted tools/list and tools/call| E[Configured MCP servers]
-    E -->|Meeting, recording, or document result| C
-    C -->|Text response| B
+flowchart TB
+    A[Zoom Meeting] -->|Live transcript via RTMS| B[mcp_client]
+    B -->|Bearer-authenticated MCP request| C[llm-router-server]
+    C -->|Selected AI provider| D[Anthropic, OpenAI or OpenRouter]
+    D -->|Model Response| C
+    C -->|tools/list and tools/call| E[Configured MCP servers]
+    E -->|Tool result| C
+    C -->|Response| B
 ```
 
 The router returns the model's text response to the RTMS client. With `LOG_CONTENT=false`, the client records only the request outcome. Set `LOG_CONTENT=true` in both services during local testing to print transcript and response text. Add an output adapter if the response needs to appear in a UI, API, CRM, or persistent store.
@@ -345,6 +345,10 @@ LOG_CONTENT=false
 
 To use OpenAI or OpenRouter, change `AI_PROVIDER` and set the matching key and model variables from [`llm-router-server/.env.example`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_client/zoom-rtms-mcp-client/llm-router-server/.env.example). Only the selected provider's key is required. OpenRouter also supports an alternate compatible base URL and optional application-attribution headers. Set `LOG_CONTENT=true` in both services only while checking local transcript and response output.
 
+The screenshot shows the router's example environment file, including provider selection, model settings, task prompt, and an MCP server allowlist. Its stock-data MCP server is an illustration of how to configure a different server; use the Zoom MCP entry above for the meeting-content workflow.
+
+![LLM router example environment configuration with provider settings and an MCP server allowlist](images/llm-router-env-example.png)
+
 Configure `mcp_client/.env` with:
 
 ```dotenv
@@ -396,7 +400,9 @@ docker build \
   -t zoom-rtms-mcp-client .
 ```
 
-The repository does not include Render, Railway, or Docker Compose configuration. Supply the two environment files, connect both containers through a private network, expose only the client webhook, and keep bearer authentication enabled.
+The Render deployment card creates a public RTMS client and a private LLM router, connects them through Render's private network, and generates their shared bearer token. Supply the Zoom credentials, selected model-provider key, `MCP_SERVERS_JSON`, and each token variable referenced by that registry. Expose only the RTMS client.
+
+The deployment definition is ready for platform testing but has not been verified with a production Zoom account. For Railway, deploy the private LLM router first and wait for its health check. Then deploy the public RTMS client with `LLM_MCP_SERVER_URL` referencing the router's `RAILWAY_PRIVATE_DOMAIN`. That reference enforces router-first ordering during template deployments and staged multi-service changes. Railway is omitted from the deployment cards until a published two-service template can configure private networking and the shared token.
 
 #### Verify the services
 
@@ -430,7 +436,7 @@ Start RTMS in a test meeting and verify that the audit log records a successful 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `your-development-domain` and `your-production-domain` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
+The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `example.ngrok.app` and `blueprint.example.ngrok.app` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
 
 ### Scopes
 
@@ -469,7 +475,7 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 - Unexpected RTMS socket closures do not trigger general reconnection.
 - Health endpoints report configured connections as available without active probes.
 - The RTMS client exposes the returned text only through local structured logs when `LOG_CONTENT=true`; it does not include a UI, API, CRM, or persistent response adapter.
-- The external repository includes a Marketplace manifest but does not yet include Render configuration, Railway configuration, or a Compose file.
+- The external repository includes a Marketplace manifest and deployment configuration. A Compose file is not included.
 
 </details>
 
