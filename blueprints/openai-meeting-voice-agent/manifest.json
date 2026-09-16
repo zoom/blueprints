@@ -1,66 +1,66 @@
 {
   "display_information": {
     "display_name": "OpenAI Meeting Voice Agent",
-    "description": "Send live Zoom Meeting audio to an OpenAI Realtime agent with selected Zoom MCP tools.",
-    "long_description": "A user-managed Zoom app that streams live meeting audio through RTMS to the OpenAI Realtime API and exposes selected Zoom MCP search, retrieval, and document tools."
+    "description": "Play OpenAI Realtime voice responses inside a Zoom Meeting app.",
+    "long_description": "A user-managed Zoom app that streams live meeting audio through RTMS, lets OpenAI Realtime call tools from configured MCP servers, and plays spoken responses inside the Zoom App webview."
   },
   "oauth_information": {
     "usage": "USER_OPERATION",
-    "development_redirect_uri": "https://your-development-domain.example.com/oauth/callback",
-    "production_redirect_uri": "https://your-production-domain.example.com/oauth/callback",
+    "development_redirect_uri": "https://example.ngrok.app/oauth/callback",
+    "production_redirect_uri": "https://blueprint.example.ngrok.app/oauth/callback",
     "oauth_allow_list": [
-      "https://your-development-domain.example.com",
-      "https://your-production-domain.example.com"
+      "https://example.ngrok.app",
+      "https://blueprint.example.ngrok.app"
     ],
     "strict_mode": true,
     "subdomain_strict_mode": false,
     "scopes": [
-      {
-        "scope": "meeting:read:meeting_audio",
-        "optional": false
-      },
-      {
-        "scope": "meeting:read:search",
-        "optional": false
-      },
-      {
-        "scope": "meeting:read:assets",
-        "optional": false
-      },
-      {
-        "scope": "cloud_recording:read:list_user_recordings",
-        "optional": false
-      },
-      {
-        "scope": "cloud_recording:read:content",
-        "optional": false
-      },
-      {
-        "scope": "docs:read:export",
-        "optional": false
-      },
-      {
-        "scope": "docs:write:import",
-        "optional": false
-      }
+      { "scope": "zoomapp:inmeeting", "optional": false },
+      { "scope": "meeting:read:meeting_audio", "optional": false }
     ],
-    "scope_description": "Receive live meeting audio and let the configured Zoom MCP tools search meetings, retrieve permitted assets and recordings, read document content, and create Zoom Docs."
+    "scope_description": "Run an in-meeting Zoom App and receive live meeting audio through RTMS. MCP server permissions are configured separately and do not add Zoom Marketplace scopes unless a selected server uses Zoom APIs."
   },
   "features": {
-    "products": [
-      "ZOOM_MEETING"
+    "products": ["ZOOM_MEETING"],
+    "development_home_uri": "https://example.ngrok.app",
+    "production_home_uri": "https://blueprint.example.ngrok.app",
+    "domain_allow_list": [
+      { "domain": "example.ngrok.app", "explanation": "Development server" },
+      { "domain": "blueprint.example.ngrok.app", "explanation": "Production server" },
+      { "domain": "appssdk.zoom.us", "explanation": "Required for Zoom Apps SDK" }
     ],
+    "in_client_feature": {
+      "zoom_app_api": {
+        "enable": true,
+        "zoom_app_apis": [
+          "getSupportedJsApis",
+          "getRunningContext",
+          "getMeetingContext",
+          "getUserContext",
+          "getMeetingUUID",
+          "getAppContext",
+          "startRTMS",
+          "stopRTMS",
+          "getRTMSStatus",
+          "onRTMSStatusChange"
+        ]
+      },
+      "guest_mode": { "enable": false },
+      "in_client_oauth": { "enable": false }
+    },
+    "zoom_client_support": {
+      "mobile": { "enable": false },
+      "zoom_room": { "enable": false },
+      "pwa_client": { "enable": false }
+    },
     "event_subscription": {
       "enable": true,
       "events": [
         {
           "subscription_name": "Meeting RTMS Events",
-          "event_types": [
-            "meeting.rtms_started",
-            "meeting.rtms_stopped"
-          ],
-          "development_webhook_url": "https://your-development-domain.example.com/",
-          "production_webhook_url": "https://your-production-domain.example.com/"
+          "event_types": ["meeting.rtms_started", "meeting.rtms_stopped"],
+          "development_webhook_url": "https://example.ngrok.app/webhook",
+          "production_webhook_url": "https://blueprint.example.ngrok.app/webhook"
         }
       ]
     }
