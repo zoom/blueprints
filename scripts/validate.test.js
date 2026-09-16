@@ -149,6 +149,12 @@ const FULL_BODY = [
   '## App Manifest', 'text',
 ].join('\n\n');
 
+const BODY_WITHOUT_MANIFEST = [
+  'This blueprint describes the outcomes teams can achieve with the solution.',
+  '## Architecture', 'text',
+  '## Implementation Guide', 'text',
+].join('\n\n');
+
 const VALID_FM_YAML = `---
 title: Test Blueprint
 slug: test-blueprint
@@ -165,6 +171,17 @@ github_repo: https://github.com/zoom/example
 test('body with intro prose and required sections passes', () => {
   const result = validateBody(FULL_BODY);
   assert.deepEqual(result.errors, []);
+});
+
+test('App Manifest section is optional for products that do not use app manifests', () => {
+  for (const product of ['video-sdk', 'cobrowse-sdk', 'ai-services']) {
+    assert.deepEqual(validateBody(BODY_WITHOUT_MANIFEST, [product]), [], product);
+  }
+});
+
+test('App Manifest section remains required for products that use app manifests', () => {
+  const errors = validateBody(BODY_WITHOUT_MANIFEST, ['rtms']);
+  assert.ok(errors.some((e) => e.includes('missing required section: ## App Manifest')));
 });
 
 test('body must open with intro prose before the first heading', () => {
@@ -201,6 +218,24 @@ test('missing manifest.json is a warning (not an error)', () => {
   // Missing manifest is now a warning, not an error
   assert.strictEqual(result.errors.length, 0);
   assert.ok(result.warnings.some((w) => w.includes('not found') || w.includes('missing')));
+});
+
+test('manifest.json is optional for products that do not use app manifests', () => {
+  const optionalProducts = ['video-sdk', 'cobrowse-sdk', 'ai-services'];
+  for (const product of optionalProducts) {
+    const dir = makeBlueprintDir({});
+    assert.deepEqual(validateManifest(dir, [product]), [], product);
+  }
+});
+
+test('manifest.json exemption accepts a scalar frontmatter product', () => {
+  const dir = makeBlueprintDir({});
+  assert.deepEqual(validateManifest(dir, 'video-sdk'), []);
+});
+
+test('an invalid optional manifest is still an error when present', () => {
+  const dir = makeBlueprintDir({ 'manifest.json': '{ nope' });
+  assert.ok(validateManifest(dir, ['video-sdk']).some((e) => e.includes('not valid JSON')));
 });
 
 test('invalid manifest JSON is an error', () => {
@@ -242,6 +277,19 @@ test('validateBlueprintDir passes a complete valid blueprint', () => {
   });
   assert.deepEqual(errors, []);
   assert.deepEqual(warnings, []);
+});
+
+test('validateBlueprintDir allows an optional-manifest product without manifest.json', () => {
+  const videoSdkFrontmatter = VALID_FM_YAML.replace('products: [rtms]', 'products: [video-sdk]');
+  const dir = makeBlueprintDir({
+    'index.md': `${videoSdkFrontmatter}\n\n${FULL_BODY}\n`,
+  });
+  const { errors } = validateBlueprintDir(dir, {
+    products: new Set(['video-sdk']),
+    verticals: new Set(['healthcare']),
+    solution_types: new Set(),
+  });
+  assert.deepEqual(errors, []);
 });
 
 test('validateBlueprintDir errors on missing index.md', () => {

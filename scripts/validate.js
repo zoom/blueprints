@@ -103,12 +103,13 @@ function validateFrontmatter(data = {}, dirSlug, taxonomy) {
   return { errors, warnings };
 }
 
-const REQUIRED_SECTIONS = [
-  'Architecture', 'Implementation Guide',
-];
+const REQUIRED_SECTIONS = ['Architecture', 'Implementation Guide'];
 
-// App Manifest section is only required for Zoom Apps, not Video SDK or other products
-const ZOOM_APP_PRODUCTS = ['zoom-apps', 'team-chat', 'contact-center'];
+// These products do not use a Zoom App manifest, so their blueprints may omit
+// manifest.json. If one is present, it is still validated below.
+const MANIFEST_OPTIONAL_PRODUCTS = new Set([
+  'video-sdk', 'cobrowse-sdk', 'ai-services',
+]);
 
 // Parse + non-empty check only for now. Field-level checks land during
 // integration weeks once the Marketplace manifests API schema is confirmed.
@@ -144,20 +145,14 @@ const isRemoteOrAbsolute = (ref) => /^(?:https?:|data:|\/)/i.test(ref);
 
 function validateBody(body, products = []) {
   const errors = [];
-  const warnings = [];
+  const requiredSections = [...REQUIRED_SECTIONS];
+  const manifestIsOptional = asArray(products)
+    .some((product) => MANIFEST_OPTIONAL_PRODUCTS.has(product));
+  if (!manifestIsOptional) requiredSections.push('App Manifest');
 
-  for (const section of REQUIRED_SECTIONS) {
+  for (const section of requiredSections) {
     const heading = new RegExp(`^## ${section}\\s*$`, 'm');
     if (!heading.test(body)) errors.push(`missing required section: ## ${section}`);
-  }
-
-  // App Manifest section is required only for Zoom Apps products
-  const needsAppManifest = products.some(p => ZOOM_APP_PRODUCTS.includes(p));
-  const hasAppManifest = /^## App Manifest\s*$/m.test(body);
-  if (needsAppManifest && !hasAppManifest) {
-    errors.push('missing required section: ## App Manifest (required for Zoom Apps)');
-  } else if (!needsAppManifest && !hasAppManifest) {
-    // Not an error for Video SDK, RTMS-only, etc.
   }
 
   // Blueprints open with outcome-focused intro prose, not a heading.
@@ -168,31 +163,26 @@ function validateBody(body, products = []) {
   if (!intro) {
     errors.push('blueprint must open with intro prose (outcomes-first) before the first heading');
   }
-  return { errors, warnings };
+  return errors;
 }
 
 function validateManifest(dir, products = []) {
   const manifestPath = path.join(dir, 'manifest.json');
-  const needsManifest = products.some(p => ZOOM_APP_PRODUCTS.includes(p));
-
   if (!fs.existsSync(manifestPath)) {
-    // Missing manifest is only a warning - doesn't block the PR
-    // But note if it's expected for Zoom Apps products
-    if (needsManifest) {
-      return { errors: [], warnings: ['manifest.json missing (recommended for Zoom Apps)'] };
-    }
-    return { errors: [], warnings: ['manifest.json not found (optional for Video SDK/RTMS-only blueprints)'] };
+    const manifestIsOptional = asArray(products)
+      .some((product) => MANIFEST_OPTIONAL_PRODUCTS.has(product));
+    return manifestIsOptional ? [] : ['missing manifest.json'];
   }
   try {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)
       || !Object.keys(manifest).length) {
-      return { errors: ['manifest.json must be a non-empty JSON object'], warnings: [] };
+      return ['manifest.json must be a non-empty JSON object'];
     }
   } catch (err) {
-    return { errors: [`manifest.json is not valid JSON: ${err.message}`], warnings: [] };
+    return [`manifest.json is not valid JSON: ${err.message}`];
   }
-  return { errors: [], warnings: [] };
+  return [];
 }
 
 function scanCredentials(dir) {
@@ -259,19 +249,15 @@ function validateBlueprintDir(dir, taxonomy) {
     errors.push('missing index.md');
   } else {
     const parsed = matter(fs.readFileSync(indexPath, 'utf8'));
-    products = asArray(parsed.data.products);
+    products = parsed.data.products;
     const fm = validateFrontmatter(parsed.data, slug, taxonomy);
     errors.push(...fm.errors);
     warnings.push(...fm.warnings);
-    const bodyResult = validateBody(parsed.content, products);
-    errors.push(...bodyResult.errors);
-    warnings.push(...bodyResult.warnings);
+    errors.push(...validateBody(parsed.content, parsed.data.products));
     errors.push(...validateImages(dir, parsed.data, parsed.content));
   }
 
-  const manifestResult = validateManifest(dir, products);
-  errors.push(...manifestResult.errors);
-  warnings.push(...manifestResult.warnings);
+  errors.push(...validateManifest(dir, products));
   errors.push(...scanCredentials(dir));
   return { slug, errors, warnings };
 }
