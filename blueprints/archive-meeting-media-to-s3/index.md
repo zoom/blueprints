@@ -187,6 +187,14 @@ Mount the recordings and queue directory on persistent storage. Use an IAM role 
 
 **Output:** Confirmed private object plus durable upload status
 
+The backend log from an example test run shows the recording job being queued, the WAV and MP4 files uploading to S3, and the upload queue marking the job complete.
+
+![Backend server logs showing mixed audio and video files uploaded to Amazon S3](images/backend-s3-upload-logs.png)
+
+The S3 console screenshot below shows the media objects from an example test run: the mixed audio WAV, the finalized audio-and-video MP4, and the video MP4. Verify that each expected object exists in your own bucket before allowing local cleanup.
+
+![Amazon S3 object list showing uploaded mixed_audio.wav, mixed_final.mp4, and mixed_video.mp4 files](images/s3-uploaded-media-objects.png)
+
 **Invariants:**
 
 - Object keys are deterministic for a meeting stream and artifact
