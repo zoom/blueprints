@@ -77,9 +77,9 @@ The linked [RTMS reference implementations](https://github.com/zoom/rtms-samples
 flowchart TB
     A[Zoom Meeting] -->|Live transcript via RTMS| B[Node.js RTMS service]
     B -->|Transcript event| C[Provider context: one segment or bounded stream history]
-    C -->|Provider request| D{Configured LLM}
-    D -->|OpenAI or Anthropic response| E[Server console in reference implementation]
-    E -.->|Customer extension| F[CRM, dashboard, automation, or app]
+    C -->|Provider request| D{OpenAI / Anthropic / Others}
+    D -->|OpenAI or Anthropic response| E[Server console]
+    E -.->|Future extension| F[CRM, dashboard, automation, or app]
 ```
 
 ### Agent integration map
