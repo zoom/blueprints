@@ -55,6 +55,10 @@ Follow along as we walk through the architecture.
 The in-meeting Zoom App shows the selected participant, separate audio and
 video service states, and the latest normalized inference result.
 
+The participant-selection view lets the reviewer choose an RTMS video/audio participant and load that participant's individual video stream before starting verification.
+
+![Zoom App showing RTMS video and audio participant selection and the Load Individual Video control](images/participant-selection.png)
+
 **See it in action:** [Demo video](https://success.zoom.us/clips/share/zjPVZV0HTeKjfm2i-p2row)
 
 ## Architecture
@@ -191,6 +195,12 @@ Send short clips instead of an endless stream. Process audio and video separatel
 [`deepfakeClient.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/stream_audio_and_video_deepfake_detection_js/deepfakeClient.js) selects either the service or local CLI path, normalizes the provider response, applies the configured threshold, and returns model metadata with the decision. The audio client follows the same boundary with its own clip duration and threshold. This separation keeps provider-specific parsing inside the inference adapter and allows either model to change without changing RTMS ingestion or the Zoom App.
 
 Check that every response has the expected fields and valid scores. Show which model ran, which part of the meeting it checked, how confident it was, and whether the service is healthy. Never turn a score directly into an accusation.
+
+These example Zoom App views show separate video and audio verification results, including clip details, processing time, and model scores. The scores describe the configured model's output for these test clips; they are not proof that a participant's media is authentic.
+
+![Zoom App showing video verification clip details, processing time, and real and fake model scores](images/video-verification.png)
+
+![Zoom App showing audio verification model, clip details, processing time, and real and fake model scores](images/audio-verification.png)
 
 **Input:** Authorized participant selection and timestamped RTMS media frames
 
