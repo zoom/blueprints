@@ -188,6 +188,10 @@ For a private server, set `authType` to `bearer` and use `bearerTokenEnv` to nam
 
 The backend passes every validated server to OpenAI Realtime with `tool_choice: auto`. Realtime loads the allowed tool names and descriptions from the servers so the model can compare their capabilities with the spoken request. The model may answer directly or call a matching tool and use the returned result in its answer.
 
+In this example, the Zoom App shows the spoken stock-price request, MCP tool activity, and an assistant response that is being played as voice audio in the app webview.
+
+![Zoom App showing an MCP-backed stock-price request and the assistant speaking its response](images/mcp-backed-spoken-response.png)
+
 Every server must have a non-empty `allowedTools` array. Keep each allowlist explicit and minimal. Route content creation, purchases, messages, and other lasting changes through the customer's approval workflow.
 
 The reference implementation defaults MCP approval to `never` and only logs approval requests; it does not include an approval UI. Keep automatic execution only for tools you are willing to run without another prompt. Put write tools behind an approval flow before production.
@@ -211,6 +215,10 @@ Do not blindly trust tool descriptions, inputs, or results. Check IDs and permis
 #### 6. Deliver and interrupt spoken responses
 
 [`frontendWss.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/frontendWss.js) carries assistant audio and status events to the app. [`public/audio-client.js`](https://github.com/zoom/rtms-samples/blob/main/zoom_apps/send_audio_to_openai_realtime_api_with_audio_playback_js/public/audio-client.js) schedules PCM chunks, clears them on interruption, and reports the played position. Keep playback scoped to the intended app instance and stop it when RTMS or the frontend disconnects.
+
+The example below shows a user speaking while the assistant is responding. The app reports that new speech interrupted the assistant, so queued playback can stop rather than continuing over the user.
+
+![Zoom App showing assistant speech interrupted by a new spoken request](images/interrupt-spoken-response.png)
 
 ### Part 3: Run the reference implementation
 
