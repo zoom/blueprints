@@ -345,6 +345,10 @@ LOG_CONTENT=false
 
 To use OpenAI or OpenRouter, change `AI_PROVIDER` and set the matching key and model variables from [`llm-router-server/.env.example`](https://github.com/zoom/rtms-samples/blob/main/rtms_mcp_client/zoom-rtms-mcp-client/llm-router-server/.env.example). Only the selected provider's key is required. OpenRouter also supports an alternate compatible base URL and optional application-attribution headers. Set `LOG_CONTENT=true` in both services only while checking local transcript and response output.
 
+The screenshot shows the router's example environment file, including provider selection, model settings, task prompt, and an MCP server allowlist. Its stock-data MCP server is an illustration of how to configure a different server; use the Zoom MCP entry above for the meeting-content workflow.
+
+![LLM router example environment configuration with provider settings and an MCP server allowlist](images/llm-router-env-example.png)
+
 Configure `mcp_client/.env` with:
 
 ```dotenv
