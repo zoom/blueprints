@@ -24,7 +24,7 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 **What you'll need:**
 
 * [RTMS access](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer)). RTMS requires a paid Zoom Workplace plan with the appropriate entitlement.
-* A [Zoom Developer Account](https://developers.zoom.us) and a **General OAuth App** created in the [Zoom App Marketplace](https://marketplace.zoom.us/).
+* A [Zoom Developer Account](https://developers.zoom.us) and a **General OAuth App** created in the [Zoom Marketplace](https://marketplace.zoom.us/).
 * A backend that can receive webhooks, join the RTMS media stream, store meeting context, and call an LLM.
 * A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) that displays the dashboard and provides in-meeting controls for starting and stopping RTMS.
 * An [OpenAI API key](https://platform.openai.com/api-keys) for task extraction, meeting summaries, and Zoom Doc creation through the Responses API and [Zoom MCP](https://mcp.zoom.us).
