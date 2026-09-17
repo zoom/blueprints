@@ -13,7 +13,7 @@ updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js"
 solution_types: ["media-processing", "data-integration", "compliance-auditing"]
 tags: ["archive", "amazon-s3", "audio", "video", "zoom-meetings"]
-seo_title: "Save Zoom recordings to S3 automatically"
+seo_title: "Save Zoom recordings to cloud storage automatically"
 seo_keywords: ["zoom meeting archive s3", "zoom rtms aws s3", "save zoom audio video"]
 partners: ["aws"]
 license_required: true
