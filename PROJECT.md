@@ -113,7 +113,7 @@
 | **Jen Brissman** | Real-time sales coaching inside Zoom calls, How to build a Zoom meeting notetaker | Agents | ✅ Gold standards complete. Reviewing team videos next week. |
 | **Ekaansh Arora** | Embed telehealth video visits in your patient portal | Apps | ✅ Video updated with intro. Ready for review. |
 | **Ticorrian Heard** | Analyze meeting sentiment in real time | Enterprise | Video update coming. |
-| **Ticorrian Heard** | Content moderation with Zoom Video SDK | Apps | Confirmed as 2nd blueprint. Timeline TBD. |
+| **Ticorrian Heard** | Moderate content in real-time video sessions | Apps | Confirmed as 2nd blueprint. Timeline TBD. |
 | **Jeremy Wright** | Rivet Starter *(placeholder)* | Apps | PR expected Thursday/Friday. |
 | **Jeremy Wright** | Zoom Scheduler *(placeholder)* | Apps | Pending PM approval. |
 | **Pranjal Jagtap** | CRM Integration *(placeholder)* | Enterprise | On hold—may not make V1 deadline. |
@@ -196,7 +196,7 @@
 | Build an iOS classroom with screen sharing and annotation | Boon Jun | In Progress |
 | Rivet Starter | Jeremy | PR expected Thursday/Friday |
 | Zoom Scheduler | Jeremy | Pending PM approval |
-| Content moderation with Zoom Video SDK | Ticorrian | Confirmed as 2nd blueprint. Timeline TBD. |
+| Moderate content in real-time video sessions | Ticorrian | Confirmed as 2nd blueprint. Timeline TBD. |
 
 ---
 
