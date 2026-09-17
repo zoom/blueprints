@@ -150,7 +150,12 @@
 | Monitor contact center calls in real time | Rehema | ✅ Video submitted |
 | Real-time compliance advisor | Max | In progress, needs photos/video |
 | Embed meetings into website | Max | In progress |
-| Chun Siong's PRs | Chun Siong | Polishing |
+| Send Zoom transcripts to ChatGPT or Claude | Chun Siong | Draft PR (#25) |
+| Save Zoom recordings to S3 automatically | Chun Siong | Draft PR (#26) |
+| Turn Zoom meetings into searchable knowledge | Chun Siong | Draft PR (#27) |
+| Add an OpenAI voice assistant to Zoom meetings | Chun Siong | Draft PR (#28) |
+| Detect deepfakes in live Zoom calls | Chun Siong | Draft PR (#29) |
+| Connect Zoom transcripts to AI tools via MCP | Chun Siong | Draft PR (#30) |
 
 ---
 
