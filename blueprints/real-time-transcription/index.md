@@ -13,6 +13,7 @@ author: "Michael Harrington"
 status: "draft"
 updated: 2026-08-04
 github_repo: "https://github.com/zoom/rtms-samples"
+seo_title: "Stream live transcripts from Zoom meetings"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom meeting live transcript api"]
 ---
 

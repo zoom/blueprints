@@ -13,7 +13,7 @@ updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["voice-agent", "openai-realtime", "audio", "mcp", "zoom-meetings"]
-seo_title: "Analyze Live Zoom Meeting Audio with OpenAI Realtime"
+seo_title: "Add an OpenAI voice assistant to Zoom meetings"
 seo_keywords: ["zoom meeting audio openai", "zoom rtms openai realtime", "zoom meeting listening agent"]
 partners: ["openai"]
 license_required: true

@@ -16,7 +16,7 @@ status: "draft"
 updated: 2026-08-26
 github_repo: "https://github.com/zoom/rtms-compliance-sample-js"
 tags: ["compliance", "finance", "real-time", "audit", "supervision"]
-seo_title: "How to build a real-time compliance monitoring app on Zoom"
+seo_title: "Real-time compliance monitoring for Zoom meetings"
 seo_keywords: ["zoom real-time compliance monitoring", "rtms compliance app", "finra meeting supervision zoom", "build compliance advisor zoom api"]
 partners: ["anthropic", "openai"]
 license_required: true
