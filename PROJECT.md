@@ -128,8 +128,8 @@
 
 **Chun Siong's 6 blueprints:**
 - Send Zoom transcripts to ChatGPT or Claude (Agents)
-- Save Zoom recordings to S3 automatically (Enterprise)
-- Turn Zoom meetings into searchable knowledge (Enterprise)
+- Save Zoom recordings to cloud storage automatically (Enterprise)
+- Capture live meeting transcripts for search and storage (Enterprise)
 - Add an OpenAI voice assistant to Zoom meetings (Agents)
 - Detect deepfakes in live Zoom calls (Enterprise)
 - Connect Zoom transcripts to AI tools via MCP (Agents)
@@ -151,8 +151,8 @@
 | Real-time compliance advisor | Max | In progress, needs photos/video |
 | Embed meetings into website | Max | In progress |
 | Send Zoom transcripts to ChatGPT or Claude | Chun Siong | Draft PR (#25) |
-| Save Zoom recordings to S3 automatically | Chun Siong | Draft PR (#26) |
-| Turn Zoom meetings into searchable knowledge | Chun Siong | Draft PR (#27) |
+| Save Zoom recordings to cloud storage automatically | Chun Siong | Draft PR (#26) |
+| Capture live meeting transcripts for search and storage | Chun Siong | Draft PR (#27) |
 | Add an OpenAI voice assistant to Zoom meetings | Chun Siong | Draft PR (#28) |
 | Detect deepfakes in live Zoom calls | Chun Siong | Draft PR (#29) |
 | Connect Zoom transcripts to AI tools via MCP | Chun Siong | Draft PR (#30) |
@@ -171,8 +171,8 @@
 | Monitor contact center calls in real time | Rehema | ✅ Video submitted |
 | Analyze meeting sentiment in real time | Ticorrian | Video update coming |
 | Detect deepfakes in live Zoom calls | Chun Siong | Draft PR |
-| Save Zoom recordings to S3 automatically | Chun Siong | Draft PR |
-| Turn Zoom meetings into searchable knowledge | Chun Siong | Draft PR |
+| Save Zoom recordings to cloud storage automatically | Chun Siong | Draft PR |
+| Capture live meeting transcripts for search and storage | Chun Siong | Draft PR |
 | CRM Integration *(placeholder)* | Pranjal | On hold—may not make V1 deadline |
 
 ### Agents
