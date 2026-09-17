@@ -124,7 +124,6 @@
 | **Chun Siong Tan** | 6 blueprints (see below) | Agents, Enterprise | ✅ 6 draft PRs (#25-30) with screenshots, videos, deploy buttons. |
 | **Donte Small** | Add human approval to an AI workplace agent | Agents | Status unclear. Reaching out. |
 | **Boon Jun Tan** | Build an iOS classroom with screen sharing and annotation | Apps | Branch exists. In progress. |
-| **Michael Harrington** | Stream live transcripts from Zoom meetings | Enterprise | Draft exists. |
 | **Gianni Latange** | TBD | — | Blueprint selection pending. |
 
 **Chun Siong's 6 blueprints:**
@@ -169,7 +168,6 @@
 | Detect deepfakes in live Zoom calls | Chun Siong | Draft PR |
 | Save Zoom recordings to S3 automatically | Chun Siong | Draft PR |
 | Turn Zoom meetings into searchable knowledge | Chun Siong | Draft PR |
-| Stream live transcripts from Zoom meetings | Michael | Draft exists |
 | CRM Integration *(placeholder)* | Pranjal | On hold—may not make V1 deadline |
 
 ### Agents
@@ -314,8 +312,8 @@
 
 - Agent skill generation workflow (pending Chun Siong's LLM Gateway consultation)
 - ⚠️ Credential scan recursion blocker if subdirectories grow
-- Cover images for Jen's completed Blueprints
-- GitHub author link fixes for Jen's Blueprints
+- Cover images needed for all blueprints (Jen to action)
+- GitHub author links all point to Jen's GitHub (Michael to fix)
 - Content container width (pending DevDocs styling update)
 - Amplitude/telemetry implementation
 - Security approval process timeline for new app integration
