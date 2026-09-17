@@ -15,7 +15,7 @@ updated: 2026-08-25
 github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
 demo_url: ""
 tags: ["sales", "coaching", "real-time"]
-seo_title: "Receive Zoom Transcripts for a Sentiment Analysis Model"
+seo_title: "Analyze meeting sentiment in real time"
 seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysis", "rtms ai sentiment"]
 license_required: false
 stack: "Node · Express · React · TensorFlow"
