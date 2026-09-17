@@ -15,7 +15,7 @@ updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://www.youtube.com/watch?v=4N-g5TgGRz0"
 tags: ["notetaker", "transcription", "real-time", "action-items"]
-seo_title: "How to build a Zoom notetaker / meeting bot"
+seo_title: "How to build a Zoom meeting notetaker"
 seo_keywords: ["zoom meeting notetaker", "zoom meeting bot", "rtms meeting assistant", "build zoom transcription app", "ai meeting notes zoom"]
 partners: ["anthropic", "openai"]
 license_required: false

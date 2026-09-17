@@ -18,7 +18,7 @@ demo_url: "https://youtu.be/cQ5eT_UbMIY?si=7TwtTTzF0EHwJOCi"
 # ── Optional — delete what you don't use ────────────────────────────────────
 solution_types: ["transcription-summarization", "analytics"]
 tags: ["real-time", "rtms", "contact-center", "audio-capture", "monitoring"]
-seo_title: "Real-Time Contact Center Engagement Monitoring with Zoom RTMS"
+seo_title: "Monitor contact center calls in real time"
 seo_keywords: ["zoom contact center rtms", "real-time media streams", "contact center monitoring", "supervisor dashboard"]
 license_required: true
 license_note: "Requires RTMS add-on license for Zoom Contact Center"

@@ -15,7 +15,7 @@ updated: 2026-09-03
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
-seo_title: "Send Zoom Meeting Transcripts to MCP Servers"
+seo_title: "Connect Zoom transcripts to AI tools via MCP"
 seo_keywords: ["zoom transcript mcp", "zoom rtms mcp client", "zoom meeting mcp tools"]
 partners: ["anthropic", "openai"]
 license_required: true
