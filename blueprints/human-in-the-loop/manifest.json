@@ -1,7 +1,7 @@
 {
     "manifest": {
         "display_information": {
-            "display_name": "Zoom Workplace Chatbot",
+            "display_name": "your-app-name",
             "discover_type": "LISTED",
             "install_type": "APP_DIRECTORY"
         },
@@ -224,7 +224,7 @@
                 "enable": true,
                 "enable_support_channel": false,
                 "slash_command": {
-                    "command": "zwc",
+                    "command": "ex_zwc",
                     "command_hints": [
                         {
                             "usage_hint": "General Chatbot Command",

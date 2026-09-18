@@ -83,8 +83,6 @@ Expected:
   }
 
   try {
-<<<<<<< HEAD
-<<<<<<< HEAD
     const manifestFile = JSON.parse(rawManifest);
 
     if (
@@ -92,24 +90,6 @@ Expected:
       typeof manifestFile !== "object" ||
       Array.isArray(manifestFile) ||
       Object.keys(manifestFile).length === 0
-=======
-    const manifest = JSON.parse(rawManifest);
-
-    if (
-      !manifest ||
-      typeof manifest !== "object" ||
-      Array.isArray(manifest) ||
-      Object.keys(manifest).length === 0
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
-    const manifestFile = JSON.parse(rawManifest);
-
-    if (
-      !manifestFile ||
-      typeof manifestFile !== "object" ||
-      Array.isArray(manifestFile) ||
-      Object.keys(manifestFile).length === 0
->>>>>>> 24fb25d (Updated Zoom Manifest script)
     ) {
       fail(
         "Manifest file parsed successfully but contains no manifest data."
@@ -120,15 +100,7 @@ Expected:
       `✓ JSON parsed successfully: ${manifestPath}`
     );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     return manifestFile;
-=======
-    return manifest;
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
-    return manifestFile;
->>>>>>> 24fb25d (Updated Zoom Manifest script)
   } catch (error) {
     fail(
       `Manifest contains invalid JSON: ${error.message}`
@@ -136,10 +108,6 @@ Expected:
   }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 24fb25d (Updated Zoom Manifest script)
 function normalizeManifestPayload(manifestFile) {
   if (
     manifestFile.manifest &&
@@ -162,11 +130,6 @@ function normalizeManifestPayload(manifestFile) {
   };
 }
 
-<<<<<<< HEAD
-=======
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
->>>>>>> 24fb25d (Updated Zoom Manifest script)
 async function getZoomAccessToken() {
   requireEnv(
     "ZOOM_ACCOUNT_ID",
@@ -223,19 +186,9 @@ async function getZoomAccessToken() {
   }
 
   if (!response.ok) {
-<<<<<<< HEAD
-<<<<<<< HEAD
     console.error(
       JSON.stringify(data, null, 2)
     );
-=======
-    console.error(data);
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
-    console.error(
-      JSON.stringify(data, null, 2)
-    );
->>>>>>> 24fb25d (Updated Zoom Manifest script)
 
     fail(
       `Unable to obtain Zoom access token (HTTP ${response.status})`
@@ -257,25 +210,10 @@ async function getZoomAccessToken() {
 
 async function validateManifest(
   accessToken,
-<<<<<<< HEAD
-<<<<<<< HEAD
   manifestFile
 ) {
   const requestBody =
     normalizeManifestPayload(manifestFile);
-=======
-  manifest
-) {
-  const requestBody = {
-    manifest,
-  };
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
-  manifestFile
-) {
-  const requestBody =
-    normalizeManifestPayload(manifestFile);
->>>>>>> 24fb25d (Updated Zoom Manifest script)
 
   console.log(
     "→ Sending manifest to Zoom validation API..."
@@ -365,30 +303,12 @@ async function main() {
     "-----------------------"
   );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   const blueprintName =
     process.argv[2];
 
   const manifestPath =
     getManifestPath();
 
-=======
-  const manifestPath =
-    getManifestPath();
-
-  const blueprintName =
-    process.argv[2];
-
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
-  const blueprintName =
-    process.argv[2];
-
-  const manifestPath =
-    getManifestPath();
-
->>>>>>> 24fb25d (Updated Zoom Manifest script)
   console.log(
     `Blueprint: ${blueprintName}`
   );
@@ -397,15 +317,7 @@ async function main() {
     `Manifest: ${manifestPath}\n`
   );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   const manifestFile =
-=======
-  const manifest =
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
-  const manifestFile =
->>>>>>> 24fb25d (Updated Zoom Manifest script)
     loadManifest(manifestPath);
 
   const accessToken =
@@ -414,15 +326,7 @@ async function main() {
   const result =
     await validateManifest(
       accessToken,
-<<<<<<< HEAD
-<<<<<<< HEAD
       manifestFile
-=======
-      manifest
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
-=======
-      manifestFile
->>>>>>> 24fb25d (Updated Zoom Manifest script)
     );
 
   if (result.ok !== true) {
