@@ -733,8 +733,6 @@ Observe → Recommend → Approve → Execute
 The model can interpret context and prepare work, but application code still controls when an action becomes executable and which Zoom capability is allowed to perform it.
 
 
-
-
 ## App Manifest
 
 The app manifest configures the Zoom products, permissions, event subscriptions, and Zoom Apps SDK APIs used by the human-in-the-loop agent.
@@ -794,8 +792,6 @@ Use this checklist to verify the implementation:
 * [ ] WebSocket connections require a valid JWT
 
 * [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
-
-* [ ] LLM extraction runs at a configured interval instead of running on every transcript segment
 
 * [ ] Extraction results parse as valid JSON, and malformed responses are handled without interrupting the session
 
