@@ -10,7 +10,7 @@ permissions:
 jobs:
   validate-manifest:
     name: Validate Zoom Manifest
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest 
 
     steps:
       - name: Checkout PR
