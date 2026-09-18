@@ -14,7 +14,6 @@ author: "Donte"
 status: "draft"                    # draft | review | published
 updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
-seo_title: "Add human approval to an AI workplace agent"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom mcp server"]
 ---
 
@@ -24,7 +23,7 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 **What you'll need:**
 
 * [RTMS access](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer)). RTMS requires a paid Zoom Workplace plan with the appropriate entitlement.
-* A [Zoom Developer Account](https://developers.zoom.us) and a **General OAuth App** created in the [Zoom Marketplace](https://marketplace.zoom.us/).
+* A [Zoom Developer Account](https://developers.zoom.us) and a **General OAuth App** created in the [Zoom App Marketplace](https://marketplace.zoom.us/).
 * A backend that can receive webhooks, join the RTMS media stream, store meeting context, and call an LLM.
 * A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) that displays the dashboard and provides in-meeting controls for starting and stopping RTMS.
 * An [OpenAI API key](https://platform.openai.com/api-keys) for task extraction, meeting summaries, and Zoom Doc creation through the Responses API and [Zoom MCP](https://mcp.zoom.us).
@@ -215,9 +214,9 @@ There is no separate timer or manual "run analysis" step.
 
 The recommendation pipeline has two layers.
 
-* AI interprets language and produces structured signals.
+AI interprets language and produces structured signals.
 
-* Application logic decides whether those signals justify recommending an action.
+Application logic decides whether those signals justify recommending an action.
 
 ### Turn the transcript into structured suggestions
 
@@ -734,17 +733,19 @@ Observe → Recommend → Approve → Execute
 The model can interpret context and prepare work, but application code still controls when an action becomes executable and which Zoom capability is allowed to perform it.
 
 
+
+
 ## App Manifest
 
 The app manifest configures the Zoom products, permissions, event subscriptions, and Zoom Apps SDK APIs used by the human-in-the-loop agent.
 
 The manifest enables the agent to:
 
-* Run inside Zoom Meetings and Zoom Chat.
+* Run inside Zoom Meetings and Team Chat.
 * Start, pause, resume, and stop a Real-Time Media Streams (RTMS) session.
 * Receive meeting transcripts, audio, video, screen sharing, and in-meeting chat data.
 * Display recommendations inside the Zoom client.
-* Send approved actions and follow-up messages to Zoom Chat.
+* Send approved actions and follow-up messages to Team Chat.
 * Import generated meeting notes and action items into Zoom Docs.
 * Receive RTMS lifecycle events through webhooks.
 
@@ -763,16 +764,16 @@ You must also replace `your_subscription_id_here` and `your_shortcut_id_here` wi
 1. Sign in to the [Zoom App Marketplace](https://marketplace.zoom.us/).
 2. Select **Develop** and then **Build App**.
 3. Create a **General App**.
-4. Open the [app’s manifest](https://github.com/zoom/human-in-the-loop-workplace-agent-sample/tree/main/0-app-manifest).
+4. Open the [app’s manifest](https://github.com/zoom/human-in-the-loop-workplace-agent-sample/tree/main/0-app-manifest)
 5. Copy the contents of `manifest.json` into the editor.
 6. Update the placeholder URLs and identifiers.
 7. Save the manifest and resolve any validation errors.
 
-The development URLs must be publicly accessible over HTTPS. If you are running the blueprint locally, start your tunnel before testing OAuth callbacks, Zoom Chat commands, or webhook events.
+The development URLs must be publicly accessible over HTTPS. If you are running the blueprint locally, start your tunnel before testing OAuth callbacks, Team Chat commands, or webhook events.
 
 ### Review the requested permissions
 
-The manifest requests access to meeting media, transcripts, Zoom Chat, Zoom Docs, recordings, and AI Companion search. Review these scopes before distributing the app and remove any permissions your implementation does not use.
+The manifest requests access to meeting media, transcripts, Team Chat, Zoom Docs, recordings, and AI Companion search. Review these scopes before distributing the app and remove any permissions your implementation does not use.
 
 The provided manifest also includes Zoom Contact Center and webinar RTMS events. Remove those events and their corresponding scopes if the blueprint only supports Zoom Meetings. Keeping the manifest limited to the implemented workflow makes the app easier for administrators and users to review.
 
@@ -782,46 +783,48 @@ For production, configure the production home, redirect, message, and webhook UR
 
 Use this checklist to verify the implementation:
 
-- [ ] Webhook signature verification rejects requests with invalid signatures or stale timestamps
+* [ ] Webhook signature verification rejects requests with invalid signatures or stale timestamps
 
-- [ ] Stream failover with a new `rtms_stream_id` for the same meeting tears down the previous session before joining the new stream
+* [ ] Stream failover with a new `rtms_stream_id` for the same meeting tears down the previous session before joining the new stream
 
-- [ ] Invalid, stale, or out-of-order RTMS lifecycle events do not change the active session state
+* [ ] Invalid, stale, or out-of-order RTMS lifecycle events do not change the active session state
 
-- [ ] Transcript segments broadcast to connected clients before being persisted to the database
+* [ ] Transcript segments broadcast to connected clients before being persisted to the database
 
-- [ ] WebSocket connections require a valid JWT
+* [ ] WebSocket connections require a valid JWT
 
-- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
+* [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
 
-- [ ] LLM extraction runs at a configured interval instead of running on every transcript segment
+* [ ] LLM extraction runs at a configured interval instead of running on every transcript segment
 
-- [ ] Extraction results parse as valid JSON, and malformed responses are handled without interrupting the session
+* [ ] Extraction results parse as valid JSON, and malformed responses are handled without interrupting the session
 
-- [ ] The panel displays existing signals when it connects and updates when new extraction results are available
+* [ ] The panel displays existing signals when it connects and updates when new extraction results are available
 
-- [ ] The model can call only the Zoom MCP tools included in the configured allowlist
+* [ ] The model can call only the Zoom MCP tools included in the configured allowlist
 
-- [ ] Zoom MCP tool inputs are validated before execution
+* [ ] Zoom MCP tool inputs are validated before execution
 
-- [ ] Actions that create, update, send, or share content require explicit user approval
+* [ ] Actions that create, update, send, or share content require explicit user approval
 
-- [ ] The user can review the proposed action and its destination before approving it
+* [ ] The user can review the proposed action and its destination before approving it
 
-- [ ] Rejecting or dismissing a recommendation does not execute the proposed action
+* [ ] Rejecting or dismissing a recommendation does not execute the proposed action
 
-- [ ] Executed actions record the approving user, selected action, timestamp, and result
+* [ ] Executed actions record the approving user, selected action, timestamp, and result
 
-- [ ] Meeting media and transcript data are processed only for the authorized meeting and user
+* [ ] Meeting media and transcript data are processed only for the authorized meeting and user
 
-- [ ] OAuth scopes are limited to the permissions required by the workflow
+* [ ] OAuth scopes are limited to the permissions required by the workflow
 
-- [ ] Expired or revoked OAuth tokens fail safely and prompt the user to reconnect
+* [ ] Expired or revoked OAuth tokens fail safely and prompt the user to reconnect
 
-- [ ] SDK credentials, OAuth tokens, API keys, and other secrets do not appear in client bundles or application logs
+* [ ] SDK credentials, OAuth tokens, API keys, and other secrets do not appear in client bundles or application logs
 
 
 ## Related Resources
-* [Human in the loop sample app](https://github.com/zoom/human-in-the-loop-workplace-agent-sample) - Zoom Workplace Agent 
-* [Zoom Apps SDK](http://localhost:3000/docs/zoom-apps/) - Building in-meeting experiences
-* [Zoom Developer](https://devforum.zoom.us/) Forum - Community support
+
+- [Zoom Workplace Agent](https://github.com/zoom/human-in-the-loop-workplace-agent-sample) - Reference implementation
+- [RTMS Documentation](https://developers.zoom.us/docs/rtms/)
+- [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/)
+- [Zoom Developer Forum](https://devforum.zoom.us/)
