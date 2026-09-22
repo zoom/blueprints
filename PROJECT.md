@@ -199,7 +199,7 @@
 | Content container width expansion (Clay's feedback) | Michael | Pre-launch |
 | Persistent Dev Forum footer on each Blueprint page | Michael | Pre-launch (Jen to write language) |
 | Blueprint homepage clarity and discoverability | Jen / Michael | Pre-launch |
-| Amplitude tracking for Blueprint clicks | Jen | Pre-launch |
+| Amplitude tracking: page views, deploy button clicks, repo clicks, video plays, scroll depth | Michael / Jen | Pre-launch |
 | Agent-skill generation workflow (consult LLM Gateway team) | Chun Siong | Scoping |
 | Mermaid chart refinement | Michael | Pre-launch |
 | Manifest copy/download button on Blueprint pages | Michael | Pre-launch |
