@@ -13,7 +13,7 @@ updated: 2026-08-19
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "quickstart", "vtt", "srt", "zoom-meetings"]
-seo_title: "Zoom Meeting Live Transcript RTMS Quickstart"
+seo_title: "Capture live meeting transcripts for search and storage"
 seo_keywords: ["zoom meeting transcript api", "zoom rtms transcript", "save zoom transcript"]
 license_required: true
 license_note: "Requires RTMS to be enabled for the Zoom account and meeting."
