@@ -14,6 +14,7 @@ author: "Donte"
 status: "draft"                    # draft | review | published
 updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
+seo_title: "Add human approval to an AI workplace agent"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom mcp server"]
 ---
 
