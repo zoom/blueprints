@@ -15,7 +15,7 @@ status: "draft"
 updated: 2026-08-26
 github_repo: "https://github.com/zoom/meetingsdk-appointment-sample-js"
 tags: ["meeting-sdk", "embed", "component-view", "appointments"]
-seo_title: "How to embed a Zoom meeting in your website"
+seo_title: "Embed a Zoom meeting in your website"
 seo_keywords: ["embed zoom meeting in website", "zoom meeting sdk component view", "zoom web sdk react embed", "join zoom meeting in browser no download"]
 license_required: false
 stack: "Node · Express · React · Vite"

@@ -13,7 +13,7 @@ updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
-seo_title: "Detect Audio and Video Deepfakes in Zoom Meetings"
+seo_title: "Detect deepfakes in live Zoom calls"
 seo_keywords: ["zoom deepfake detection", "meeting deepfake detection", "live audio video fraud detection"]
 license_required: true
 license_note: "Requires a Zoom Developer Pack with RTMS access and an in-meeting Zoom App."

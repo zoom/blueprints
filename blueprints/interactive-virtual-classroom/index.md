@@ -12,7 +12,7 @@ status: "draft"
 updated: 2026-09-04
 github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom" 
 demo_url: ""
-seo_title: "Interactive virtual classroom with real-time screen sharing and annotation"
+seo_title: "Build an iOS classroom with screen sharing and annotation"
 seo_keywords: ["screen sharing", "annotation", "virtual classroom"]
 license_required: false
 stack: "iOS - Swift UIKit"
