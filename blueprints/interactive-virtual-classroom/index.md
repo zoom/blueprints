@@ -34,11 +34,59 @@ Remote learning often falls apart at exactly this moment: the teacher is explain
 - **Rich annotation Tools**: Supports pen, highlighter, shapes, and more, along with color differentiation so contributions are easy to tell apart
 - **In-session panel**: Surface everything in a tab bar visible to all participants
 
-<div align="center">
-  <img src="images/virtual-classroom-join-session.jpg" alt="" width="320" />
-  <img src="images/virtual-classroom-share-pdf.jpg" alt="" width="320" />
-  <img src="images/virtual-classroom-annotation.jpg" alt="" width="320" />
-</div>
+<table align="center">
+  <thead>
+    <tr>
+      <th align="center">iPhone</th>
+      <th align="center">iPad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center">
+        <img
+          src="images/virtual-classroom-join-session.jpg"
+          alt="Interactive Virtual Classroom landing view (iPhone)"
+          width="320"
+        />
+      </td>
+      <td align="center">
+        <img
+          src="images/iPad 1.png"
+          alt="Interactive Virtual Classroom landing view (iPad)"
+          width="480"
+        />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table align="center">
+  <thead>
+    <tr>
+      <th align="center">iPhone</th>
+      <th align="center">iPad</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center">
+        <img
+          src="images/virtual-classroom-annotation.jpg"
+          alt="Interactive Virtual Classroom annotation view (iPhone)"
+          width="320"
+        />
+      </td>
+      <td align="center">
+        <img
+          src="images/iPad 4.png"
+          alt="Interactive Virtual Classroom annotation view (iPad)"
+          width="480"
+        />
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 **See it in action:** [Demo video](https://www.youtube.com/watch?v=)
 
