@@ -12,7 +12,7 @@ status: "draft"
 updated: 2026-09-01
 github_repo: "https://github.com/zoom/VideoSDK-Web-Telehealth"
 tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]
-seo_title: "Build telehealth video visits with Zoom Video SDK for Web"
+seo_title: "Embed telehealth video visits in your patient portal"
 seo_keywords: ["zoom video sdk telehealth", "telehealth video visit app", "telehealth waiting room", "embed video in patient portal"]
 partners: ["vercel"]
 demo_url: "https://www.youtube.com/watch?v=pqXgNJAejQk"

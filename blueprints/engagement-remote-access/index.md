@@ -18,7 +18,7 @@ demo_url: "https://youtu.be/cQ5eT_UbMIY?si=7TwtTTzF0EHwJOCi"
 # ── Optional — delete what you don't use ────────────────────────────────────
 solution_types: ["transcription-summarization", "analytics"]
 tags: ["real-time", "rtms", "contact-center", "audio-capture", "monitoring"]
-seo_title: "Real-Time Contact Center Engagement Monitoring with Zoom RTMS"
+seo_title: "Monitor contact center calls in real time"
 seo_keywords: ["zoom contact center rtms", "real-time media streams", "contact center monitoring", "supervisor dashboard"]
 license_required: true
 license_note: "Requires RTMS add-on license for Zoom Contact Center"
@@ -92,7 +92,7 @@ The application operates as three independent Node.js processes that communicate
 - Frontend displays transcript in real time
 
 <div align="center">
-  <img src="images/manual_blueprint.png" alt="Application diagram" width="640" />
+  <img src="images/manual_blueprint.png" alt="application diagram" width="640" />
 </div>
 
 ## Implementation Guide
@@ -747,6 +747,7 @@ This application requires a Zoom Marketplace **General App** configured as **adm
 **OAuth Flow:**
 
 The app uses authorization code flow with automatic token refresh:
+
 1. User clicks "Add App" in Zoom Marketplace Local Test menu
 2. Zoom redirects to app with authorization code
 3. Backend exchanges code for access + refresh tokens at `POST https://zoom.us/oauth/token`
