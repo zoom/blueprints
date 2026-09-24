@@ -12,7 +12,7 @@ status: "draft"
 updated: 2026-09-08
 
 # ── Strongly encouraged — the site hides blueprints without a repo ──────────
-github_repo: "https://github.com/zoom/zcc-rtms-PWA_sample-js"
+github_repo: "https://github.com/rarmorer/RTMS_ZCC_PWA"
 demo_url: "https://youtu.be/cQ5eT_UbMIY?si=7TwtTTzF0EHwJOCi"
 
 # ── Optional — delete what you don't use ────────────────────────────────────
@@ -29,7 +29,7 @@ Contact Center admins can monitor active engagements by streaming live audio and
 
 
 <div align="center">
-  <img src="images/dashboard-preview.png" alt="Engagement dashboard" width="640" />
+  <img src="images/dashboard.png" alt="Engagement dashboard" width="640" />
 </div>
 
 
@@ -91,17 +91,9 @@ The application operates as three independent Node.js processes that communicate
 - Transcripts are forwarded to the backend for polling
 - Frontend displays transcript in real time
 
-```mermaid
-graph LR
-    A[Zoom Contact Center] -->|Webhooks| B[Backend API<br/>Express :3001]
-    A -->|WebSocket| C[RTMS Server<br/>Node.js :8080]
-    
-    B -->|Control API| A
-    C -->|Audio + Transcript| B
-    B -->|Server-Sent Events| D[Frontend PWA<br/>React :3000]
-    
-    C -->|Save| E[(WAV Files<br/>Per Channel + Mixed)]
-```
+<div align="center">
+  <img src="images/manual_blueprint.png" alt="application diagram" width="640" />
+</div>
 
 ## Implementation Guide
 
@@ -295,6 +287,10 @@ function connectToSignalingWebSocket(engagementId, rtmsStreamId, serverUrl, enga
 #### Manual RTMS start and stop control
 
 RTMS capture is admin-initiated, not automatic, and triggered when the Start/Stop buttons are clicked by the user.
+
+<div align="center">
+  <img src="images/rtms-control.png" alt="start and stop RTMS with button click" width="640" />
+</div>
 
 **Input:** Engagement ID, action ("start" or "stop"), OAuth access token
 
@@ -499,6 +495,9 @@ export function finalizeInterleavedWav(sessionDir, channelIds) {
 ### 4. Frontend: Live Media Rendering
 
 Supervisors need to experience the engagement as it happens. This means hearing the conversation in real time, reading the transcript as words are spoken, and watching metrics update live. The frontend achieves this through three independent data streams: Server-Sent Events for audio, HTTP polling for transcript and metrics, and client-side calculations for smooth visual updates.
+<div align="center">
+  <img src="images/active-engagement.png" alt="metric counts" width="640" />
+</div>
 
 #### Server-Sent Events audio streaming
 
