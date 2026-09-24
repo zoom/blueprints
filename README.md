@@ -9,6 +9,8 @@
 
 [Browse Blueprints](https://developers.zoom.us/blueprints) · [Contributing](CONTRIBUTING.md) · [Style Guide](STYLE_GUIDE.md)
 
+![Blueprints - Agents](images/blueprints-agents.png)
+
 </div>
 
 ---
