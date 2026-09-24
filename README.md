@@ -1,70 +1,135 @@
+<div align="center">
+
 # Zoom Blueprints
 
-Curated, use-case-driven reference implementations for the [Zoom developer platform](https://developers.zoom.us). Each Blueprint is a deployable demonstration of a solution to a real enterprise problem: the outcome it delivers, the architecture, a step-by-step implementation guide, and a Zoom app manifest for one-click setup.
+**Production-ready reference implementations for the Zoom developer platform**
 
-Published at **developers.zoom.us/blueprints** (this repo is the content source; the site builds from it).
+[![Zoom Developer Platform](https://img.shields.io/badge/Zoom-Developer%20Platform-2D8CFF?logo=zoom)](https://developers.zoom.us/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
+[Browse Blueprints](https://developers.zoom.us/blueprints) · [Contributing](CONTRIBUTING.md) · [Style Guide](STYLE_GUIDE.md)
+
+</div>
+
+---
 
 ## What is a Blueprint?
 
-A Blueprint is **declarative, opinionated, and prescriptive**. It's a gold standard for recreating a system, closer to a CloudFormation template than a step-by-step tutorial.
+A Blueprint is a **curated, use-case-driven reference implementation** that solves a real enterprise problem. Each one includes:
+
+- **The outcome** — What you're building and why it matters
+- **Architecture** — System design with diagrams and data flow
+- **Implementation guide** — Step-by-step with code contracts
+- **App manifest** — One-click Zoom app configuration
+
+Think of it as a CloudFormation template for Zoom integrations: declarative, opinionated, and ready to adapt.
 
 | Tutorial | Blueprint |
 |----------|-----------|
-| "Go here, click this button" | "Here are the APIs and patterns; here's the path we recommend" |
-| Sequential walkthrough | Declarative, prescriptive architecture |
-| Clone and run | Understand and adapt |
+| "Click here, then click there" | "Here's the architecture and the path we recommend" |
+| Sequential walkthrough | Declarative system design |
+| Follow along | Understand and adapt |
 
-**Litmus test:** If you removed all the prose and left only the architecture diagram, contracts, and manifest, could an experienced developer (or an LLM agent) recreate the system? If yes, it's a Blueprint.
+**Litmus test:** If you removed all prose and left only the architecture diagram, contracts, and manifest — could an experienced developer recreate the system? If yes, it's a Blueprint.
 
-## Gold standard examples
+---
 
-- [Real-Time Sales Coach](blueprints/realtime-sales-coach/) - Stream transcripts, extract qualification signals, surface coaching cues in-meeting
-- [AI Meeting Notetaker](blueprints/ai-meeting-notetaker/) - Generate live summaries and action items from meeting transcripts
+## Featured Blueprints
 
-## Using a Blueprint
+### Agents
 
-1. Browse `blueprints/` or visit [developers.zoom.us/blueprints](https://developers.zoom.us/blueprints)
-2. Read the Blueprint: Outcome intro, Architecture, Implementation Guide, App Manifest
-3. Clone the linked sample-code repo (`github_repo` in the frontmatter)
-4. Use the directory's `manifest.json` to create the Zoom app
-5. Follow the Implementation Guide to understand and adapt the code
+| Blueprint | Description |
+|-----------|-------------|
+| [**Real-Time Sales Coach**](blueprints/realtime-sales-coach/) | Stream transcripts, extract BANT signals, surface coaching cues in-meeting |
+| [**AI Meeting Notetaker**](blueprints/ai-meeting-notetaker/) | Generate live summaries and action items from meeting transcripts |
 
-## Repo structure
+### Enterprise
 
-| Path | What it is |
-|------|-----------|
-| `blueprints/<slug>/` | One Blueprint: `index.md`, `manifest.json`, `images/` |
-| `blueprints/_template/` | Start here for a new Blueprint |
-| `taxonomy.json` | Vocabulary for `products`, `verticals`, `solution_types`, `partners` |
-| `collections/index.json` | Vertical collections shown on the site |
-| `scripts/validate.js` | Quality gate: `npm run validate` |
-| `scripts/validate-zoom-manifest.js` | Validate manifest.json against Zoom API |
-| `.github/workflows/` | CI: validates manifests on PRs |
-| `STYLE_GUIDE.md` | Content standards, tone, required sections |
-| `CONTRIBUTING.md` | Step-by-step contribution workflow |
-| `PROJECT.md` | Current status, open tasks, topic claims |
+| Blueprint | Description |
+|-----------|-------------|
+| [**Sentiment Analysis**](blueprints/transcript-sentiment-analysis/) | Analyze customer sentiment in real-time during support calls |
+| [**Deepfake Detection**](blueprints/detect-deepfakes-in-meetings/) | Detect deepfakes in live Zoom calls |
+| [**Compliance Advisor**](blueprints/realtime-compliance-advisor/) | Real-time compliance monitoring for regulated industries |
 
-## Previewing a draft
+### Apps
 
-Writing a Blueprint? See it rendered exactly as it will ship without pushing anything:
+| Blueprint | Description |
+|-----------|-------------|
+| [**Telehealth Video Visits**](blueprints/telehealth-video-visits/) | Embed video visits in your patient portal with Video SDK |
+| [**Embed Meetings**](blueprints/embed-meetings-website/) | Embed a Zoom meeting directly in your website |
+
+[**Browse all Blueprints →**](https://developers.zoom.us/blueprints)
+
+---
+
+## Quick Start
+
+### Using a Blueprint
+
+1. **Browse** — Visit [developers.zoom.us/blueprints](https://developers.zoom.us/blueprints) or explore `blueprints/`
+2. **Read** — Understand the outcome, architecture, and implementation guide
+3. **Clone** — Get the linked sample code repository
+4. **Configure** — Use the `manifest.json` to create your Zoom app
+5. **Adapt** — Customize the implementation for your use case
+
+### Preview Tool
+
+Writing or reviewing a Blueprint? See it rendered exactly as it will appear on the site:
 
 1. Open [developers.zoom.us/blueprints/preview](https://developers.zoom.us/blueprints/preview/)
 2. Drag your `blueprints/<slug>/` folder onto the page
-3. Edit `index.md` locally and save. The preview re-renders automatically.
+3. Edit locally — the preview updates automatically
 
-The preview surfaces frontmatter errors, MDX syntax issues, and missing files that validation would catch.
+---
 
 ## Contributing
 
-Currently team-only (Zoom Developer Advocacy). Partner contributions planned for V2.
+We welcome contributions! Whether you're fixing a typo or proposing a new Blueprint, we'd love to hear from you.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and [STYLE_GUIDE.md](STYLE_GUIDE.md) for content standards.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — Step-by-step contribution workflow
+- **[STYLE_GUIDE.md](STYLE_GUIDE.md)** — Content standards and writing guidelines
+- **[Blueprint Template](blueprints/_template/)** — Start here for new Blueprints
 
-Sample code lives in separate linked repositories. This repo is content: it describes and guides.
+Sample code lives in separate linked repositories. This repo contains the content: architecture docs, implementation guides, and app manifests.
 
-## Quick links
+---
 
-- [STYLE_GUIDE.md](STYLE_GUIDE.md) - How to write a Blueprint
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Step-by-step workflow
-- [PROJECT.md](PROJECT.md) - Status, open tasks, topic claims
-- [Preview tool](https://developers.zoom.us/blueprints/preview/) - Render your draft locally
+## Repository Structure
+
+```
+blueprints/
+├── <slug>/              # Each Blueprint
+│   ├── index.md         # Content (outcome, architecture, guide)
+│   ├── manifest.json    # Zoom app configuration
+│   └── images/          # Screenshots and diagrams
+├── _template/           # Start here for new Blueprints
+taxonomy.json            # Categories: products, verticals, solutions
+collections/             # Homepage collections
+scripts/                 # Validation tools
+```
+
+---
+
+## Resources
+
+- [Zoom Developer Platform](https://developers.zoom.us/)
+- [Zoom Apps Documentation](https://developers.zoom.us/docs/zoom-apps/)
+- [RTMS Documentation](https://developers.zoom.us/docs/rtms/)
+- [Video SDK Documentation](https://developers.zoom.us/docs/video-sdk/)
+- [Zoom Developer Forum](https://devforum.zoom.us/)
+
+---
+
+## License
+
+MIT License — See [LICENSE](./LICENSE) for details.
+
+---
+
+<div align="center">
+
+**Ready to build?**
+
+[Browse Blueprints](https://developers.zoom.us/blueprints) · [Start Contributing](CONTRIBUTING.md)
+
+</div>
