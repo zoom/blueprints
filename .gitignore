@@ -1,21 +1,7 @@
 node_modules/
 .DS_Store
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 # Environment variables / credentials
 .env
 .env.local
 .env.*.local
-=======
-.env
->>>>>>> e0dd73a (Added validate-zoom-manifest script and Git workflow)
-=======
-.env
-=======
-# Environment variables / credentials
-.env
-.env.local
-.env.*.local
->>>>>>> eea6493 (Added Zoom  manifest vaildation script and CLI command)
->>>>>>> e76f8e5 (Added Zoom  manifest vaildation script and CLI command)
