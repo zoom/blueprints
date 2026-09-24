@@ -5,20 +5,24 @@ description: >-
   A Zoom Workplace agent that turns meeting context into suggested follow-up actions, while keeping a human in control before anything gets executed.
 products: ["rtms","zoom-apps","team-chat"]
 partners: ["anthropic", "openai"]
-license_required: false
+license_required: true
 stack: "Node · Express · NextJS · Oracle "                   
 solution_types: ["real-time-analysis", "agent-automation"]
 verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
 estimated_time: "2-4 hours"        
 author: "Donte"
 status: "draft"                    # draft | review | published
-updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
+updated: 2026-09-23                # YYYY-MM-DD, bump on every edit
+demo_url: https://www.youtube.com/watch?v=HF1bQyDS60A
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom mcp server"]
+deploy:
+  - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2Fhuman-in-the-loop-workplace-agent-sample&root-directory=frontend&project-name=zoom-hitl-workplace-agent&env=EXPRESS_ORIGIN,NEXT_PUBLIC_BACKEND_ORIGIN&envDescription=Public%20HTTPS%20origin%20of%20your%20deployed%20Express%20backend%20(Render)&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2Fhuman-in-the-loop-workplace-agent-sample%23deploy" }
 ---
 
 Build a workplace agent that uses Zoom meeting and chat context to recommend follow-up actions without removing human oversight. This guide shows developers how to build an agentic workflow that observes what happened, recommends the next steps, requests approval, and takes action only after approval is provided.
 
+![Agent Dashboard](images/dashboard.png)
 
 **What you'll need:**
 
@@ -214,9 +218,9 @@ There is no separate timer or manual "run analysis" step.
 
 The recommendation pipeline has two layers.
 
-AI interprets language and produces structured signals.
+* AI interprets language and produces structured signals.
 
-Application logic decides whether those signals justify recommending an action.
+* Application logic decides whether those signals justify recommending an action.
 
 ### Turn the transcript into structured suggestions
 
@@ -319,6 +323,8 @@ The preview endpoint generates editable Markdown:
 ```text
 POST /api/meetings/:id/ai-actions/preview
 ```
+
+![AI Action](images/ai-actions.png)
 
 It does not create anything in Zoom. After reviewing or editing the content, the user can call:
 
@@ -639,99 +645,6 @@ The backend has the user's OAuth token and can create the Zoom Doc through MCP.
 The frontend is running inside the Zoom client and can send a message into the user's current chat context.
 
 ---
-
-## End-to-end implementation pattern
-
-```text
-                    OBSERVE
-
-meeting.rtms_started
-        ↓
-@zoom/rtms joins the session
-        ↓
-onTranscriptData
-
-
-                MEETING CONTEXT
-
-Normalized transcript segments
-stored by meeting UUID
-        ↓
-TaskStore + live SSE updates
-
-
-                    ANALYZE
-
-meeting.rtms_stopped
-        ↓
-OpenAI Structured Outputs
-        ↓
-Task suggestions saved as `pending`
-
-
-                  RECOMMEND
-
-Deterministic application rules
-        ↓
-"Create Follow-up Doc"
-        ↓
-Reasons shown to the user
-
-
-                    PREVIEW
-
-POST /ai-actions/preview
-        ↓
-Editable Markdown
-        ↓
-No Zoom side effect
-
-
-                    APPROVE
-
-User reviews or edits
-        ↓
-User confirms the action
-        ↓
-Backend validates approved content
-
-
-                    EXECUTE
-
-OpenAI Responses API
-        ↓
-Zoom Workplace MCP
-        ↓
-allowed_tools + user OAuth
-        ↓
-Zoom Doc created
-
-
-                 BACK TO WORK
-
-Apps SDK
-        ↓
-sendMessageToChat
-        ↓
-Doc link posted into Zoom Chat
-```
-
-The implementation keeps three boundaries explicit:
-
-**Reasoning:** AI converts meeting language into structured suggestions.
-
-**Authorization:** the user decides which suggestion becomes an action.
-
-**Execution:** Zoom RTMS, MCP, APIs, and the Apps SDK perform specific operations using the context and authorization available to them.
-
-That gives developers a reusable pattern for Zoom Workplace applications:
-
-```text
-Observe → Recommend → Approve → Execute
-```
-
-The model can interpret context and prepare work, but application code still controls when an action becomes executable and which Zoom capability is allowed to perform it.
-
 
 ## App Manifest
 
