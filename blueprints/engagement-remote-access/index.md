@@ -29,7 +29,7 @@ Contact Center admins can monitor active engagements by streaming live audio and
 
 
 <div align="center">
-  <img src="images/dashboard-preview.png" alt="Engagement dashboard" width="640" />
+  <img src="images/dashboard.png" alt="Engagement dashboard" width="640" />
 </div>
 
 
@@ -288,6 +288,10 @@ function connectToSignalingWebSocket(engagementId, rtmsStreamId, serverUrl, enga
 
 RTMS capture is admin-initiated, not automatic, and triggered when the Start/Stop buttons are clicked by the user.
 
+<div align="center">
+  <img src="images/rtms-control.png" alt="start and stop RTMS with button click" width="640" />
+</div>
+
 **Input:** Engagement ID, action ("start" or "stop"), OAuth access token
 
 **Output:** RTMS state updated in Zoom, `contact_center.voice_rtms_started` or `contact_center.voice_rtms_stopped` webhook fired
@@ -491,6 +495,9 @@ export function finalizeInterleavedWav(sessionDir, channelIds) {
 ### 4. Frontend: Live Media Rendering
 
 Supervisors need to experience the engagement as it happens. This means hearing the conversation in real time, reading the transcript as words are spoken, and watching metrics update live. The frontend achieves this through three independent data streams: Server-Sent Events for audio, HTTP polling for transcript and metrics, and client-side calculations for smooth visual updates.
+<div align="center">
+  <img src="images/active-engagement.png" alt="metric counts" width="640" />
+</div>
 
 #### Server-Sent Events audio streaming
 
