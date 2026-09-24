@@ -9,9 +9,9 @@ solution_types: ["real-time-analysis", "compliance-auditing"]
 estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
 status: "draft"
-updated: 2026-09-18
+updated: 2026-09-23
 github_repo: "https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation"
-demo_url: ""
+demo_url: "https://success.zoom.us/clips/share/6vWmz6gcQr6P_hCG0f2gAg"
 tags: ["real-time", "raw-data", "video", "security"]
 seo_title: "Real-time Content Moderation in Zoom Video SDK Meetings"
 seo_keywords: ["zoom object detection ai", "image analysis zoom video sdk", "raw data video sdk"]
@@ -47,8 +47,8 @@ without identifying or exposing participants, meeting locations, or sensitive ob
 - Real-Time Objection in a multi-thread environment
 - Project structure offers Plug-and-play with of your own LLM
 
-<Image src="images/unblurreddetection.png"/>
-<Image src="images/blurreddetection.png"/>
+<Image src="images/contentmod-shot2.png"/>
+<Image src="images/contentmod-shot1.png"/>
 
 ## Architecture
 The client device requests for a JWT Token to a secure backend Server. The client receives the JWT Token and passed it to the Zoom Video SDK to start the session. On successful join into the session, `mediaStream.createProcessor()` is used to create the 
