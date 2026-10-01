@@ -63,10 +63,6 @@ The Zoom App keeps the live transcript history visible while Jev returns ranked 
 
 ![Jev-ranked coaching choices for a buyer turn](images/jev-coaching-ranking.png)
 
-The reference implementation also keeps the typed Jev decision questions in application-owned code.
-
-![Typed Jev decision questions in the reference implementation](images/jev-decision-questions.png)
-
 ### Components
 
 | Component | Responsibility | Reference implementation |
