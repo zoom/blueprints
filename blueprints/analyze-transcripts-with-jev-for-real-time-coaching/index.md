@@ -11,6 +11,7 @@ estimated_time: "1-2 days"
 author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-30
+demo_url: "https://success.zoom.us/clips/share/fOfIFPEMSnmMzuNKKBsShw"
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/jev_transcript_analysis_js"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "sales-coaching", "jev", "openrouter", "zoom-meetings"]
@@ -26,6 +27,8 @@ Build a real-time sales coaching app that receives [Zoom Realtime Media Streams 
 Jev returns decisions and confidence values rather than arbitrary response text. The reference implementation uses those decisions to rank application-owned coaching choices, so the seller can choose how to respond. It does not send messages or take external actions automatically.
 
 This Blueprint is based on the [Jev transcript analysis reference implementation](https://github.com/zoom/rtms-samples/tree/main/zoom_apps/jev_transcript_analysis_js). It shows how to connect RTMS transcript events to a typed decision model and a meeting-scoped coaching interface. Add your own sales context, question criteria, coaching language, and output integrations for the environment where the app will run.
+
+**See it in action:** [Demo video](https://success.zoom.us/clips/share/fOfIFPEMSnmMzuNKKBsShw)
 
 ## Features
 
@@ -51,6 +54,18 @@ flowchart TB
     B -->|Meeting-scoped WebSocket events| D[Zoom App]
     D --> E[Real-time sales coaching UI]
 ```
+
+## Screenshots
+
+The Zoom App keeps the live transcript history visible while Jev returns ranked coaching choices for each buyer turn.
+
+![Jev coaching history with ranked recommendations](images/jev-coaching-history.png)
+
+![Jev-ranked coaching choices for a buyer turn](images/jev-coaching-ranking.png)
+
+The reference implementation also keeps the typed Jev decision questions in application-owned code.
+
+![Typed Jev decision questions in the reference implementation](images/jev-decision-questions.png)
 
 ### Components
 
