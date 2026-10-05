@@ -11,6 +11,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-08-19
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
+demo_url: "https://youtu.be/5CjRLI59ErQ"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "quickstart", "vtt", "srt", "zoom-meetings"]
 seo_title: "Capture live meeting transcripts for search and storage"

@@ -13,7 +13,7 @@ updated: 2026-09-08
 
 # ── Strongly encouraged — the site hides blueprints without a repo ──────────
 github_repo: "https://github.com/zoom/zcc-rtms-PWA_sample-js"
-demo_url: "https://youtu.be/cQ5eT_UbMIY?si=7TwtTTzF0EHwJOCi"
+demo_url: "https://youtu.be/vc0M40eu_OU"
 
 # ── Optional — delete what you don't use ────────────────────────────────────
 solution_types: ["transcription-summarization", "analytics"]
