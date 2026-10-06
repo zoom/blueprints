@@ -13,6 +13,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-03
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
+demo_url: "https://youtu.be/kAATjicBxsM"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["transcripts", "mcp", "tool-calling", "agents", "zoom-meetings"]
 seo_title: "Connect Zoom transcripts to AI tools via MCP"

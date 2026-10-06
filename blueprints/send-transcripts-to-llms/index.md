@@ -11,6 +11,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples"
+demo_url: "https://youtu.be/2Uapr2w8wmk"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "llm", "real-time", "zoom-meetings"]
 seo_title: "Send Zoom transcripts to ChatGPT or Claude"

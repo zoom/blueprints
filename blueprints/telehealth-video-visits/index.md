@@ -15,7 +15,7 @@ tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]
 seo_title: "Embed telehealth video visits in your patient portal"
 seo_keywords: ["zoom video sdk telehealth", "telehealth video visit app", "telehealth waiting room", "embed video in patient portal"]
 partners: ["vercel"]
-demo_url: "https://www.youtube.com/watch?v=pqXgNJAejQk"
+demo_url: "https://youtu.be/CgzVrKO0KR4"
 license_required: true
 license_note: "Requires a Zoom Video SDK account; cloud recording requires a Cloud Recording Storage Plan."
 stack: "Next.js · React · TypeScript · tRPC · Drizzle · Vercel · Neon Postgres · Vercel Blob, Amazon S3, or Cloudflare R2"

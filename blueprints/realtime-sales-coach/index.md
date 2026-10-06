@@ -13,7 +13,7 @@ author: "Jen Brissman"
 status: "draft"
 updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
-demo_url: "https://www.youtube.com/watch?v=LKpZAe5_A8o"
+demo_url: "https://youtu.be/sCkZACLtDns"
 tags: ["sales", "coaching", "real-time"]
 seo_title: "Real-time sales coaching inside Zoom calls"
 seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant app", "rtms sales call intelligence", "build sales assistant zoom api"]

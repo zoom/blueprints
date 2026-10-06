@@ -11,6 +11,7 @@ author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
+demo_url: "https://youtu.be/K05XU1SsVL4"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
 tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
 seo_title: "Detect deepfakes in live Zoom calls"

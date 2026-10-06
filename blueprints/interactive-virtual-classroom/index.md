@@ -11,7 +11,7 @@ author: "Boon Jun Tan"
 status: "draft"
 updated: 2026-09-04
 github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom" 
-demo_url: ""
+demo_url: "https://youtu.be/-xiWmnCwIP4"
 seo_title: "Build virtual classroom with screen sharing for iOS devices"
 seo_keywords: ["screen sharing", "annotation", "virtual classroom"]
 license_required: false
