@@ -13,12 +13,12 @@ updated: 2026-09-23
 github_repo: "https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation"
 demo_url: "https://success.zoom.us/clips/share/6vWmz6gcQr6P_hCG0f2gAg"
 tags: ["real-time", "raw-data", "video", "security"]
-seo_title: "Real-time Content Moderation in Zoom Video SDK Meetings"
+seo_title: "Moderate Content in Zoom meetings"
 seo_keywords: ["zoom object detection ai", "image analysis zoom video sdk", "raw data video sdk"]
 license_required: false
 stack: "Node · Express · Javascript · TensorFlow"
 deploy:
-  - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/zoom-rtms-sentiment-sample" }
+  - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation" }
 ---
 
 The Zoom Video SDK uses its Video Processor feature to launch the Web
