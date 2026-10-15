@@ -10,7 +10,7 @@ stack: "Node · Express · NextJS · Oracle "
 solution_types: ["real-time-analysis", "agent-automation"]
 verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
 estimated_time: "2-4 hours"        
-author: "Donte"
+author: "Donte White"
 status: "draft"                    # draft | review | published
 updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
