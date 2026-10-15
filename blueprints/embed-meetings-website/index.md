@@ -1,5 +1,5 @@
 ---
-title: "Embed Meetings into Your Website"
+title: "Embed Zoom Meetings in Your Website"
 slug: "embed-meetings-website"
 description: >-
   Embed a live Zoom meeting inside your own page layout with the Meeting SDK
