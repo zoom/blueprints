@@ -1,5 +1,5 @@
 ---
-title: "Real-Time Compliance Advisor in Meetings"
+title: "Monitor Meeting Compliance in Real Time"
 slug: "realtime-compliance-advisor"
 description: >-
   Build a real-time compliance advisor that lives inside Zoom meetings.
