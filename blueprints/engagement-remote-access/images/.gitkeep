@@ -1,0 +1,3 @@
+# Put this blueprint's images here.
+# Reference them relatively from index.md: ![alt](images/your-image.png)
+# The header/thumbnail is set via the `hero_image:` frontmatter field.

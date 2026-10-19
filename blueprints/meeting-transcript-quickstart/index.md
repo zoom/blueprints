@@ -6,15 +6,15 @@ description: >-
   segments and save VTT, SRT, and plain-text files for search or storage.
 products: ["rtms"]
 verticals: ["enterprise"]
-difficulty: "beginner"
 estimated_time: "1-2 hours"
 author: "Chun Siong Tan"
 status: "draft"
 updated: 2026-08-19
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
+demo_url: "https://youtu.be/5CjRLI59ErQ"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "quickstart", "vtt", "srt", "zoom-meetings"]
-seo_title: "Zoom Meeting Live Transcript RTMS Quickstart"
+seo_title: "Capture live meeting transcripts for search and storage"
 seo_keywords: ["zoom meeting transcript api", "zoom rtms transcript", "save zoom transcript"]
 license_required: true
 license_note: "Requires RTMS to be enabled for the Zoom account and meeting."

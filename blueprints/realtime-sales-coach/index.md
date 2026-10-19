@@ -8,15 +8,14 @@ description: >-
 products: ["rtms", "zoom-apps"]
 verticals: ["sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-difficulty: "intermediate"
 estimated_time: "4-6 hours"
 author: "Jen Brissman"
 status: "draft"
 updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
-demo_url: "https://www.youtube.com/watch?v=LKpZAe5_A8o"
+demo_url: "https://youtu.be/sCkZACLtDns"
 tags: ["sales", "coaching", "real-time"]
-seo_title: "How to build a real-time sales coaching app on Zoom"
+seo_title: "Real-time sales coaching inside Zoom calls"
 seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant app", "rtms sales call intelligence", "build sales assistant zoom api"]
 partners: ["anthropic", "openai"]
 license_required: false
