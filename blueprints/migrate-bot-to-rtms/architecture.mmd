@@ -1,0 +1,6 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+%% It exists so diagrams can be reused/rendered outside the doc.
+graph LR
+    A[Zoom Meeting] -->|RTMS stream| B[Your Server]
+    B -->|Audio / transcript| C[Processing Service]
+    C -->|Structured output| D[Destination System]
