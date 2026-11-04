@@ -63,9 +63,9 @@ graph LR
     A -- 7. client.join --> E
 ```
 
-## Backend Server Configuration
+## Implementation Guide
 
-### Database Security
+### Backend Server Configuration - Database Security
 HTTP is stateless: every request arrives with no memory of the previous one. If you sign in
 on request 1, the server has no idea who you are on request 2. Browser sessions solve this:
 
