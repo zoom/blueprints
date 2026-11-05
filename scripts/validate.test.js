@@ -175,13 +175,6 @@ test('body must open with intro prose before the first heading', () => {
   ));
 });
 
-test('body must open with intro prose before the first heading', () => {
-  const headingFirstBody = FULL_BODY.replace(/^.*?\n\n/, '');
-  assert.ok(validateBody(headingFirstBody).includes(
-    'blueprint must open with intro prose (outcomes-first) before the first heading',
-  ));
-});
-
 test('each missing required section is an error', () => {
   const result = validateBody('Outcome-focused intro prose.\n');
   // Architecture and Implementation Guide are always required
