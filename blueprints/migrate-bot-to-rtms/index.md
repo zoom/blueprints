@@ -18,7 +18,7 @@ seo_title: "How to migrate a Zoom meeting bot to RTMS"
 seo_keywords: ["zoom meeting bot migration", "rtms vs meeting sdk", "zoom bot to rtms", "replace zoom bot"]
 partners: ["anthropic", "openai"]
 license_required: true
-license_note: "Requires RTMS entitlement on a paid Zoom Workplace plan"
+license_note: "RTMS access via Zoom Developer Pack"
 stack: "Node · Express · React · MySQL"
 deploy:
   - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
@@ -32,7 +32,7 @@ Meeting SDK bots join as participants. They appear in the roster, require host a
 **What you'll need:**
 
 - An existing Meeting SDK bot you want to migrate (or understanding of bot architecture)
-- [RTMS access](https://developers.zoom.us/docs/rtms/) (requires a paid Zoom Workplace plan with RTMS entitlement; [request access](https://www.zoom.com/en/realtime-media-streams/#form))
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
 - A backend to receive webhooks and maintain WebSocket connections
 - A [Zoom General App](https://developers.zoom.us/docs/integrations/) with RTMS event subscriptions
 - Optional: A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) for in-meeting UI

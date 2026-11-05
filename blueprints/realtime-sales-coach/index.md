@@ -31,7 +31,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 
 **What you'll need:**
 
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer))
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the coaching panel in-meeting
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
