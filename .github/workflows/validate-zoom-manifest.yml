@@ -56,20 +56,47 @@ jobs:
 
           echo "Blueprints to validate: ${NAMES[*]}"
 
+          # Products that require Zoom Marketplace manifest validation.
+          # Video SDK, RTMS-only, and Meeting SDK blueprints don't use Marketplace manifests.
+          MARKETPLACE_PRODUCTS="zoom-apps|team-chat|contact-center"
+
           FAILED=()
+          SKIPPED=()
           for name in "${NAMES[@]}"; do
-            echo "::group::Validating $name"
-            if node scripts/validate-zoom-manifest.js "$name"; then
-              echo "✓ $name passed"
+            echo "::group::Checking $name"
+
+            INDEX_FILE="blueprints/$name/index.md"
+            if [ ! -f "$INDEX_FILE" ]; then
+              echo "⚠ No index.md found for $name, skipping manifest validation"
+              SKIPPED+=("$name")
+              echo "::endgroup::"
+              continue
+            fi
+
+            # Extract products from frontmatter and check if it needs Marketplace validation
+            PRODUCTS=$(sed -n '/^---$/,/^---$/p' "$INDEX_FILE" | grep -E '^products:' | head -1 || echo "")
+
+            if echo "$PRODUCTS" | grep -qE "$MARKETPLACE_PRODUCTS"; then
+              echo "→ $name uses Marketplace products, validating manifest..."
+              if node scripts/validate-zoom-manifest.js "$name"; then
+                echo "✓ $name passed"
+              else
+                FAILED+=("$name")
+              fi
             else
-              FAILED+=("$name")
+              echo "✓ $name uses Video SDK/RTMS/Meeting SDK only, skipping Marketplace manifest validation"
+              SKIPPED+=("$name")
             fi
             echo "::endgroup::"
           done
+
+          if [ ${#SKIPPED[@]} -gt 0 ]; then
+            echo "ℹ Skipped Marketplace validation for: ${SKIPPED[*]} (Video SDK/RTMS/Meeting SDK blueprints)"
+          fi
 
           if [ ${#FAILED[@]} -gt 0 ]; then
             echo "❌ Manifest validation failed for: ${FAILED[*]}"
             exit 1
           fi
 
-          echo "✅ All changed Zoom manifests are valid."
+          echo "✅ All Marketplace manifests are valid."
