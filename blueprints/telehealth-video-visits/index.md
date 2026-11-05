@@ -141,7 +141,6 @@ Before changing code, inventory the target application and produce a mapping for
 | Clinical workspace             | Existing chart or encounter panel   | Role-gated patient context and SOAP notes                     |
 | File storage                   | Approved document service           | Private Amazon S3 or Cloudflare R2 bucket with presigned URLs |
 
-
 Document which components the implementation reuses, adapts, creates, or omits. Recording, captions, notes, and documents are optional. Identity, appointment authorization, server-side token issuance, device preview, session cleanup, and visible failure states are required.
 
 ### Contract A: appointment authorization
@@ -287,7 +286,6 @@ Register `connection-change` before joining and run `cleanupSession()` from ever
 
 Clinical data remains outside the media session. Use this minimum model whether it lives in PostgreSQL or behind an existing EHR service:
 
-
 | Entity                | Required relationships and data                          |
 | --------------------- | -------------------------------------------------------- |
 | User                  | Stable identity ID and application role                  |
@@ -295,7 +293,6 @@ Clinical data remains outside the media session. Use this minimum model whether 
 | Clinical note         | Appointment ID, clinician ID, SOAP fields, timestamps    |
 | Patient document      | Patient ID, object key, media type, timestamps           |
 | Zoom session instance | Appointment ID, Zoom session ID, start/end state         |
-
 
 Clinicians may read patient context only when the appointment relationship permits it. Patients may manage only their own documents. The server issues short-lived Amazon S3 or Cloudflare R2 URLs; bucket credentials never reach the browser. Each module defines its own retention and audit events.
 
