@@ -1,0 +1,8 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+graph LR
+    V[Visitor] -->|1. open appointment page| P[Your Page]
+    P -->|2. request signature| B[Backend]
+    B -->|3. authorize booking| D[(Bookings)]
+    B -->|4. signed JWT| P
+    P -->|5. join| Z[Zoom Meeting]
+    Z -->|6. media into your DOM node| P

@@ -1,0 +1,9 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+graph LR
+    Z[Zoom Meeting] -->|1. webhook| B[Backend with @zoom/rtms]
+    Z -->|2. media WS| B
+    B -->|3. segments| E[Rule Engine]
+    E -->|4. candidates| L[LLM]
+    L -->|5. verdicts| B
+    B -->|6. WS broadcast| P[Advisor Panel]
+    B --> D[(Audit Log)]

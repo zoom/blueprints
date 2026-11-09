@@ -1,0 +1,11 @@
+{
+  "collections": [
+    {
+      "slug": "enterprise",
+      "title": "Enterprise Solutions",
+      "description": "Cross-industry enterprise patterns for the Zoom developer platform.",
+      "icon": "enterprise",
+      "blueprints": ["realtime-sales-coach", "ai-meeting-notetaker"]
+    }
+  ]
+}
