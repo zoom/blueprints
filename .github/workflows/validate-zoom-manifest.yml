@@ -1,0 +1,102 @@
+name: Zoom Manifest Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-manifest:
+    name: Validate Zoom Manifest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate changed Zoom manifests
+        env:
+          ZOOM_ACCOUNT_ID: ${{ secrets.ZOOM_ACCOUNT_ID }}
+          ZOOM_CLIENT_ID: ${{ secrets.ZOOM_CLIENT_ID }}
+          ZOOM_CLIENT_SECRET: ${{ secrets.ZOOM_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          # Ensure both endpoints of the diff are available locally.
+          git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA" >/dev/null 2>&1 || true
+
+          # Collect blueprint dir names for every added/modified/renamed manifest.json.
+          mapfile -t NAMES < <(
+            git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" \
+              | grep -E '^blueprints/[^/]+/manifest\.json$' \
+              | sed -E 's|^blueprints/([^/]+)/manifest\.json$|\1|' \
+              | sort -u
+          )
+
+          if [ ${#NAMES[@]} -eq 0 ]; then
+            echo "No blueprint manifest.json files were added or modified in this PR. Nothing to validate."
+            exit 0
+          fi
+
+          echo "Blueprints to validate: ${NAMES[*]}"
+
+          # Products that require Zoom Marketplace manifest validation.
+          # Video SDK, RTMS-only, and Meeting SDK blueprints don't use Marketplace manifests.
+          MARKETPLACE_PRODUCTS="zoom-apps|team-chat|contact-center"
+
+          FAILED=()
+          SKIPPED=()
+          for name in "${NAMES[@]}"; do
+            echo "::group::Checking $name"
+
+            INDEX_FILE="blueprints/$name/index.md"
+            if [ ! -f "$INDEX_FILE" ]; then
+              echo "⚠ No index.md found for $name, skipping manifest validation"
+              SKIPPED+=("$name")
+              echo "::endgroup::"
+              continue
+            fi
+
+            # Extract products from frontmatter and check if it needs Marketplace validation
+            PRODUCTS=$(sed -n '/^---$/,/^---$/p' "$INDEX_FILE" | grep -E '^products:' | head -1 || echo "")
+
+            if echo "$PRODUCTS" | grep -qE "$MARKETPLACE_PRODUCTS"; then
+              echo "→ $name uses Marketplace products, validating manifest..."
+              if node scripts/validate-zoom-manifest.js "$name"; then
+                echo "✓ $name passed"
+              else
+                FAILED+=("$name")
+              fi
+            else
+              echo "✓ $name uses Video SDK/RTMS/Meeting SDK only, skipping Marketplace manifest validation"
+              SKIPPED+=("$name")
+            fi
+            echo "::endgroup::"
+          done
+
+          if [ ${#SKIPPED[@]} -gt 0 ]; then
+            echo "ℹ Skipped Marketplace validation for: ${SKIPPED[*]} (Video SDK/RTMS/Meeting SDK blueprints)"
+          fi
+
+          if [ ${#FAILED[@]} -gt 0 ]; then
+            echo "❌ Manifest validation failed for: ${FAILED[*]}"
+            exit 1
+          fi
+
+          echo "✅ All Marketplace manifests are valid."

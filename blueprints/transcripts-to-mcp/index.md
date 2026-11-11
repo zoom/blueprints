@@ -1,5 +1,5 @@
 ---
-title: "Send Zoom Meeting Transcripts to MCP Servers"
+title: "Connect Zoom transcripts to AI tools via MCP"
 slug: "transcripts-to-mcp"
 description: >-
   Build a two-service meeting agent that routes live RTMS transcript batches
@@ -8,9 +8,9 @@ description: >-
   servers declared through the environment.
 products: ["rtms", "mcp"]
 verticals: ["agents", "enterprise"]
-estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-03
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
 demo_url: "https://youtu.be/kAATjicBxsM"
