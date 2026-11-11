@@ -525,7 +525,7 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
    # Read by the app
    ZOOM_HOST=https://zoom.us          # https://zoomgov.com for Zoom for Government
    PUBLIC_URL=https://your-subdomain.ngrok-free.app
-   DATABASE_URL=postgresql://compliance:compliance@localhost:5432/compliance
+   DATABASE_URL=postgresql://compliance@localhost:5432/compliance
    RULE_PACK_ID=fin-us-retail-v3
    TRANSCRIPT_LANGUAGE=ENGLISH
    LLM_API_KEY=your_llm_api_key
