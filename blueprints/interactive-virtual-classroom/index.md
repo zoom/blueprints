@@ -1,14 +1,14 @@
 ---
-title: "Build Virtual Classroom with Screensharing for iOS Devices"
+title: "Build virtual classroom with screensharing for iOS devices"
 slug: "interactive-virtual-classroom"
 description: >-
   Build an interactive virtual classroom with real-time screen sharing and annotation for engaging, collaborative online learning.
 products: ["video-sdk"]
 verticals: ["education"]
 difficulty: "intermediate"
-estimated_time: "4-6 hours"
 author: "Boon Jun Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-04
 github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom" 
 demo_url: "https://youtu.be/-xiWmnCwIP4"

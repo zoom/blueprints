@@ -1,5 +1,5 @@
 ---
-title: "Embed Zoom Meetings in Your Website"
+title: "Embed a Zoom meeting in your website"
 slug: "embed-meetings-website"
 description: >-
   Embed a live Zoom meeting inside your own page layout with the Meeting SDK
@@ -9,9 +9,9 @@ products: ["meeting-sdk"]
 verticals: ["customer-support", "enterprise"]
 solution_types: ["embedded-video"]
 difficulty: "beginner"
-estimated_time: "2-3 hours"
 author: "Max Mansfield"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-26
 github_repo: "https://github.com/zoom/meetingsdk-appointment-sample-js"
 tags: ["meeting-sdk", "embed", "component-view", "appointments"]

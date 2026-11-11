@@ -18,7 +18,7 @@ const ENUMS = {
 
 // Route names claimed by developers.zoom.us/blueprints/* — a blueprint with
 // one of these slugs would collide with a site page.
-const RESERVED_SLUGS = new Set(['preview', 'preview-frame', 'collections']);
+const RESERVED_SLUGS = new Set(['preview', 'preview-frame', 'collections', 'all']);
 
 const FACETS = ['products', 'verticals', 'solution_types'];
 const REQUIRED_FACETS = ['products', 'verticals'];

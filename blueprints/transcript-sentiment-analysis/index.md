@@ -1,5 +1,5 @@
 ---
-title: "Send Transcription to Sentiment Analysis Model"
+title: "Analyze meeting sentiment in real time"
 slug: "transcript-sentiment-analysis"
 description: >-
     Send live Zoom meeting transcriptions to a sentiment analysis model in real time.
@@ -7,9 +7,9 @@ description: >-
 products: ["rtms", "video-sdk"]
 verticals: ["customer-support", "sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-31
 github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
 demo_url: "https://youtu.be/uVcAsuKQe3E"
