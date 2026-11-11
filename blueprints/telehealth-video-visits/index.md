@@ -1,14 +1,13 @@
 ---
-title: "Build Telehealth Video Visits with Zoom Video SDK"
+title: "Embed telehealth video visits in your patient portal"
 slug: "telehealth-video-visits"
 hero_image: "images/hero.png"
 description: Build telehealth video visits inside your patient portal with role-based access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and optional recording using Zoom Video SDK for Web.
 products: ["video-sdk"]
 verticals: ["healthcare"]
 solution_types: ["data-integration"]
-estimated_time: "1-2 days"
 author: "Ekaansh Arora"
-status: "draft"
+status: "published"
 updated: 2026-09-01
 github_repo: "https://github.com/zoom/VideoSDK-Web-Telehealth"
 tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]

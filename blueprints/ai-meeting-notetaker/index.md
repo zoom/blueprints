@@ -1,5 +1,5 @@
 ---
-title: "AI Meeting Notetaker"
+title: "How to build a Zoom meeting notetaker"
 slug: "ai-meeting-notetaker"
 description: >-
   Build an AI-powered meeting assistant that lives inside Zoom meetings.
@@ -8,9 +8,9 @@ description: >-
 products: ["rtms", "zoom-apps"]
 verticals: ["enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-estimated_time: "4-6 hours"
 author: "Jen Brissman"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://youtu.be/ATnbAbBV7Cs"

@@ -1,14 +1,14 @@
 ---
-title: "Review Deepfake Risk in Live Zoom Meetings"
+title: "Detect deepfakes in live Zoom calls"
 slug: "detect-deepfakes-in-meetings"
 description: >-
   Build an in-meeting deepfake risk review for Zoom Meetings. Send selected
   RTMS media to a commercial or customer-hosted model and show cues in a Zoom App.
 products: ["rtms", "zoom-apps"]
 verticals: ["enterprise", "finance"]
-estimated_time: "1-2 days"
 author: "Chun Siong Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 demo_url: "https://youtu.be/K05XU1SsVL4"

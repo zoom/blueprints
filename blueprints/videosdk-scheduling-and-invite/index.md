@@ -1,5 +1,5 @@
 ---
-title: "Secure Invite and Scheduling System with Video SDK"
+title: "Build a secure scheduling and invite system"
 slug: "videosdk-scheduling-and-invite"
 description: >-
     Schedule Video SDK sessions and share secure invite links using the Video SDK REST APIs.
@@ -7,14 +7,14 @@ description: >-
 products: ["video-sdk"]
 verticals: ["customer-support", "sales", "enterprise"]
 solution_types: ["security-encryption"]
-estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-10-21
 github_repo: "https://github.com/zoom/videosdk-scheduling-and-invite"
 demo_url: "https://youtu.be/"
 tags: ["scheduling", "security"]
-seo_title: "Build a secure Video SDK scheduling and invite system"
+seo_title: "Build a secure scheduling and invite system"
 seo_keywords: ["zoom video sdk scheduling", "video sdk invite link", "video sdk rest api"]
 license_required: false
 stack: "Node · Express · React · Neon"
