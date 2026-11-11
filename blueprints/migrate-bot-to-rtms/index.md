@@ -1,5 +1,5 @@
 ---
-title: "Migrate Your Meeting Bot to Zoom RTMS"
+title: "How to migrate a Zoom meeting bot to RTMS"
 slug: "migrate-bot-to-rtms"
 description: >-
   Replace your Meeting SDK bot with Zoom RTMS for native transcript, audio, and video access.
@@ -7,9 +7,9 @@ description: >-
 products: ["rtms", "zoom-apps", "meeting-sdk"]
 verticals: ["enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-estimated_time: "4-8 hours"
 author: "Jen Brissman"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-11-03
 github_repo: "https://github.com/zoom/arlo"
 demo_url: ""
@@ -67,8 +67,12 @@ This migration guide covers:
 - **Webhook handler setup**: Replace SDK join with event-driven stream initiation
 - **WebSocket connection patterns**: Connect to RTMS streams using the `@zoom/rtms` SDK
 - **Lifecycle management**: Handle stream start, stop, and reconnection scenarios
+- **Stream persistence for long meetings**: The scheduler-as-app-owner pattern for virtual onsites
 - **Data model migration**: Update session tracking from bot IDs to RTMS stream IDs
 - **Chat alternatives**: Replace bot chat with REST API, Surface Apps, or pre-meeting notifications
+- **Failure modes and fallback logic**: Detect failures and fall back gracefully
+- **Compliance considerations**: Recording notification, consent, pause/cancel functionality
+- **Enterprise deployment**: Admin install flow for org-wide rollout
 
 The reference implementation is [Arlo](https://github.com/zoom/arlo), a meeting assistant that demonstrates the complete RTMS pattern.
 
@@ -256,11 +260,13 @@ async function connectToStream(payload) {
 
 ### Part 3: Handle Lifecycle Differences
 
-Meeting SDK bots control their own lifecycle. RTMS streams are controlled by users and hosts.
+Meeting SDK bots control their own lifecycle. RTMS streams are controlled by users and hosts. This is the most significant behavioral change in the migration.
 
 #### Stream start conditions
 
 RTMS starts when ALL conditions are met:
+- The meeting host's organization has RTMS enabled at the account level
+- The meeting host's Zoom client is version 6.5.5+
 - The app is installed for the user (app owner)
 - Account/group/user policy allows RTMS
 - Host approves (if required) or auto-start is enabled
@@ -270,12 +276,30 @@ RTMS starts when ALL conditions are met:
 
 | Event | Bot Behavior | RTMS Behavior |
 |-------|--------------|---------------|
-| Host leaves | Bot stays | Stream continues if app owner used auto-start |
-| App owner leaves | N/A | Stream stops |
+| Host leaves | Bot stays | Stream continues IF app owner used auto-start and never joined. Stream STOPS if app owner joined the meeting. |
+| App owner leaves | N/A | **Stream stops** |
 | Host disables sharing | Bot unaffected | Stream stops; new `rtms_started` if re-enabled |
-| Network disconnect | Bot reconnects | Wait for new `rtms_started` webhook |
+| Host handoff to org with RTMS disabled | Bot unaffected | Stream stops permanently |
+| App owner moves to breakout room | N/A | Stream stops; may resume when returning to main room |
+| Network disconnect | Bot reconnects | WebSocket closes; must wait for new `meeting.rtms_started` webhook |
 
-**Critical for long meetings:** If the app owner is the meeting scheduler and auto-start is enabled, the stream persists regardless of whether the app owner joins or leaves. For virtual onsites or all-day meetings, ensure the scheduler has your app installed.
+**WARNING: App owner leaving kills the stream.** This is the most common migration surprise. With bots, you control when to leave. With RTMS, if the app owner leaves the meeting, the stream terminates even if other participants remain. Plan for this in your product flow.
+
+#### Stream persistence for long meetings (virtual onsites)
+
+For multi-hour meetings where participants rotate (virtual onsites, all-day workshops, interview panels), you need the stream to persist regardless of who joins or leaves. The key insight:
+
+**If the app owner is the meeting's original scheduler AND auto-start is enabled, the RTMS stream persists for the entire meeting lifetime. The scheduler does not need to join or stay in the meeting.**
+
+This means:
+- Your app must be installed for the **meeting scheduler** (the person who created the meeting), not just the participants
+- Use the scheduler's OAuth credentials when configuring auto-start for the meeting
+- If your calendar sync knows who scheduled the meeting, use that user's context
+
+**When the scheduler is not your user:** If an external party scheduled the meeting (candidate, external recruiter, customer), you cannot use their credentials for auto-start. Options:
+1. Fall back to a participant who is your user, accepting the risk that the stream may die if they leave
+2. Prompt the external scheduler to install your app (may not be practical)
+3. For critical meetings, keep a bot fallback ready
 
 #### Handling multiple users
 
@@ -285,6 +309,7 @@ When multiple users in the same meeting have your app installed, Zoom may send m
 - Process only the first webhook per `meeting_uuid`
 - Ignore subsequent webhooks while a stream is active
 - If active stream drops and new webhook arrives, treat as reconnection
+- Track which user's stream you're using; if that user leaves and a new webhook arrives from another user, you can switch
 
 ### Part 4: Update Your Data Model
 
@@ -330,6 +355,53 @@ Build a [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/buil
 **Option C: Pre-meeting notification**
 
 Send recording consent via email or calendar invite before the meeting starts. Less interactive but simpler.
+
+### Part 6: Plan for Failure Modes
+
+Bots fail visibly: the bot doesn't join, or it disconnects and participants notice. RTMS fails silently: no webhook arrives, or the stream drops, and participants have no idea. Build detection and fallback logic.
+
+#### Failure modes table
+
+| Failure Mode | How to Detect | Mitigation |
+|--------------|---------------|------------|
+| RTMS not enabled for host org | No `meeting.rtms_started` webhook within 60 seconds of meeting start | Fall back to bot; notify your ops team |
+| Zoom client too old (< 6.5.5) | No `meeting.rtms_started` received | Fall back to bot; prompt user to update Zoom |
+| Host denies RTMS approval | No `meeting.rtms_started`, or `meeting.rtms_stopped` fires immediately | Fall back to bot; notify user that host declined |
+| WebSocket connection failure | Connection error or timeout when connecting to `server_urls` | Retry with exponential backoff; fall back to bot if retries exhausted |
+| Stream drops mid-meeting | WebSocket close event without `meeting.rtms_stopped` | Log the gap timestamp; wait 30 seconds for new `meeting.rtms_started`; if none arrives, finalize partial recording |
+| App owner leaves (stream dies) | `meeting.rtms_stopped` webhook while meeting is still active | If another app owner is in the meeting, their webhook may arrive; otherwise finalize partial recording |
+| Duplicate webhooks | Multiple `meeting.rtms_started` for same `meeting_uuid` | Deduplicate; process only one stream; ignore others |
+| Webhook signature invalid | HMAC verification fails | Reject the request; log for security review |
+| Webhook replay attack | Timestamp outside 5-minute window | Reject the request |
+
+#### Fallback decision logic
+
+```
+Meeting scheduled
+  │
+  ├── Is scheduler an app owner with RTMS installed?
+  │     ├── YES → Configure auto-start with scheduler's credentials
+  │     └── NO  → Use first participant who is an app owner (accept stream-drop risk)
+  │
+Meeting starts
+  │
+  ├── meeting.rtms_started received within 60s?
+  │     ├── YES → Connect RTMS WebSocket, begin recording
+  │     └── NO  → Fall back to bot (or notify user RTMS unavailable)
+  │
+RTMS stream active
+  │
+  ├── Stream healthy → Continue recording
+  ├── Stream drops (WebSocket close)
+  │     ├── Wait 30s for new meeting.rtms_started
+  │     │     ├── New webhook → Reconnect, log gap
+  │     │     └── No webhook → Finalize partial recording; optionally deploy bot for remainder
+  │     └── meeting.rtms_stopped → Finalize recording
+  │
+Meeting ends → Finalize all recordings
+```
+
+**Recommendation:** For high-stakes meetings (customer calls, compliance-required recordings), keep bot infrastructure available as a fallback during your RTMS rollout. Once you have confidence in RTMS reliability for your user base, you can decommission bots.
 
 ### Run the Sample
 
@@ -408,22 +480,118 @@ For hands-free recording (no user action required each meeting):
 
 With auto-start enabled, RTMS begins automatically when the app owner's meeting starts.
 
+### Enterprise Deployment (Admin Install)
+
+For enterprise customers, individual OAuth flows per user create friction. Zoom supports admin-level installation where an admin installs the app for their organization, and users can start using it without individual consent flows.
+
+#### Admin install flow
+
+1. **Admin enables RTMS at the organization level**
+   - Zoom Admin Portal > Settings > "Allow apps to access real-time meeting content"
+   - This is the master switch. If disabled, RTMS will not work for any meeting hosted by this organization.
+
+2. **Admin installs your app for the organization**
+   - Admin navigates to your app's Zoom Marketplace listing (or a direct install link you provide)
+   - Admin approves OAuth scopes for the organization
+   - Admin selects which users or groups the app is installed for (all users or a subset)
+
+3. **Admin configures RTMS settings**
+   - Enable auto-start for your app (Zoom Admin > Zoom Apps Settings)
+   - Optionally disable host approval requirement (recommended for seamless recording)
+   - Optionally enable "Allow meeting to start without host" (required if non-hosts need to trigger recording)
+
+#### Post-install behavior
+
+- **First meeting records automatically**: No user login or app interaction required. When a meeting starts for an installed user, Zoom sends `meeting.rtms_started` to your webhook.
+- **No bot joins**: Participants see no additional attendee. Your app is listed in the meeting's Apps panel but does not appear as a participant.
+- **Works for non-hosts**: A user who is not the host can trigger RTMS via auto-start as long as they are an app owner (the app is installed for them).
+
+#### Required Zoom account settings
+
+| Setting | Required Value | Where to Configure |
+|---------|----------------|-------------------|
+| Allow apps to access real-time meeting content | Enabled | Zoom Admin > Settings |
+| Your RTMS app installed | Yes, for target users | Zoom Marketplace |
+| Auto-start for your RTMS app | Enabled | Zoom Admin > Zoom Apps Settings |
+| Host approval for RTMS | Disabled (recommended) | Zoom Admin > Settings |
+| Allow meeting to start without host | Enabled (if needed) | Zoom Admin > Meeting Settings |
+| Zoom client version | 6.5.5+ | All users |
+
+---
+
+## Compliance Considerations
+
+RTMS is receive-only streaming, not Zoom's cloud recording. This distinction affects compliance requirements.
+
+### No native recording indicator
+
+**RTMS does not trigger Zoom's recording indicator** (the red dot or "Recording" badge). From Zoom's perspective, RTMS streams data to your application; it is not "recording." If your jurisdiction requires visible notification that recording is active, you must implement this yourself.
+
+#### Options for recording notification
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Zoom Surface App** | In-meeting UI; can show recording status, consent dialog, cancel button | Requires building a Zoom App with the Zoom Apps SDK |
+| **Account-level disclaimer popup** | Zoom-native; no development required | Same disclaimer for all apps on the account; not customizable per-app or per-meeting |
+| **Pre-meeting email/calendar** | Simple to implement; reaches external participants | No in-meeting cancel capability; participants may not read it |
+| **Post-join external notification** | Can include links to cancel/consent page | Disruptive (email/SMS during meeting); may be too late |
+
+**Recommendation:** If compliance requires in-meeting notification, build a Zoom Surface App. The Surface App and your RTMS General App can share the same Zoom App registration. The Surface App can display recording status, consent text, and a cancel button. It can also use the Zoom Apps SDK `sendMessage()` method to send chat messages on behalf of the app.
+
+### Pause, resume, and cancel recording
+
+RTMS streams continuously while active. To implement pause/resume or cancel functionality:
+
+- **Pause/Resume**: Your app stops processing the stream but keeps the WebSocket open. Mark pause/resume timestamps and strip paused sections in post-processing. Alternatively, close the WebSocket on pause and wait for a new `meeting.rtms_started` on resume (but this is less reliable).
+- **Cancel**: Close the WebSocket connection and discard captured media. The stream will stop. If you need to restart, the user must manually trigger RTMS again (or wait for conditions to re-trigger auto-start, which may not happen mid-meeting).
+
+A Surface App provides the best UX for these controls, with pause/cancel buttons visible in-meeting.
+
+### Consent for external participants
+
+External participants (guests not in the host's organization) cannot see your app in their Apps panel unless they also install it. For consent:
+
+1. Use Zoom's account-level disclaimer (if the host's org has it configured)
+2. Send pre-meeting email with recording notice
+3. Build a Surface App with guest mode that displays consent to all participants
+
 ---
 
 ## Acceptance Criteria
 
 Use this checklist to verify your migration:
 
+**Webhook and connection:**
 - [ ] Webhook endpoint validates signatures with timing-safe comparison
 - [ ] Webhook endpoint enforces 5-minute replay window
 - [ ] Duplicate `rtms_stream_id` webhooks are ignored
 - [ ] WebSocket handlers registered before `join()` call
 - [ ] Stream cleanup runs on `onLeave` and `meeting.rtms_stopped`
 - [ ] Multiple app owners in same meeting deduplicated by `meeting_uuid`
-- [ ] Session data model updated with RTMS identifiers
+
+**Data model:**
+- [ ] Session data model updated with RTMS identifiers (`rtms_stream_id`, `meeting_uuid`)
+- [ ] Stream status tracking implemented (waiting, connected, ended)
+
+**Lifecycle and reliability:**
+- [ ] Fallback logic implemented for when RTMS is unavailable (if applicable)
+- [ ] Stream persistence strategy defined for long meetings (scheduler-as-app-owner pattern)
+- [ ] Gap detection and logging implemented for mid-meeting stream drops
+- [ ] Reconnection handling tested (new `meeting.rtms_started` after drop)
+
+**Compliance (if required by your use case):**
+- [ ] Recording notification mechanism implemented (Surface App, disclaimer, or pre-meeting email)
+- [ ] Pause/resume functionality tested (if offered to users)
+- [ ] Cancel recording functionality tested (WebSocket close, media discard)
+- [ ] External participant consent flow documented
+
+**User experience:**
 - [ ] Chat functionality replaced with REST API, Surface App, or pre-meeting notification
-- [ ] Bot infrastructure can be decommissioned after migration validation
 - [ ] Users no longer see bot participant in meetings
+- [ ] Admin install flow documented for enterprise customers
+
+**Decommissioning:**
+- [ ] Bot infrastructure can be decommissioned after migration validation (or retained as fallback)
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: "Monitor Meeting Compliance in Real Time"
+title: "Real-time compliance monitoring for Zoom meetings"
 slug: "realtime-compliance-advisor"
 description: >-
   Build a real-time compliance advisor that lives inside Zoom meetings.
@@ -10,9 +10,9 @@ products: ["rtms", "zoom-apps"]
 verticals: ["finance", "healthcare", "enterprise"]
 solution_types: ["real-time-analysis", "compliance-auditing"]
 difficulty: "intermediate"
-estimated_time: "5-7 hours"
 author: "Max Mansfield"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-26
 github_repo: "https://github.com/zoom/rtms-compliance-sample-js"
 tags: ["compliance", "finance", "real-time", "audit", "supervision"]

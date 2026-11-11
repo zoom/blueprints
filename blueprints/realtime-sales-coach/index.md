@@ -1,5 +1,5 @@
 ---
-title: "Real-Time Sales Coach in Meetings"
+title: "Real-time sales coaching inside Zoom calls"
 slug: "realtime-sales-coach"
 description: >-
   Build a real-time sales coaching panel that lives inside Zoom meetings.
@@ -8,9 +8,9 @@ description: >-
 products: ["rtms", "zoom-apps"]
 verticals: ["sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-estimated_time: "4-6 hours"
 author: "Jen Brissman"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://youtu.be/sCkZACLtDns"
