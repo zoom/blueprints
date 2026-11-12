@@ -6,7 +6,7 @@ description: >-
   Stream transcripts with RTMS, generate live summaries and action items,
   and give participants instant recall of what was discussed.
 products: ["rtms", "zoom-apps"]
-verticals: ["enterprise"]
+verticals: ["agents", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"
