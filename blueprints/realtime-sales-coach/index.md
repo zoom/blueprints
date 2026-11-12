@@ -54,7 +54,7 @@ Follow along as we walk through the architecture.
   <img src="images/competitor-intel.png" alt="Competitor Intel" width="640" />
 </div>
 
-[Watch a 3-minute demo](https://www.youtube.com/watch?v=LKpZAe5_A8o)
+<YouTube id="sCkZACLtDns" />
 
 ---
 

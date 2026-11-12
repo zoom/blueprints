@@ -46,6 +46,10 @@ already frustrated, and the opportunity to respond in the moment is gone.
 
 <Image src="images/sentimentpic.png"/>
 
+<YouTube id="uVcAsuKQe3E" />
+
+---
+
 ## Architecture
 
 ### Server-Side with RTMS

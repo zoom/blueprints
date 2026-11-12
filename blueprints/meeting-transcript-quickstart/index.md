@@ -43,6 +43,10 @@ These files are a starting point. Search them, summarize them, attach them to a 
 
 Follow along as we walk through the architecture.
 
+<YouTube id="5CjRLI59ErQ" />
+
+---
+
 ## Architecture
 
 ### The reusable pattern

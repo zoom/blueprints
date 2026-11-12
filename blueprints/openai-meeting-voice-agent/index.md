@@ -48,6 +48,10 @@ It does not send text to a user interface or play assistant audio into the meeti
 
 Follow along as we walk through the architecture.
 
+<YouTube id="boDGB4nZGag" />
+
+---
+
 ## Features
 
 The reference implementation reports the OpenAI Realtime session, text
