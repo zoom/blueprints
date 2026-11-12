@@ -1,0 +1,10 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+%% It exists so diagrams can be reused/rendered outside the doc.
+graph TD
+    A[React app: useSmartEmbed hook] -->|inject script tag| B[Smart Embed SDK sdk.js]
+    B -->|renders iframe #zoom-embeddable-phone-iframe| C[Phone widget iframe]
+    A -->|postMessage zp-init-config| C
+    A -->|postMessage zp-make-call| C
+    C -->|postMessage call events| A
+    C -->|runs in| D[applications.zoom.us]
+    D -->|signaling| E[Zoom Phone service]
