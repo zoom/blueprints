@@ -46,6 +46,10 @@ Archive only the meetings and media your use case requires. Tell participants, g
 
 Follow along as we walk through the architecture.
 
+<YouTube id="GZN92AdQnGY" />
+
+---
+
 ## Features
 
 The reference implementation produces playable media and uploads the finalized

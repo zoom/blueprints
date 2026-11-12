@@ -53,7 +53,11 @@ Follow along as we walk through the architecture.
   <img src="images/notetaker-summary.png" alt="AI Meeting Summary" width="640" />
 </div>
 
-**See it in action:** [Demo video](https://www.youtube.com/watch?v=4N-g5TgGRz0)
+**See it in action:**
+
+<YouTube id="ATnbAbBV7Cs" />
+
+---
 
 ## Architecture
 

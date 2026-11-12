@@ -55,6 +55,10 @@ Zoom Contact Center includes native supervisor features for live monitoring. Bui
 
 This blueprint uses [Zoom Contact Center RTMS](https://developers.zoom.us/docs/contact-center/real-time-media-streams/) to access live media streams. Follow along as we walk through the architecture.
 
+<YouTube id="vc0M40eu_OU" />
+
+---
+
 ## Architecture
 
 The application operates as three independent Node.js processes that communicate via HTTP APIs and Server-Sent Events:

@@ -56,6 +56,10 @@ model response produced from that transcript.
   <img src="images/llm-response-in-console.png" alt="LLM response produced from the live transcript" width="640" />
 </div>
 
+<YouTube id="2Uapr2w8wmk" />
+
+---
+
 ## Architecture
 
 ### The reusable pattern
