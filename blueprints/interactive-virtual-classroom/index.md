@@ -5,7 +5,6 @@ description: >-
   Build an interactive virtual classroom with real-time screen sharing and annotation for engaging, collaborative online learning.
 products: ["video-sdk"]
 verticals: ["education"]
-difficulty: "intermediate"
 author: "Boon Jun Tan"
 status: "published"
 hero_image: "images/hero.png"
@@ -40,7 +39,11 @@ Remote learning often falls apart at exactly this moment: the teacher is explain
   <img src="images/virtual-classroom-annotation.jpg" alt="" width="320" />
 </div>
 
-**See it in action:** [Demo video](https://www.youtube.com/watch?v=)
+**See it in action:**
+
+<YouTube id="-xiWmnCwIP4" />
+
+---
 
 ## Architecture
 

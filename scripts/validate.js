@@ -9,7 +9,7 @@ const ROOT = path.join(__dirname, '..');
 
 const REQUIRED_FIELDS = [
   'title', 'slug', 'description', 'products', 'verticals',
-  'estimated_time', 'author', 'status', 'updated',
+  'author', 'status', 'updated',
 ];
 
 const ENUMS = {

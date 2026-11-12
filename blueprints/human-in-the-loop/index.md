@@ -8,9 +8,9 @@ partners: ["anthropic", "openai"]
 license_required: false
 stack: "Node · Express · NextJS · Oracle "                   
 solution_types: ["real-time-analysis", "agent-automation"]
-verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
+verticals: ["agents", "enterprise"]
 author: "Donte Small"
-status: "published"                    # draft | review | published
+status: "draft"                    # draft | review | published
 hero_image: "images/hero.png"
 updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
