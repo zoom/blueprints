@@ -1,5 +1,5 @@
 ---
-title: "Real-Time Compliance Advisor in Meetings"
+title: "Real-time compliance monitoring for Zoom meetings"
 slug: "realtime-compliance-advisor"
 description: >-
   Build a real-time compliance advisor that lives inside Zoom meetings.
@@ -9,10 +9,9 @@ description: >-
 products: ["rtms", "zoom-apps"]
 verticals: ["finance", "healthcare", "enterprise"]
 solution_types: ["real-time-analysis", "compliance-auditing"]
-difficulty: "intermediate"
-estimated_time: "5-7 hours"
 author: "Max Mansfield"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-26
 github_repo: "https://github.com/zoom/rtms-compliance-sample-js"
 tags: ["compliance", "finance", "real-time", "audit", "supervision"]
@@ -525,7 +524,7 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
    # Read by the app
    ZOOM_HOST=https://zoom.us          # https://zoomgov.com for Zoom for Government
    PUBLIC_URL=https://your-subdomain.ngrok-free.app
-   DATABASE_URL=postgresql://compliance:compliance@localhost:5432/compliance
+   DATABASE_URL=postgresql://compliance@localhost:5432/compliance
    RULE_PACK_ID=fin-us-retail-v3
    TRANSCRIPT_LANGUAGE=ENGLISH
    LLM_API_KEY=your_llm_api_key

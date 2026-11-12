@@ -1,18 +1,17 @@
 ---
-title: "Interactive Virtual Classroom with Screen Sharing & Real-Time Annotation"
+title: "Build virtual classroom with screensharing for iOS devices"
 slug: "interactive-virtual-classroom"
 description: >-
   Build an interactive virtual classroom with real-time screen sharing and annotation for engaging, collaborative online learning.
 products: ["video-sdk"]
 verticals: ["education"]
-difficulty: "intermediate"
-estimated_time: "4-6 hours"
 author: "Boon Jun Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-04
 github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom" 
-demo_url: ""
-seo_title: "Build an iOS classroom with screen sharing and annotation"
+demo_url: "https://youtu.be/-xiWmnCwIP4"
+seo_title: "Build virtual classroom with screensharing for iOS devices"
 seo_keywords: ["screen sharing", "annotation", "virtual classroom"]
 license_required: false
 stack: "iOS - Swift UIKit"
@@ -40,7 +39,11 @@ Remote learning often falls apart at exactly this moment: the teacher is explain
   <img src="images/virtual-classroom-annotation.jpg" alt="" width="320" />
 </div>
 
-**See it in action:** [Demo video](https://www.youtube.com/watch?v=)
+**See it in action:**
+
+<YouTube id="-xiWmnCwIP4" />
+
+---
 
 ## Architecture
 

@@ -1,0 +1,15 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+graph LR
+    A[React Frontend]
+    B[Backend - Node/Express]
+    C[(Neon Postgres)]
+    D[Zoom Cloud - Video SDK REST API]
+    E[Zoom Video SDK Session]
+
+    A -- 1. Sign in / schedule --> B
+    B -- 2. Users, sessions, invite IDs --> C
+    B -- 3. Create / get / delete session --> D
+    B -- 4. Invite link --> A
+    A -- 5. Open invite link, request token --> B
+    B -- 6. Signed JWT --> A
+    A -- 7. client.join --> E

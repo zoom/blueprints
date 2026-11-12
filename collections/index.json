@@ -1,11 +1,71 @@
 {
   "collections": [
     {
-      "slug": "enterprise",
-      "title": "Enterprise Solutions",
-      "description": "Cross-industry enterprise patterns for the Zoom developer platform.",
-      "icon": "enterprise",
-      "blueprints": ["realtime-sales-coach", "ai-meeting-notetaker"]
+      "slug": "ai-assistants",
+      "title": "AI Assistants",
+      "description": "AI-powered tools that help you capture, analyze, and act on meeting content.",
+      "icon": "ai-assistant",
+      "blueprints": [
+        "ai-meeting-notetaker",
+        "openai-meeting-voice-agent",
+        "send-transcripts-to-llms",
+        "transcripts-to-mcp",
+        "migrate-bot-to-rtms",
+        "realtime-sales-coach"
+      ]
+    },
+    {
+      "slug": "agent-workflows",
+      "title": "Agent Workflows",
+      "description": "Autonomous AI agents that take action on your behalf with human oversight.",
+      "icon": "agent",
+      "blueprints": [
+        "human-in-the-loop",
+        "openai-meeting-voice-agent",
+        "realtime-compliance-advisor"
+      ]
+    },
+    {
+      "slug": "transcription-analytics",
+      "title": "Transcription & Analytics",
+      "description": "Capture, store, and analyze meeting transcripts and recordings.",
+      "icon": "analytics",
+      "blueprints": [
+        "meeting-transcript-quickstart",
+        "transcript-sentiment-analysis",
+        "archive-meeting-media-to-s3"
+      ]
+    },
+    {
+      "slug": "compliance-security",
+      "title": "Compliance & Security",
+      "description": "Monitor meetings for compliance, detect fraud, and ensure security.",
+      "icon": "shield",
+      "blueprints": [
+        "realtime-compliance-advisor",
+        "detect-deepfakes-in-meetings"
+      ]
+    },
+    {
+      "slug": "embedded-video",
+      "title": "Embedded Video",
+      "description": "Embed Zoom meetings and video experiences directly in your applications.",
+      "icon": "video",
+      "blueprints": [
+        "embed-meetings-website",
+        "telehealth-video-visits",
+        "interactive-virtual-classroom",
+        "videosdk-scheduling-and-invite"
+      ]
+    },
+    {
+      "slug": "phone-contact-center",
+      "title": "Phone & Contact Center",
+      "description": "Build integrations for Zoom Phone and Contact Center.",
+      "icon": "contact-center",
+      "blueprints": [
+        "engagement-remote-access"
+      ]
     }
   ]
 }

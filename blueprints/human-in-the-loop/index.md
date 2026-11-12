@@ -1,5 +1,5 @@
 ---
-title: "Human-in-the-loop Workplace Agent"
+title: "Add human approval to an AI workplace agent"
 slug: "human-in-the-loop"        # MUST match this directory's name
 description: >-
   A Zoom Workplace agent that turns meeting context into suggested follow-up actions, while keeping a human in control before anything gets executed.
@@ -8,10 +8,10 @@ partners: ["anthropic", "openai"]
 license_required: false
 stack: "Node · Express · NextJS · Oracle "                   
 solution_types: ["real-time-analysis", "agent-automation"]
-verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
-estimated_time: "2-4 hours"        
-author: "Donte"
-status: "draft"                    # draft | review | published
+verticals: ["agents", "enterprise"]
+author: "Donte Small"
+status: "published"                    # draft | review | published
+hero_image: "images/hero.png"
 updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
 seo_title: "Add human approval to an AI workplace agent"

@@ -1,21 +1,20 @@
 ---
-title: "Build Telehealth Video Visits with Zoom Video SDK"
+title: "Embed telehealth video visits in your patient portal"
 slug: "telehealth-video-visits"
 hero_image: "images/hero.png"
 description: Build telehealth video visits inside your patient portal with role-based access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and optional recording using Zoom Video SDK for Web.
 products: ["video-sdk"]
 verticals: ["healthcare"]
 solution_types: ["data-integration"]
-estimated_time: "1-2 days"
 author: "Ekaansh Arora"
-status: "draft"
+status: "published"
 updated: 2026-09-01
 github_repo: "https://github.com/zoom/VideoSDK-Web-Telehealth"
 tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]
 seo_title: "Embed telehealth video visits in your patient portal"
 seo_keywords: ["zoom video sdk telehealth", "telehealth video visit app", "telehealth waiting room", "embed video in patient portal"]
 partners: ["vercel"]
-demo_url: "https://www.youtube.com/watch?v=pqXgNJAejQk"
+demo_url: "https://youtu.be/CgzVrKO0KR4"
 license_required: true
 license_note: "Requires a Zoom Video SDK account; cloud recording requires a Cloud Recording Storage Plan."
 stack: "Next.js · React · TypeScript · tRPC · Drizzle · Vercel · Neon Postgres · Vercel Blob, Amazon S3, or Cloudflare R2"
@@ -48,7 +47,7 @@ External video apps pull patients out of the portal. A native waiting room keeps
 
 If you'd rather buy than build, Zoom offers [Zoom for Healthcare](https://www.zoom.com/en/industry/healthcare/) with telehealth video visits out of the box, and [Clinical Note](https://www.zoom.com/en/industry/healthcare/solutions/clinical-notes/) for visit documentation. Use Video SDK when the visit must live inside your own portal, identity model, and clinical workflow.
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/pqXgNJAejQk?si=CvxzH1mUiDtH9Srq" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<YouTube id="CgzVrKO0KR4" />
 
 ---
 
@@ -140,7 +139,6 @@ Before changing code, inventory the target application and produce a mapping for
 | Pre-call route                 | Existing appointment detail page    | `/appointments/:id/join` surface                              |
 | Clinical workspace             | Existing chart or encounter panel   | Role-gated patient context and SOAP notes                     |
 | File storage                   | Approved document service           | Private Amazon S3 or Cloudflare R2 bucket with presigned URLs |
-
 
 Document which components the implementation reuses, adapts, creates, or omits. Recording, captions, notes, and documents are optional. Identity, appointment authorization, server-side token issuance, device preview, session cleanup, and visible failure states are required.
 
@@ -287,7 +285,6 @@ Register `connection-change` before joining and run `cleanupSession()` from ever
 
 Clinical data remains outside the media session. Use this minimum model whether it lives in PostgreSQL or behind an existing EHR service:
 
-
 | Entity                | Required relationships and data                          |
 | --------------------- | -------------------------------------------------------- |
 | User                  | Stable identity ID and application role                  |
@@ -295,7 +292,6 @@ Clinical data remains outside the media session. Use this minimum model whether 
 | Clinical note         | Appointment ID, clinician ID, SOAP fields, timestamps    |
 | Patient document      | Patient ID, object key, media type, timestamps           |
 | Zoom session instance | Appointment ID, Zoom session ID, start/end state         |
-
 
 Clinicians may read patient context only when the appointment relationship permits it. Patients may manage only their own documents. The server issues short-lived Amazon S3 or Cloudflare R2 URLs; bucket credentials never reach the browser. Each module defines its own retention and audit events.
 

@@ -1,16 +1,17 @@
 ---
-title: "Capture Live Zoom Meeting Transcripts"
+title: "Capture live meeting transcripts for search and storage"
 slug: "meeting-transcript-quickstart"
 description: >-
   Build a live transcript pipeline for Zoom Meetings. Capture RTMS transcript
   segments and save VTT, SRT, and plain-text files for search or storage.
 products: ["rtms"]
 verticals: ["enterprise"]
-estimated_time: "1-2 hours"
 author: "Chun Siong Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-19
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js"
+demo_url: "https://youtu.be/5CjRLI59ErQ"
 solution_types: ["transcription-summarization"]
 tags: ["transcripts", "quickstart", "vtt", "srt", "zoom-meetings"]
 seo_title: "Capture live meeting transcripts for search and storage"
@@ -41,6 +42,10 @@ These files are a starting point. Search them, summarize them, attach them to a 
 - Append each received transcript event to readable local files.
 
 Follow along as we walk through the architecture.
+
+<YouTube id="5CjRLI59ErQ" />
+
+---
 
 ## Architecture
 

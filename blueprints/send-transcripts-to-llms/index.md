@@ -1,16 +1,17 @@
 ---
-title: "Analyze Live Zoom Meeting Transcripts with an LLM"
+title: "Send Zoom transcripts to ChatGPT or Claude"
 slug: "send-transcripts-to-llms"
 description: >-
   Build a live meeting analysis workflow that sends Zoom Meeting transcripts
   to OpenAI or Anthropic and returns useful answers while the meeting is active.
 products: ["rtms"]
 verticals: ["enterprise", "agents"]
-estimated_time: "2-4 hours"
 author: "Chun Siong Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples"
+demo_url: "https://youtu.be/2Uapr2w8wmk"
 solution_types: ["real-time-analysis", "agent-automation"]
 tags: ["transcripts", "llm", "real-time", "zoom-meetings"]
 seo_title: "Send Zoom transcripts to ChatGPT or Claude"
@@ -54,6 +55,10 @@ model response produced from that transcript.
   <img src="images/zoom-client.png" alt="Zoom client showing a live meeting transcript" width="640" />
   <img src="images/llm-response-in-console.png" alt="LLM response produced from the live transcript" width="640" />
 </div>
+
+<YouTube id="2Uapr2w8wmk" />
+
+---
 
 ## Architecture
 

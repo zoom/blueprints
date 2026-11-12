@@ -7,7 +7,6 @@ description: >-
   Shown on cards and used for SEO — write how a customer would search.
 products: ["rtms"]                 # ids from /taxonomy.json → products
 verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
-estimated_time: "2-4 hours"        # honest wall-clock estimate to implement
 author: "Your Name"
 status: "draft"                    # draft | review | published
 updated: 2026-08-04                # YYYY-MM-DD, bump on every edit

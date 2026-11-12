@@ -1,19 +1,19 @@
 ---
-title: "Real-Time Sales Coach in Meetings"
+title: "Real-time sales coaching inside Zoom calls"
 slug: "realtime-sales-coach"
 description: >-
   Build a real-time sales coaching panel that lives inside Zoom meetings.
   Stream transcripts with RTMS, analyze for qualification signals and competitor
   mentions, and surface AI coaching cues during the call.
 products: ["rtms", "zoom-apps"]
-verticals: ["sales", "enterprise"]
+verticals: ["agents", "sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-estimated_time: "4-6 hours"
 author: "Jen Brissman"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
-demo_url: "https://www.youtube.com/watch?v=LKpZAe5_A8o"
+demo_url: "https://youtu.be/sCkZACLtDns"
 tags: ["sales", "coaching", "real-time"]
 seo_title: "Real-time sales coaching inside Zoom calls"
 seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant app", "rtms sales call intelligence", "build sales assistant zoom api"]
@@ -31,7 +31,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 
 **What you'll need:**
 
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer))
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the coaching panel in-meeting
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
@@ -54,7 +54,7 @@ Follow along as we walk through the architecture.
   <img src="images/competitor-intel.png" alt="Competitor Intel" width="640" />
 </div>
 
-[Watch a 3-minute demo](https://www.youtube.com/watch?v=LKpZAe5_A8o)
+<YouTube id="sCkZACLtDns" />
 
 ---
 

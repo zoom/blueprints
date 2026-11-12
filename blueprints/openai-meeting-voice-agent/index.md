@@ -1,16 +1,17 @@
 ---
-title: "Analyze Zoom Meeting Audio with OpenAI Realtime"
+title: "Add an OpenAI voice assistant to Zoom meetings"
 slug: "openai-meeting-voice-agent"
 description: >-
   Build a listening agent for Zoom Meetings with the OpenAI Realtime API. Stream
   RTMS audio, allow approved Zoom MCP tools, and return text and tool results.
 products: ["rtms", "mcp"]
 verticals: ["agents", "enterprise"]
-estimated_time: "1-2 days"
 author: "Chun Siong Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api"
+demo_url: "https://youtu.be/boDGB4nZGag"
 solution_types: ["agent-automation", "real-time-analysis"]
 tags: ["voice-agent", "openai-realtime", "audio", "mcp", "zoom-meetings"]
 seo_title: "Add an OpenAI voice assistant to Zoom meetings"
@@ -46,6 +47,10 @@ The current implementation listens to speech and returns text and tool results. 
 It does not send text to a user interface or play assistant audio into the meeting.
 
 Follow along as we walk through the architecture.
+
+<YouTube id="boDGB4nZGag" />
+
+---
 
 ## Features
 

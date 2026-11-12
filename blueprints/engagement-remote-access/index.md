@@ -1,22 +1,22 @@
 ---
 # ── Required — validation fails without these ───────────────────────────────
-title: "Remote Access to Live Engagements"
+title: "Monitor contact center calls in real time"
 slug: "engagement-remote-access"
 description: >-
   Gain remote access to real-time engagement streams to monitor agent activity and control media streams. Capture live audio and transcripts from Zoom Contact Center voice engagements for supervisor monitoring and quality assurance.
 products: ["rtms", "contact-center"]
-verticals: ["customer-support"]
-estimated_time: "1-2 hours"
+verticals: ["customer-support", "enterprise"]
 author: "Rehema Armorer"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-08
 
 # ── Strongly encouraged — the site hides blueprints without a repo ──────────
 github_repo: "https://github.com/zoom/zcc-rtms-PWA_sample-js"
-demo_url: "https://youtu.be/cQ5eT_UbMIY?si=7TwtTTzF0EHwJOCi"
+demo_url: "https://youtu.be/vc0M40eu_OU"
 
 # ── Optional — delete what you don't use ────────────────────────────────────
-solution_types: ["transcription-summarization", "analytics"]
+solution_types: ["transcription-summarization", "real-time-analysis"]
 tags: ["real-time", "rtms", "contact-center", "audio-capture", "monitoring"]
 seo_title: "Monitor contact center calls in real time"
 seo_keywords: ["zoom contact center rtms", "real-time media streams", "contact center monitoring", "supervisor dashboard"]
@@ -54,6 +54,10 @@ Contact Center admins can monitor active engagements by streaming live audio and
 Zoom Contact Center includes native supervisor features for live monitoring. Build custom when you need remote access without joining calls, custom metrics tracking, or integration with your quality assurance tools.
 
 This blueprint uses [Zoom Contact Center RTMS](https://developers.zoom.us/docs/contact-center/real-time-media-streams/) to access live media streams. Follow along as we walk through the architecture.
+
+<YouTube id="vc0M40eu_OU" />
+
+---
 
 ## Architecture
 

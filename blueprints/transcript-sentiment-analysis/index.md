@@ -1,5 +1,5 @@
 ---
-title: "Send Transcription to Sentiment Analysis Model"
+title: "Analyze meeting sentiment in real time"
 slug: "transcript-sentiment-analysis"
 description: >-
     Send live Zoom meeting transcriptions to a sentiment analysis model in real time.
@@ -7,12 +7,12 @@ description: >-
 products: ["rtms", "video-sdk"]
 verticals: ["customer-support", "sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-31
 github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
-demo_url: "https://success.zoom.us/clips/share/h7O9P6UVQaegHFdcEBGuFw"
+demo_url: "https://youtu.be/uVcAsuKQe3E"
 tags: ["sales", "coaching", "real-time"]
 seo_title: "Analyze meeting sentiment in real time"
 seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysis", "rtms ai sentiment"]
@@ -45,6 +45,10 @@ already frustrated, and the opportunity to respond in the moment is gone.
 - Project structure offers Plug-and-play with of your own LLM
 
 <Image src="images/sentimentpic.png"/>
+
+<YouTube id="uVcAsuKQe3E" />
+
+---
 
 ## Architecture
 

@@ -1,6 +1,0 @@
-%% Keep this file in sync with the mermaid fence in index.md.
-graph LR
-    A[Zoom Video SDK Client]  
-    D[Zoom Cloud - RTMS] --> |Sends Real Transcripts| B[Backend - Node/Express]
-    B --> |Sentiment Processing| C[LLM]
-    C --> |Sentiment Result| B

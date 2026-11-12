@@ -1,16 +1,17 @@
 ---
-title: "Archive Zoom Meeting Audio and Video"
+title: "Save Zoom recordings to cloud storage automatically"
 slug: "archive-meeting-media-to-s3"
 description: >-
   Build a customer-controlled archive for Zoom Meeting audio and video. Capture
   media with RTMS, package it with FFmpeg, and store the files in Amazon S3.
 products: ["rtms"]
 verticals: ["enterprise", "finance"]
-estimated_time: "4-8 hours"
 author: "Chun Siong Tan"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-02
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_and_video_to_aws_s3_storage_js"
+demo_url: "https://youtu.be/GZN92AdQnGY"
 solution_types: ["media-processing", "data-integration", "compliance-auditing"]
 tags: ["archive", "amazon-s3", "audio", "video", "zoom-meetings"]
 seo_title: "Save Zoom recordings to cloud storage automatically"
@@ -44,6 +45,10 @@ Archive only the meetings and media your use case requires. Tell participants, g
 - Upload objects into a bucket where the customer configures access, encryption, and retention.
 
 Follow along as we walk through the architecture.
+
+<YouTube id="GZN92AdQnGY" />
+
+---
 
 ## Features
 

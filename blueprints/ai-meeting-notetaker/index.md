@@ -1,19 +1,19 @@
 ---
-title: "AI Meeting Notetaker"
+title: "How to build a Zoom meeting notetaker"
 slug: "ai-meeting-notetaker"
 description: >-
   Build an AI-powered meeting assistant that lives inside Zoom meetings.
   Stream transcripts with RTMS, generate live summaries and action items,
   and give participants instant recall of what was discussed.
 products: ["rtms", "zoom-apps"]
-verticals: ["enterprise"]
+verticals: ["agents", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
-estimated_time: "4-6 hours"
 author: "Jen Brissman"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
-demo_url: "https://www.youtube.com/watch?v=4N-g5TgGRz0"
+demo_url: "https://youtu.be/ATnbAbBV7Cs"
 tags: ["notetaker", "transcription", "real-time", "action-items"]
 seo_title: "How to build a Zoom meeting notetaker"
 seo_keywords: ["zoom meeting notetaker", "zoom meeting bot", "rtms meeting assistant", "build zoom transcription app", "ai meeting notes zoom"]
@@ -31,7 +31,7 @@ Most meeting notes happen after the call. Someone reviews the recording, writes 
 
 **What you'll need:**
 
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer))
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the notes panel in-meeting
 - An LLM for extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
@@ -53,7 +53,11 @@ Follow along as we walk through the architecture.
   <img src="images/notetaker-summary.png" alt="AI Meeting Summary" width="640" />
 </div>
 
-**See it in action:** [Demo video](https://www.youtube.com/watch?v=4N-g5TgGRz0)
+**See it in action:**
+
+<YouTube id="ATnbAbBV7Cs" />
+
+---
 
 ## Architecture
 
