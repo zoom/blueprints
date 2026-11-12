@@ -6,7 +6,7 @@ description: >-
   Stream transcripts with RTMS, analyze for qualification signals and competitor
   mentions, and surface AI coaching cues during the call.
 products: ["rtms", "zoom-apps"]
-verticals: ["agents", "sales", "enterprise"]
+verticals: ["agents"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"

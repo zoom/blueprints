@@ -7,7 +7,7 @@ const { validateFrontmatter, loadTaxonomy } = require('./validate.js');
 
 const TAXONOMY = {
   products: new Set(['rtms', 'ai-services-scribe']),
-  verticals: new Set(['healthcare', 'enterprise']),
+  verticals: new Set(['enterprise', 'agents', 'apps']),
   solution_types: new Set(['transcription-summarization']),
   partners: new Set(['anthropic', 'aws']),
 };
@@ -17,7 +17,7 @@ const VALID = {
   slug: 'test-blueprint',
   description: 'A test blueprint.',
   products: ['rtms'],
-  verticals: ['healthcare'],
+  verticals: ['enterprise'],
   author: 'Test Author',
   status: 'draft',
   updated: '2026-08-04',

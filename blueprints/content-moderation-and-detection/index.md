@@ -4,7 +4,7 @@ slug: "content-moderation-and-detection"
 description: >-
     Use Zoom Video SDK video processor to run object detection model on video images. After detection, blur any object identified in a "sensitive objects" filter list for content moderation.
 products: ["video-sdk"]
-verticals: ["customer-support", "sales", "education"]
+verticals: ["apps"]
 solution_types: ["real-time-analysis", "compliance-auditing"]
 author: "Ticorrian Heard"
 status: "published"

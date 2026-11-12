@@ -8,7 +8,7 @@ partners: ["anthropic", "openai"]
 license_required: false
 stack: "Node · Express · NextJS · Oracle "                   
 solution_types: ["real-time-analysis", "agent-automation"]
-verticals: ["agents", "enterprise"]
+verticals: ["agents"]
 author: "Donte Small"
 status: "draft"                    # draft | review | published
 hero_image: "images/hero.png"

@@ -5,7 +5,7 @@ description: >-
     Send live Zoom meeting transcriptions to a sentiment analysis model in real time.
     The model evaluates the sentiment of each transcript chunk and provides insights into the overall mood of the conversation.
 products: ["rtms", "video-sdk"]
-verticals: ["customer-support", "sales", "enterprise"]
+verticals: ["enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Ticorrian Heard"
 status: "published"

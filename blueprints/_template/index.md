@@ -6,7 +6,7 @@ description: >-
   One to two sentences: capture X with [product], do Y, deliver [outcome].
   Shown on cards and used for SEO — write how a customer would search.
 products: ["rtms"]                 # ids from /taxonomy.json → products
-verticals: ["enterprise"]          # ids from /taxonomy.json → verticals
+verticals: ["enterprise"]          # enterprise | agents | apps
 author: "Your Name"
 status: "draft"                    # draft | review | published
 updated: 2026-08-04                # YYYY-MM-DD, bump on every edit

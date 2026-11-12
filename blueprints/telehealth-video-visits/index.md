@@ -4,7 +4,7 @@ slug: "telehealth-video-visits"
 hero_image: "images/hero.png"
 description: Build telehealth video visits inside your patient portal with role-based access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and optional recording using Zoom Video SDK for Web.
 products: ["video-sdk"]
-verticals: ["healthcare"]
+verticals: ["apps"]
 solution_types: ["data-integration"]
 author: "Ekaansh Arora"
 status: "published"

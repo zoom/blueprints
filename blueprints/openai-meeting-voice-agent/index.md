@@ -5,7 +5,7 @@ description: >-
   Build a listening agent for Zoom Meetings with the OpenAI Realtime API. Stream
   RTMS audio, allow approved Zoom MCP tools, and return text and tool results.
 products: ["rtms", "mcp"]
-verticals: ["agents", "enterprise"]
+verticals: ["agents"]
 author: "Chun Siong Tan"
 status: "published"
 hero_image: "images/hero.png"

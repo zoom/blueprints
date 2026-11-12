@@ -7,7 +7,7 @@ description: >-
   versioned rule pack, and warn the representative before a disclosure is
   missed or a prohibited claim goes unanswered.
 products: ["rtms", "zoom-apps"]
-verticals: ["finance", "healthcare", "enterprise"]
+verticals: ["enterprise"]
 solution_types: ["real-time-analysis", "compliance-auditing"]
 author: "Max Mansfield"
 status: "published"
