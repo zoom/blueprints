@@ -5,7 +5,7 @@ description: >-
   Build a live meeting analysis workflow that sends Zoom Meeting transcripts
   to OpenAI or Anthropic and returns useful answers while the meeting is active.
 products: ["rtms"]
-verticals: ["enterprise", "agents"]
+verticals: ["agents"]
 author: "Chun Siong Tan"
 status: "published"
 hero_image: "images/hero.png"

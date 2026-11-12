@@ -5,7 +5,7 @@ description: >-
   Build a customer-controlled archive for Zoom Meeting audio and video. Capture
   media with RTMS, package it with FFmpeg, and store the files in Amazon S3.
 products: ["rtms"]
-verticals: ["enterprise", "finance"]
+verticals: ["enterprise"]
 author: "Chun Siong Tan"
 status: "published"
 hero_image: "images/hero.png"

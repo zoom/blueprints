@@ -14,13 +14,9 @@
     { "id": "mcp", "label": "MCP" }
   ],
   "verticals": [
-    { "id": "healthcare", "label": "Healthcare" },
-    { "id": "finance", "label": "Finance & Compliance" },
-    { "id": "customer-support", "label": "Customer Support & Contact Center" },
     { "id": "enterprise", "label": "Enterprise" },
-    { "id": "sales", "label": "Sales" },
-    { "id": "agents", "label": "AI Agents & Automation" },
-    { "id": "education", "label": "Education" }
+    { "id": "agents", "label": "Agents" },
+    { "id": "apps", "label": "Apps" }
   ],
   "solution_types": [
     { "id": "transcription-summarization", "label": "Transcription & Summarization" },

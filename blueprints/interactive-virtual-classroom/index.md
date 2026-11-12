@@ -4,7 +4,7 @@ slug: "interactive-virtual-classroom"
 description: >-
   Build an interactive virtual classroom with real-time screen sharing and annotation for engaging, collaborative online learning.
 products: ["video-sdk"]
-verticals: ["education"]
+verticals: ["apps"]
 author: "Boon Jun Tan"
 status: "published"
 hero_image: "images/hero.png"

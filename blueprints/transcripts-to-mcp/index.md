@@ -7,7 +7,7 @@ description: >-
   deployment-specific task prompt, and exposes only approved tools from MCP
   servers declared through the environment.
 products: ["rtms", "mcp"]
-verticals: ["agents", "enterprise"]
+verticals: ["agents"]
 author: "Chun Siong Tan"
 status: "published"
 hero_image: "images/hero.png"

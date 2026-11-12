@@ -5,7 +5,7 @@ description: >-
     Schedule Video SDK sessions and share secure invite links using the Video SDK REST APIs.
     Covers password and session storage, JWT signing, and host and guest access control.
 products: ["video-sdk"]
-verticals: ["customer-support", "sales", "enterprise"]
+verticals: ["apps"]
 solution_types: ["security-encryption"]
 author: "Ticorrian Heard"
 status: "published"
