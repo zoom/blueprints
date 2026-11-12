@@ -1,0 +1,7 @@
+{
+  "name": "your-app-name",
+  "description": "One-line description of the Zoom app this blueprint creates.",
+  "scopes": ["meeting:read"],
+  "redirect_url": "https://example.com/auth/callback",
+  "event_subscriptions": []
+}
