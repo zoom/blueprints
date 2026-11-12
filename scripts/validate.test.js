@@ -18,7 +18,6 @@ const VALID = {
   description: 'A test blueprint.',
   products: ['rtms'],
   verticals: ['healthcare'],
-  estimated_time: '2-4 hours',
   author: 'Test Author',
   status: 'draft',
   updated: '2026-08-04',
@@ -33,7 +32,7 @@ test('valid frontmatter yields no errors or warnings', () => {
 
 test('each missing required field is an error', () => {
   for (const field of ['title', 'slug', 'description', 'products', 'verticals',
-    'estimated_time', 'author', 'status', 'updated']) {
+    'author', 'status', 'updated']) {
     const data = { ...VALID };
     delete data[field];
     const { errors } = validateFrontmatter(data, 'test-blueprint', TAXONOMY);
@@ -155,7 +154,6 @@ slug: test-blueprint
 description: A test blueprint.
 products: [rtms]
 verticals: [healthcare]
-estimated_time: 2-4 hours
 author: Test Author
 status: draft
 updated: 2026-08-04
