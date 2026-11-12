@@ -5,7 +5,6 @@
       "title": "AI Assistants",
       "description": "AI-powered tools that help you capture, analyze, and act on meeting content.",
       "icon": "ai-assistant",
-      "featured": true,
       "blueprints": [
         "ai-meeting-notetaker",
         "openai-meeting-voice-agent",
@@ -20,7 +19,6 @@
       "title": "Agent Workflows",
       "description": "Autonomous AI agents that take action on your behalf with human oversight.",
       "icon": "agent",
-      "featured": true,
       "blueprints": [
         "human-in-the-loop",
         "openai-meeting-voice-agent",
@@ -32,7 +30,6 @@
       "title": "Transcription & Analytics",
       "description": "Capture, store, and analyze meeting transcripts and recordings.",
       "icon": "analytics",
-      "featured": true,
       "blueprints": [
         "meeting-transcript-quickstart",
         "transcript-sentiment-analysis",
