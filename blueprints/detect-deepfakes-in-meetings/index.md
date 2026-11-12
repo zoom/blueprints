@@ -5,7 +5,7 @@ description: >-
   Build an in-meeting deepfake risk review for Zoom Meetings. Send selected
   RTMS media to a commercial or customer-hosted model and show cues in a Zoom App.
 products: ["rtms", "zoom-apps"]
-verticals: ["enterprise", "finance"]
+verticals: ["enterprise"]
 author: "Chun Siong Tan"
 status: "published"
 hero_image: "images/hero.png"

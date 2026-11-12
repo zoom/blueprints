@@ -5,7 +5,7 @@ slug: "engagement-remote-access"
 description: >-
   Gain remote access to real-time engagement streams to monitor agent activity and control media streams. Capture live audio and transcripts from Zoom Contact Center voice engagements for supervisor monitoring and quality assurance.
 products: ["rtms", "contact-center"]
-verticals: ["customer-support", "enterprise"]
+verticals: ["enterprise"]
 author: "Rehema Armorer"
 status: "published"
 hero_image: "images/hero.png"

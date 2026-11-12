@@ -6,7 +6,7 @@ description: >-
   Component View. A customer joins a scheduled appointment from your site in
   their browser, with no download, no Zoom account, and no meeting number to type.
 products: ["meeting-sdk"]
-verticals: ["customer-support", "enterprise"]
+verticals: ["apps"]
 solution_types: ["embedded-video"]
 author: "Max Mansfield"
 status: "published"
