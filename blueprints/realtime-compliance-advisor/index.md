@@ -9,7 +9,6 @@ description: >-
 products: ["rtms", "zoom-apps"]
 verticals: ["finance", "healthcare", "enterprise"]
 solution_types: ["real-time-analysis", "compliance-auditing"]
-difficulty: "intermediate"
 author: "Max Mansfield"
 status: "published"
 hero_image: "images/hero.png"

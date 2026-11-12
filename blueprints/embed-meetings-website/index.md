@@ -8,7 +8,6 @@ description: >-
 products: ["meeting-sdk"]
 verticals: ["customer-support", "enterprise"]
 solution_types: ["embedded-video"]
-difficulty: "beginner"
 author: "Max Mansfield"
 status: "published"
 hero_image: "images/hero.png"
