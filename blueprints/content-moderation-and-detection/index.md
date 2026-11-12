@@ -6,9 +6,9 @@ description: >-
 products: ["video-sdk"]
 verticals: ["customer-support", "sales", "enterprise", "education"]
 solution_types: ["real-time-analysis", "compliance-auditing"]
-estimated_time: "2-4 hours"
 author: "Ticorrian Heard"
-status: "draft"
+status: "published"
+hero_image: "images/hero.png"
 updated: 2026-09-23
 github_repo: "https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation"
 demo_url: "https://success.zoom.us/clips/share/6vWmz6gcQr6P_hCG0f2gAg"
