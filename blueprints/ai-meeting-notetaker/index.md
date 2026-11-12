@@ -6,7 +6,7 @@ description: >-
   Stream transcripts with RTMS, generate live summaries and action items,
   and give participants instant recall of what was discussed.
 products: ["rtms", "zoom-apps"]
-verticals: ["enterprise"]
+verticals: ["agents", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"
@@ -53,7 +53,11 @@ Follow along as we walk through the architecture.
   <img src="images/notetaker-summary.png" alt="AI Meeting Summary" width="640" />
 </div>
 
-**See it in action:** [Demo video](https://www.youtube.com/watch?v=4N-g5TgGRz0)
+**See it in action:**
+
+<YouTube id="ATnbAbBV7Cs" />
+
+---
 
 ## Architecture
 

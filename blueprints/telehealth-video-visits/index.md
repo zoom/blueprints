@@ -47,7 +47,7 @@ External video apps pull patients out of the portal. A native waiting room keeps
 
 If you'd rather buy than build, Zoom offers [Zoom for Healthcare](https://www.zoom.com/en/industry/healthcare/) with telehealth video visits out of the box, and [Clinical Note](https://www.zoom.com/en/industry/healthcare/solutions/clinical-notes/) for visit documentation. Use Video SDK when the visit must live inside your own portal, identity model, and clinical workflow.
 
-<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/pqXgNJAejQk?si=CvxzH1mUiDtH9Srq" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<YouTube id="CgzVrKO0KR4" />
 
 ---
 

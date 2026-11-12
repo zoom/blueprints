@@ -45,6 +45,10 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 
 Follow along as we walk through the architecture.
 
+<YouTube id="K05XU1SsVL4" />
+
+---
+
 ## Features
 
 The in-meeting Zoom App shows the selected participant, separate audio and

@@ -5,7 +5,7 @@ description: >-
   Replace your Meeting SDK bot with Zoom RTMS for native transcript, audio, and video access.
   No participant tile, no waiting room friction, same data.
 products: ["rtms", "zoom-apps", "meeting-sdk"]
-verticals: ["enterprise"]
+verticals: ["agents", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"

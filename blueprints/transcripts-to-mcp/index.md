@@ -55,6 +55,10 @@ If you prefer built-in meeting assistance, [Zoom AI Companion](https://zoom.us/a
 
 Follow along as we walk through the architecture.
 
+<YouTube id="kAATjicBxsM" />
+
+---
+
 ## Features
 
 The reference implementation reports RTMS transcript batching, environment-configured MCP server discovery, allowlisted tool calls, and responses through structured service logs. The screenshot shows a transcript asking for Zoom's stock price and the model response returned through the router with local content logging enabled.

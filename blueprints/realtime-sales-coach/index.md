@@ -6,7 +6,7 @@ description: >-
   Stream transcripts with RTMS, analyze for qualification signals and competitor
   mentions, and surface AI coaching cues during the call.
 products: ["rtms", "zoom-apps"]
-verticals: ["sales", "enterprise"]
+verticals: ["agents", "sales", "enterprise"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"
@@ -54,7 +54,7 @@ Follow along as we walk through the architecture.
   <img src="images/competitor-intel.png" alt="Competitor Intel" width="640" />
 </div>
 
-[Watch a 3-minute demo](https://www.youtube.com/watch?v=LKpZAe5_A8o)
+<YouTube id="sCkZACLtDns" />
 
 ---
 
