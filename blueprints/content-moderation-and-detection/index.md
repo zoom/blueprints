@@ -1,5 +1,5 @@
 ---
-title: "Moderate Content in Zoom meetings"
+title: "Moderate content in real-time video sessions"
 slug: "content-moderation-and-detection"
 description: >-
     Use Zoom Video SDK video processor to run object detection model on video images. After detection, blur any object identified in a "sensitive objects" filter list for content moderation.
@@ -11,9 +11,9 @@ status: "published"
 hero_image: "images/hero.png"
 updated: 2026-09-23
 github_repo: "https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation"
-demo_url: "https://success.zoom.us/clips/share/6vWmz6gcQr6P_hCG0f2gAg"
+demo_url: "https://youtu.be/jDxPPI-rvwc"
 tags: ["real-time", "raw-data", "video", "security"]
-seo_title: "Moderate Content in Zoom meetings"
+seo_title: "Moderate content in real-time video sessions"
 seo_keywords: ["zoom object detection ai", "image analysis zoom video sdk", "raw data video sdk"]
 license_required: false
 stack: "Node · Express · Javascript · TensorFlow"
@@ -25,6 +25,8 @@ The Zoom Video SDK uses its Video Processor feature to launch the Web
 Worker and pass raw video frames to the model, client-side.
 This Web Worker runs an object detection model and Webgl is used to apply effects
 on the identified filter list objects to the image (classification, blurring, masking, etc).
+
+<YouTube id="jDxPPI-rvwc"/>
 
 **Scenario 1:**
 Platforms that feature video and audio streams such as social media and conferencing apps
