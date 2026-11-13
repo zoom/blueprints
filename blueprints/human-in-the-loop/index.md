@@ -10,7 +10,7 @@ stack: "Node · Express · NextJS · Oracle "
 solution_types: ["real-time-analysis", "agent-automation"]
 verticals: ["agents"]
 author: "Donte Small"
-status: "draft"                    # draft | review | published
+status: "published"                    # draft | review | published
 hero_image: "images/hero.png"
 updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
