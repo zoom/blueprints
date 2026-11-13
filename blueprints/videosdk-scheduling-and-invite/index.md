@@ -12,7 +12,7 @@ status: "published"
 hero_image: "images/hero.png"
 updated: 2026-10-21
 github_repo: "https://github.com/zoom/videosdk-scheduling-and-invite"
-demo_url: "https://youtu.be/"
+demo_url: "https://youtu.be/69n5W_BOX4U"
 tags: ["scheduling", "security"]
 seo_title: "Build a secure scheduling and invite system"
 seo_keywords: ["zoom video sdk scheduling", "video sdk invite link", "video sdk rest api"]
@@ -26,6 +26,8 @@ Video SDK sessions don't come with a built-in scheduler or invite flow. This blu
 shows how to build one yourself: a signed-in host schedules a session through the
 Video SDK REST API, shares a link, and guests join without ever seeing your credentials
 or the session password.
+
+<YouTube id="69n5W_BOX4U"/>
 
 **What you'll need:**
 - Zoom Video SDK credentials [Get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)
