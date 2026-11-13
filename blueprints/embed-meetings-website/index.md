@@ -18,6 +18,7 @@ seo_title: "Embed a Zoom meeting in your website"
 seo_keywords: ["embed zoom meeting in website", "zoom meeting sdk component view", "zoom web sdk react embed", "join zoom meeting in browser no download"]
 license_required: false
 stack: "Node · Express · React · Vite"
+demo_url: "https://youtu.be/b_ujhWgMAVU"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/meetingsdk-appointment-sample-js" }
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/meetingsdk-appointment-sample-js" }
@@ -26,6 +27,8 @@ deploy:
 An appointment page embeds a live Zoom meeting directly in your own layout using the [Meeting SDK](https://developers.zoom.us/docs/meeting-sdk/web/) Component View. Your header, sidebar, and booking details stay on screen; the meeting renders into an element you control.
 
 Sending a customer a Zoom link takes them off your site, often into a download prompt, sometimes into a sign-in wall. Every step between "I'm ready" and "I'm in the meeting" loses people. Embedding removes all of them: the visitor clicks once on the page they are already on.
+
+<YouTube id="b_ujhWgMAVU"/>
 
 **What you'll need:**
 

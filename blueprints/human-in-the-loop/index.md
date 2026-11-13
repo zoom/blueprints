@@ -16,10 +16,12 @@ updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
 seo_title: "Add human approval to an AI workplace agent"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom mcp server"]
+demo_url: "https://youtu.be/OwmHBUCVh9c"
 ---
 
 Build a workplace agent that uses Zoom meeting and chat context to recommend follow-up actions without removing human oversight. This guide shows developers how to build an agentic workflow that observes what happened, recommends the next steps, requests approval, and takes action only after approval is provided.
 
+<YouTube id="OwmHBUCVh9c"/>
 
 **What you'll need:**
 
