@@ -12,7 +12,7 @@ status: "published"
 hero_image: "images/hero.png"
 updated: 2026-11-03
 github_repo: "https://github.com/zoom/arlo"
-demo_url: ""
+demo_url: "https://youtu.be/-Zr7LejQjgc"
 tags: ["migration", "meeting-bot", "rtms", "transcription", "real-time"]
 seo_title: "How to migrate a Zoom meeting bot to RTMS"
 seo_keywords: ["zoom meeting bot migration", "rtms vs meeting sdk", "zoom bot to rtms", "replace zoom bot"]
@@ -28,6 +28,8 @@ deploy:
 Your meeting bot works. Users see it join. Hosts admit it from the waiting room. You manage infrastructure to keep a participant connected for the duration of the call. **Zoom RTMS** gives you the same data (audio, video, transcripts, screen share) without the bot.
 
 Meeting SDK bots join as participants. They appear in the roster, require host approval, and need compute resources to stay connected. RTMS streams meeting data directly to your backend via webhook and WebSocket. No participant tile. No waiting room. The user installs your app once, and every meeting streams automatically.
+
+<YouTube id="-Zr7LejQjgc"/>
 
 **What you'll need:**
 
