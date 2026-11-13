@@ -13,7 +13,7 @@ updated: 2026-09-08
 
 # ── Strongly encouraged — the site hides blueprints without a repo ──────────
 github_repo: "https://github.com/zoom/zcc-rtms-PWA_sample-js"
-demo_url: "https://youtu.be/vc0M40eu_OU"
+demo_url: "https://youtu.be/AwosG5X2dCs"
 
 # ── Optional — delete what you don't use ────────────────────────────────────
 solution_types: ["transcription-summarization", "real-time-analysis"]
@@ -27,6 +27,7 @@ stack: "Node.js · React · Express · WebSocket · ffmpeg"
 
 Contact Center admins can monitor active engagements by streaming live audio and transcripts from Zoom Contact Center voice calls to a browser-based dashboard. Quality monitoring typically requires admins to join calls or wait for recordings. Real-time access lets admins catch issues while agents can still course-correct.
 
+<YouTube id="AwosG5X2dCs"/>
 
 <div align="center">
   <img src="images/dashboard-preview.png" alt="Engagement dashboard" width="640" />

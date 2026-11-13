@@ -21,6 +21,7 @@ partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires a paid Zoom Workplace plan with the RTMS entitlement"
 stack: "Node 22 · Express · @zoom/rtms · React · Postgres"
+demo_url: "https://youtu.be/FwzbkMaxUsE"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/rtms-compliance-sample-js" }
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/rtms-compliance-sample-js" }
@@ -29,6 +30,8 @@ deploy:
 A real-time compliance advisor streams meeting transcripts through the [Zoom RTMS SDK](https://github.com/zoom/rtms), screens every segment against a versioned rule pack, and warns the licensed representative in a panel only they can see. The alert names the rule, quotes the phrase that triggered it, and offers approved language to correct the record.
 
 Compliance review normally happens weeks after the call, when a surveillance team samples recordings. By then the client has acted on what they heard and the only remedy is remediation. Screening the transcript live gives the representative a chance to correct the record while the other party is still on the call.
+
+<YouTube id="FwzbkMaxUsE"/>
 
 **What you'll need:**
 
