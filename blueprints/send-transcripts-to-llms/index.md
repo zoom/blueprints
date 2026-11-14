@@ -35,7 +35,7 @@ The transcript is only the starting point. Change the prompt, send the answer to
 - An OpenAI or Anthropic account, or another approved model provider
 - A destination for the results, such as a dashboard, CRM, or automation
 
-**Features:**
+## Features
 
 - Receive live transcript segments without adding a meeting participant.
 - Keep Zoom and model-provider credentials on the backend.
