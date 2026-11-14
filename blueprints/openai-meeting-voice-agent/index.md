@@ -26,7 +26,7 @@ Build a listening agent that understands spoken requests in a Zoom Meeting and c
 
 This Blueprint connects [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio from a Zoom Meeting, not a Video SDK session, to the [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime). The reference implementation changes the audio into the format OpenAI expects, sends it to the realtime model, and lets the model call approved tools on [Zoom's hosted MCP server](https://developers.zoom.us/docs/mcp/zoom-mcp-server/).
 
-The current implementation listens to speech and returns text and tool results. It cannot play the assistant's voice back into the Zoom Meeting. A two-way voice agent still needs an approved way to join or speak in the meeting. Until then, this remains a listening implementation.
+This is a one-way agent. It listens to speech in the meeting and returns text and tool results. It does not play the assistant's voice back into the Zoom Meeting.
 
 **What you'll need:**
 
@@ -72,8 +72,6 @@ flowchart LR
     D -->|Authorized meeting or document result| C
     C -->|Text and tool results| E[Server console in reference implementation]
     E -.->|Customer extension| G[Agent UI or workflow]
-    C -.->|Optional synthesized audio| F[Approved meeting audio output adapter]
-    F -.->|Not implemented by reference implementation| A
 ```
 
 ### Agent integration map
@@ -96,7 +94,7 @@ Check what your application already provides before adding components:
 
 #### 1. Start with the supported reference boundary
 
-Start with voice input, text output, and tool calls. Test those parts before adding spoken replies. Do not describe the app as a two-way voice agent until an approved audio-output path works in a real meeting.
+This Blueprint covers voice input, text output, and tool calls. It does not cover spoken replies in the meeting.
 
 [`openaiRealtime.js`](https://github.com/zoom/rtms-samples/blob/main/audio/send_audio_to_openai_realtime_api/openaiRealtime.js) keeps buffered source audio with the meeting session, slices fixed-size chunks, resamples each chunk, and sends it to the matching OpenAI session. The same meeting-to-session boundary is required if the audio transport or model provider changes.
 
@@ -162,8 +160,6 @@ The reference implementation uses server-side voice detection with a 600 ms sile
 
 Make it clear when the agent is listening, and give participants a simple way to stop it.
 
-For a later spoken-answer test, turn on audio output in OpenAI and capture the returned audio. This proves that OpenAI can create speech. It still does not provide a supported way to play that speech in the Zoom Meeting.
-
 **Input:** Realtime session configuration, converted audio, and turn-detection settings
 
 **Output:** Text response events and optional tool requests for the matching meeting stream
@@ -171,7 +167,7 @@ For a later spoken-answer test, turn on audio output in OpenAI and capture the r
 **Invariants:**
 
 - The configured input format matches the bytes sent by the audio bridge
-- Output remains text-only until a supported meeting audio-output path is implemented
+- Output is text-only; no audio is sent into the meeting
 - Turn settings are tested for the expected languages, overlap, and room noise
 - Session errors close or replace only the affected stream session
 - Model name, duration, rate, and spend limits come from deployment configuration
@@ -202,9 +198,7 @@ Do not blindly trust tool descriptions, inputs, or results. Check IDs and permis
 
 #### 6. Design the response experience
 
-The reference implementation logs text and tool results. Add a response adapter if the customer needs a dashboard, CRM, automation, or separate Zoom App. If the agent must speak in the meeting, choose the design with Zoom product and security owners. Decide how the agent appears, how it tells people what it is, how it avoids echo, how people interrupt it, what it can do, and what happens when it fails.
-
-Do not call the agent complete by using an undocumented or unsupported audio trick.
+The reference implementation logs text and tool results. Add a response adapter if the customer needs a dashboard, CRM, automation, or separate Zoom App. Decide where responses appear, who can see them, and what happens when the agent fails.
 
 ### Part 3: Run the reference implementation
 
@@ -289,12 +283,12 @@ The app owner must verify the OAuth flow, each granular scope, endpoint validati
 - Invalid or stale Zoom webhook signatures are rejected before audio processing begins.
 - Each RTMS stream has its own audio buffer and OpenAI Realtime session.
 - 48 kHz L16 input is converted to the configured 24 kHz PCM format without unbounded buffering.
-- Speech produces a text response while the reference implementation remains text-only.
+- Speech produces a text response.
 - The model cannot call a Zoom MCP tool outside the configured allowlist.
 - Expired OAuth tokens, slow tools, and model disconnects do not close the RTMS stream unexpectedly.
 - Session, audio buffer, and token state is removed when a meeting stream ends.
 - Participant notice, provider data handling, tool permissions, rate limits, and spend limits match the target policy.
-- The implementation is not described as a two-way voice agent unless a supported meeting audio-output path is tested.
+- No audio is sent into the meeting; responses are text and MCP tool results.
 
 ## Related Resources
 
