@@ -1,5 +1,5 @@
 ---
-title: "Archive Zoom meeting audio and video to Amazon S3"
+title: "Send meeting media to Amazon S3"
 slug: "archive-meeting-media-to-s3"
 description: >-
   Build a customer-controlled archive for Zoom Meeting audio and video. Capture
@@ -14,7 +14,7 @@ github_repo: "https://github.com/zoom/rtms-samples/tree/main/storage/save_audio_
 demo_url: "https://youtu.be/GZN92AdQnGY"
 solution_types: ["media-processing", "data-integration", "compliance-auditing"]
 tags: ["archive", "amazon-s3", "audio", "video", "zoom-meetings"]
-seo_title: "Archive Zoom meeting audio and video to Amazon S3"
+seo_title: "Send meeting media to Amazon S3"
 seo_keywords: ["zoom meeting archive s3", "zoom rtms aws s3", "save zoom audio video"]
 partners: ["aws"]
 license_required: true
@@ -153,7 +153,7 @@ Handle Zoom endpoint validation separately because that request follows a differ
 
 Open the RTMS connections in the background. Save audio and video separately, handle heartbeats and reconnects, and close each file before running FFmpeg.
 
-[`MediaProcessingPipeline.js`](https://github.com/zoom/rtms-samples/blob/main/storage/save_audio_and_video_to_aws_s3_storage_js/MediaProcessingPipeline.js) converts the raw audio to `mixed_audio.wav`, wraps the H.264 stream as `mixed_video.mp4`, and muxes both into `mixed_final.mp4` when both tracks exist. It passes FFmpeg a fixed list of arguments. Do not build a shell command from meeting details. A nonzero FFmpeg exit code fails the job, so a broken file is never uploaded as a successful recording.
+[`MediaProcessingPipeline.js`](https://github.com/zoom/rtms-samples/blob/main/storage/save_audio_and_video_to_aws_s3_storage_js/MediaProcessingPipeline.js) converts the raw audio to `mixed_audio.wav`, wraps the H.264 stream as `mixed_video.mp4`, and muxes both into `mixed_final.mp4` when both tracks exist. It passes FFmpeg a fixed list of arguments. Do not build a shell command from meeting details. A nonzero FFmpeg exit code fails the job, so a broken file is never uploaded as a finished one.
 
 **Input:** Closed raw audio and video artifacts plus trusted format settings
 
