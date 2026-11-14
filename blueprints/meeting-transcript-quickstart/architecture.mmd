@@ -4,6 +4,7 @@ flowchart LR
     C -->|WebVTT| D[VTT file]
     C -->|SubRip| E[SRT file]
     C -->|Readable transcript| F[TXT file]
+    C -->|Event log| H[JSONL file]
     D --> G[Customer storage or processing]
     E --> G
     F --> G
