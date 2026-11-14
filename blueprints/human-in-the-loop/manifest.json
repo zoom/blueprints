@@ -7,15 +7,15 @@
   },
   "oauth_information" : {
     "usage" : "USER_OPERATION",
-    "development_redirect_uri" : "https://8af1a8d3f902.ngrok.app/auth/callback",
+    "development_redirect_uri" : "https://example.ngrok.app/auth/callback",
     "production_redirect_uri" : "",
     "oauth_allow_list" : [
       "https://oauth.pstmn.io/v1/callback",
-      "https://8af1a8d3f902.ngrok.app",
-      "https://8af1a8d3f902.ngrok.app/#ai-actions",
+      "https://example.ngrok.app",
+      "https://example.ngrok.app/#ai-actions",
       "https://web.zoom.us",
       "https://us06web.zoom.us",
-      "https://8af1a8d3f902.ngrok.app/auth/callback"
+      "https://example.ngrok.app/auth/callback"
     ],
     "strict_mode" : false,
     "subdomain_strict_mode" : false,
@@ -259,7 +259,7 @@
       "ZOOM_CHAT",
       "ZOOM_MEETING"
     ],
-    "development_home_uri" : "https://8af1a8d3f902.ngrok.app",
+    "development_home_uri" : "https://example.ngrok.app",
     "production_home_uri" : "",
     "domain_allow_list" : [
       {
@@ -352,7 +352,7 @@
           }
         ],
         "enable_mention" : true,
-        "development_message_url" : "https://8af1a8d3f902.ngrok.app/webhooks",
+        "development_message_url" : "https://example.ngrok.app/webhooks",
         "production_message_url" : "",
         "sender_type" : "zoom",
         "welcome_msg" : {
@@ -363,7 +363,6 @@
       },
       "shortcuts" : [
         {
-          "shortcut_id" : "I91d0sd2QsOm1KXnrC5vpw",
           "action_label" : "Create note",
           "action_id" : "create_note",
           "action_types" : [
@@ -382,7 +381,6 @@
       "enable" : true,
       "events" : [
         {
-          "subscription_id" : "_ZfzUHN8TdyxRdidR94zZA",
           "event_types" : [
             "team_chat.channel_app_removed",
             "team_chat.channel_app_added",
@@ -391,7 +389,7 @@
             "contact_center.voice_rtms_stopped"
             
           ],
-          "development_webhook_url" : "https://8af1a8d3f902.ngrok.app/webhooks",
+          "development_webhook_url" : "https://example.ngrok.app/webhooks",
           "event_usage" : "EVENT_FOR_USER",
           "communicate_type" : "WEB_HOOK"
         }
