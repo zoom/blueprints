@@ -495,8 +495,7 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
 
 3. Create your Zoom App at [marketplace.zoom.us](https://marketplace.zoom.us/):
    - OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`
-   - Scopes: `zoomapp:inmeeting` only
-   - Zoom App SDK: enable RTMS > Transcripts
+   - Scopes: `zoomapp:inmeeting` and the RTMS scope `meeting:read:meeting_transcript`
    - Surface: Home URL `https://YOUR-NGROK-URL`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
 
