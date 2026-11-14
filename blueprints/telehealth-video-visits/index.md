@@ -5,7 +5,7 @@ hero_image: "images/hero.png"
 description: Build telehealth video visits inside your patient portal with role-based access, a device-ready pre-call check, in-session video, chat, captions, clinical notes, and optional recording using Zoom Video SDK for Web.
 products: ["video-sdk"]
 verticals: ["apps"]
-solution_types: ["data-integration"]
+solution_types: ["embedded-video", "data-integration"]
 author: "Ekaansh Arora"
 status: "published"
 updated: 2026-09-01
@@ -190,11 +190,11 @@ Call this boundary before returning appointment metadata, signing a session toke
 
 ### Contract B: server-side session token service
 
-Use the [Video SDK SDK key and secret](https://developers.zoom.us/docs/video-sdk/get-credentials/) only in the server runtime. The token service receives an already-authorized appointment and emits a signed JWT with these claims:
+Use the [Video SDK key and secret](https://developers.zoom.us/docs/video-sdk/get-credentials/) only in the server runtime. The token service receives an already-authorized appointment and emits a signed JWT with these claims:
 
 | Claim       | Required value                                                   |
 | ----------- | ---------------------------------------------------------------- |
-| `app_key`   | Video SDK SDK key from a server-only Vercel environment variable |
+| `app_key`   | Video SDK key from a server-only Vercel environment variable |
 | `tpc`       | Stable appointment ID; must equal the client `sessionName`       |
 | `role_type` | Server-derived `1` for host or `0` for participant               |
 | `version`   | `1`                                                              |

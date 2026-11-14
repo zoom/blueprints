@@ -6,7 +6,7 @@ description: >-
 products: ["rtms","zoom-apps","team-chat"]
 partners: ["anthropic", "openai"]
 license_required: false
-stack: "Node · Express · NextJS · Oracle "                   
+stack: "Node · Express · Next.js · Oracle"
 solution_types: ["real-time-analysis", "agent-automation"]
 verticals: ["agents"]
 author: "Donte Small"
@@ -33,7 +33,7 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 * An [Anthropic API key](https://console.anthropic.com/) for the Zoom Chat Research Assistant bot.
 * [ngrok](https://ngrok.com). A free static domain is recommended so your Marketplace URLs do not change each time ngrok restarts.
 
-## Features:
+**Features:**
 
 * **Live transcription (Observe):** Stream meeting transcripts through RTMS using the `meeting.rtms_started` and `meeting.rtms_stopped` lifecycle webhooks. Transcript segments are sent to the browser over server-sent events (SSE) for a live in-meeting view.
 * **AI task extraction (Recommend):** After the meeting ends, OpenAI analyzes the full transcript and uses Structured Outputs with a strict JSON Schema to return predictable task suggestions.
@@ -455,7 +455,7 @@ with a `dialog.link`, which opens the Next.js application in a Zoom webview.
 
 `dashboardUrl` comes from `getWebviewUrl()`.
 
-The helper accepts only HTTPS URLs because Zoom’s in-client browser requires `dialog.link`. If it cannot produce one, it returns `null` and the card builder leaves the button out instead of sending an invalid card. 
+The helper accepts only HTTPS URLs because `dialog.link` must be an HTTPS URL to open in Zoom’s in-client browser. If it cannot produce one, it returns `null` and the card builder leaves the button out instead of sending an invalid card. 
 
 ### `backend/utils/zoom/zoom-app-urls.js`
 
@@ -630,9 +630,9 @@ The backend endpoint records that the share occurred. It does not post the Zoom 
 ### `backend/routes/api/ai-actions.js`
 
 ```js
- Frontend calls this after the user shares the doc to chat via the Apps SDK.
- We don't actually post the message from the backend — Apps SDK does that
- client-side. This endpoint just records the intent for the activity log.
+// Frontend calls this after the user shares the doc to chat via the Apps SDK.
+// We don't actually post the message from the backend; the Apps SDK does that
+// client-side. This endpoint just records the intent for the activity log.
 ```
 
 This separation follows the context available on each side of the application.

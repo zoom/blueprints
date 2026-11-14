@@ -271,7 +271,7 @@ The [`manifest.json`](manifest.json) in this directory follows the current Zoom 
 
 Enable the SDK capabilities used by the frontend and allow the app domain plus `https://appssdk.zoom.us/`. The configured APIs are `getSupportedJsApis`, `getAppContext`, `getMeetingContext`, `getMeetingUUID`, `getMeetingParticipants`, `getRunningContext`, `getUserContext`, `onRTMSStatusChange`, `startRTMS`, `stopRTMS`, `showNotification`, `onParticipantChange`, and `clearWebView`. Marketplace capability and domain settings still require verification after import.
 
-The app owner must verify the current Marketplace schema, exact scopes, in-client APIs, redirect and webhook URLs, and domain allowlist. Security, privacy, legal, and AI-risk reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before publication or production deployment.
+The app owner must verify the current Marketplace schema, exact scopes, in-client APIs, redirect and webhook URLs, and domain allowlist. Security, privacy, legal, and AI-risk reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before production deployment.
 
 ## Acceptance Criteria
 

@@ -13,7 +13,7 @@ hero_image: "images/hero.png"
 updated: 2026-08-31
 github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
 demo_url: "https://youtu.be/oNI-y98B8jQ"
-tags: ["sales", "coaching", "real-time"]
+tags: ["sentiment-analysis", "live-transcription", "real-time"]
 seo_title: "Analyze meeting sentiment in real time"
 seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysis", "rtms ai sentiment"]
 license_required: false
@@ -42,7 +42,7 @@ already frustrated, and the opportunity to respond in the moment is gone.
 
 **Features:**
 - Live Sentiment Detection with sub-second latency
-- Project structure offers Plug-and-play with of your own LLM
+- Project structure that lets you plug in your own model
 
 <Image src="images/sentimentpic.png" alt="Video with the live caption 'Thank you for the roses.' and the label 'Detected Sentiment: gratitude' above it" />
 
@@ -266,11 +266,11 @@ const launchAI = async () => {
                 localStorage.setItem("allWords", allWords);
                 localStorage.setItem("wordReference", wordReference);
                 processingPaused = false;
-                aiBtn.innerHTML = 'Reset AI';
+                aiBtn.textContent = 'Reset AI';
                 aiBtn.disabled = false;
                 break;
             case 'sentiment-result':
-                sentimentOutput.innerHTML = `Detected Sentiment: ${result}`;
+                sentimentOutput.textContent = `Detected Sentiment: ${result}`;
         }
     }
 };
