@@ -11,7 +11,7 @@ verticals: ["agents"]
 author: "Chun Siong Tan"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-09-03
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/rtms_mcp_client/zoom-rtms-mcp-client"
 demo_url: "https://youtu.be/kAATjicBxsM"
 solution_types: ["agent-automation", "real-time-analysis"]
@@ -20,7 +20,7 @@ seo_title: "Connect Zoom transcripts to AI tools via MCP"
 seo_keywords: ["zoom transcript mcp", "zoom rtms mcp client", "zoom meeting mcp tools"]
 partners: ["anthropic", "openai"]
 license_required: true
-license_note: "Requires a Zoom Developer Pack with RTMS transcript access."
+license_note: "Requires Zoom Developer Pack credits for RTMS."
 stack: "Node.js · TypeScript · Zoom RTMS · MCP · Anthropic, OpenAI, or OpenRouter"
 ---
 
@@ -30,7 +30,7 @@ The router combines fixed security rules with a deployment-specific task prompt.
 
 **What you'll need:**
 
-- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) transcript access
+- [Zoom Developer Pack](https://zoom.us/pricing/developer) credits for [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) (free trial credits are available)
 - A backend that can receive Zoom webhooks and maintain RTMS signaling and transcript WebSockets
 - A [Zoom General App](https://developers.zoom.us/docs/integrations/) with RTMS lifecycle events and transcript access
 - An access token for each configured MCP server, including a Zoom user OAuth token with the granular scopes required by the included [Zoom MCP tools](https://developers.zoom.us/docs/mcp/servers/)
@@ -229,6 +229,8 @@ The reference implementation starts with this read-only allowlist:
 
 The included `zoom_meeting` server uses a Zoom user OAuth token with only the scopes required by the retained tools. Access tokens expire, so deployed applications need an OAuth authorization and refresh flow for each server. Treat every live `tools/list` response and missing-scope error as authoritative because hosted tool catalogs can change.
 
+The router keeps only allowlisted tools that the server actually publishes and drops the rest without an error. The [Zoom Meetings MCP server reference](https://developers.zoom.us/docs/mcp/zoom-meetings-mcp-server/) lists the first four tools in the table. It lists `get_file_content` under the [Zoom Canvas MCP server](https://developers.zoom.us/docs/mcp/zoom-canvas-mcp-server/) instead, so check `allowedToolCount` on the router's `/health` endpoint, and add a second `MCP_SERVERS_JSON` entry for that server if you need Zoom Docs.
+
 **Input:** Environment-defined MCP servers, discovered tool schemas, and per-server allowlists
 
 **Output:** Namespaced model tool definitions containing only each server's allowed, discovered tools
@@ -264,7 +266,7 @@ Add the deployment purpose separately:
 AI_TASK_PROMPT="Find relevant past meetings and return concise answers with source details."
 ```
 
-The router appends the task as `Task for this deployment: ...`. It limits the value to 4,000 characters. The task can shape the model's response, but it cannot add tools, bypass the per-server allowlists, or increase the tool-call limit.
+The router appends the task as `Task for this deployment: ...`. It refuses to start if the value is longer than 4,000 characters. The task can shape the model's response, but it cannot add tools, bypass the per-server allowlists, or increase the tool-call limit.
 
 | Limit | Default |
 | --- | ---: |
@@ -283,7 +285,7 @@ The router appends the task as `Task for this deployment: ...`. It limits the va
 
 - Pass the security prompt as the provider's system prompt.
 - Keep the fixed security rules when a deployment task is configured.
-- Reject a deployment task longer than 4,000 characters.
+- Refuse to start when the deployment task is longer than 4,000 characters.
 - Deny tool names outside the filtered set.
 - Stop exposing tools after the configured call limit.
 - Sanitize provider and tool errors before returning them.
@@ -308,7 +310,7 @@ The current RTMS client receives the `ask-llm` result. It records only the outco
 - Apply the destination's retention, redaction, and audit policy.
 - Treat the returned text as untrusted before rendering or executing it.
 
-This adapter is not included in the reference implementation. Add and test it in the implementation repository before presenting a UI or downstream workflow as working.
+This adapter is not included in the reference implementation.
 
 ### Part 3: Run the reference implementation
 
@@ -433,7 +435,7 @@ Start RTMS in a test meeting and verify that the audit log records a successful 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `your-development-domain` and `your-production-domain` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
+The [`manifest.json`](manifest.json) in this directory uses the Zoom Marketplace manifest structure and configures a user-managed Zoom General App for RTMS transcript ingestion and the read-only Zoom MCP tools enabled by the reference implementation. Replace `your-development-domain` and `your-production-domain` with HTTPS domains controlled by the app owner, then verify the imported settings in Zoom Marketplace.
 
 ### Scopes
 
@@ -461,7 +463,7 @@ The webhook URL must end at the `mcp_client` route configured by `WEBHOOK_PATH`.
 
 The manifest configures the Zoom-facing permissions and lifecycle events. The provider API key, internal router token, MCP server registry, server access tokens, tool allowlists, model limits, and network policy remain external application configuration.
 
-The app owner must confirm the current Marketplace schema, imported scopes, OAuth redirect URL, webhook endpoint, and Developer Pack credits before publishing the app.
+The app owner must confirm the imported scopes, OAuth redirect URL, webhook endpoint, and Developer Pack credits before publishing the app.
 
 <details>
 <summary><strong>Reference implementation boundaries</strong></summary>
@@ -472,7 +474,7 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 - Unexpected RTMS socket closures do not trigger general reconnection.
 - Health endpoints report configured connections as available without active probes.
 - The RTMS client exposes the returned text only through local structured logs when `LOG_CONTENT=true`; it does not include a UI, API, CRM, or persistent response adapter.
-- The external repository includes a Marketplace manifest but does not yet include Render configuration, Railway configuration, or a Compose file.
+- The sample includes a Marketplace manifest but no Render, Railway, or Docker Compose configuration.
 
 </details>
 
