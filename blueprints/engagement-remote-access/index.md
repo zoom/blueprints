@@ -12,7 +12,7 @@ hero_image: "images/hero.png"
 updated: 2026-09-08
 
 # ── Strongly encouraged — the site hides blueprints without a repo ──────────
-github_repo: "https://github.com/zoom/zcc-rtms-PWA_sample-js"
+github_repo: "https://github.com/zoom/zcc-rtms-pwa-sample-js"
 demo_url: "https://youtu.be/AwosG5X2dCs"
 
 # ── Optional — delete what you don't use ────────────────────────────────────
@@ -55,8 +55,6 @@ Contact Center admins can monitor active engagements by streaming live audio and
 Zoom Contact Center includes native supervisor features for live monitoring. Build custom when you need remote access without joining calls, custom metrics tracking, or integration with your quality assurance tools.
 
 This blueprint uses [Zoom Contact Center RTMS](https://developers.zoom.us/docs/contact-center/real-time-media-streams/) to access live media streams. Follow along as we walk through the architecture.
-
-<YouTube id="vc0M40eu_OU" />
 
 ---
 
@@ -702,8 +700,8 @@ This section walks through starting all three services (frontend, backend, RTMS 
 
 ```bash
 # Clone and install
-git clone https://github.com/zoom/zcc-rtms-PWA_sample-js
-cd zcc-rtms-PWA_sample-js
+git clone https://github.com/zoom/zcc-rtms-pwa-sample-js
+cd zcc-rtms-pwa-sample-js
 npm run install:all
 
 # Configure environment

@@ -564,36 +564,36 @@ External participants (guests not in the host's organization) cannot see your ap
 Use this checklist to verify your migration:
 
 **Webhook and connection:**
-- [ ] Webhook endpoint validates signatures with timing-safe comparison
-- [ ] Webhook endpoint enforces 5-minute replay window
-- [ ] Duplicate `rtms_stream_id` webhooks are ignored
-- [ ] WebSocket handlers registered before `join()` call
-- [ ] Stream cleanup runs on `onLeave` and `meeting.rtms_stopped`
-- [ ] Multiple app owners in same meeting deduplicated by `meeting_uuid`
+- Webhook endpoint validates signatures with timing-safe comparison
+- Webhook endpoint enforces 5-minute replay window
+- Duplicate `rtms_stream_id` webhooks are ignored
+- WebSocket handlers registered before `join()` call
+- Stream cleanup runs on `onLeave` and `meeting.rtms_stopped`
+- Multiple app owners in same meeting deduplicated by `meeting_uuid`
 
 **Data model:**
-- [ ] Session data model updated with RTMS identifiers (`rtms_stream_id`, `meeting_uuid`)
-- [ ] Stream status tracking implemented (waiting, connected, ended)
+- Session data model updated with RTMS identifiers (`rtms_stream_id`, `meeting_uuid`)
+- Stream status tracking implemented (waiting, connected, ended)
 
 **Lifecycle and reliability:**
-- [ ] Fallback logic implemented for when RTMS is unavailable (if applicable)
-- [ ] Stream persistence strategy defined for long meetings (scheduler-as-app-owner pattern)
-- [ ] Gap detection and logging implemented for mid-meeting stream drops
-- [ ] Reconnection handling tested (new `meeting.rtms_started` after drop)
+- Fallback logic implemented for when RTMS is unavailable (if applicable)
+- Stream persistence strategy defined for long meetings (scheduler-as-app-owner pattern)
+- Gap detection and logging implemented for mid-meeting stream drops
+- Reconnection handling tested (new `meeting.rtms_started` after drop)
 
 **Compliance (if required by your use case):**
-- [ ] Recording notification mechanism implemented (Surface App, disclaimer, or pre-meeting email)
-- [ ] Pause/resume functionality tested (if offered to users)
-- [ ] Cancel recording functionality tested (WebSocket close, media discard)
-- [ ] External participant consent flow documented
+- Recording notification mechanism implemented (Surface App, disclaimer, or pre-meeting email)
+- Pause/resume functionality tested (if offered to users)
+- Cancel recording functionality tested (WebSocket close, media discard)
+- External participant consent flow documented
 
 **User experience:**
-- [ ] Chat functionality replaced with REST API, Surface App, or pre-meeting notification
-- [ ] Users no longer see bot participant in meetings
-- [ ] Admin install flow documented for enterprise customers
+- Chat functionality replaced with REST API, Surface App, or pre-meeting notification
+- Users no longer see bot participant in meetings
+- Admin install flow documented for enterprise customers
 
 **Decommissioning:**
-- [ ] Bot infrastructure can be decommissioned after migration validation (or retained as fallback)
+- Bot infrastructure can be decommissioned after migration validation (or retained as fallback)
 
 ---
 
