@@ -62,7 +62,7 @@ Your backend receives mixed meeting audio through RTMS, converts it to the model
 
 The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/audio/send_audio_to_openai_realtime_api) uses RTMSManager and a server-to-server WebSocket connection to OpenAI. Its default model is [`gpt-realtime-2`](https://developers.openai.com/api/docs/models/gpt-realtime-2), with text-only output and optional input transcription. It registers the Zoom MCP server as a remote tool and writes results to the server console.
 
-The model supports audio output, but the reference implementation requests text and has no path for assistant audio to enter the Zoom Meeting. Treat spoken output as separate work that needs a supported Zoom design and architecture review.
+The reference implementation does not send audio into the meeting. It is a one-way agent: it listens to the meeting and responds with text and MCP tool calls.
 
 ```mermaid
 flowchart LR
@@ -282,7 +282,7 @@ The `search_zoom` tool searches more than one Zoom product. Its additional scope
 - `meeting.rtms_started`
 - `meeting.rtms_stopped`
 
-The app owner must verify the OAuth flow, each granular scope, endpoint validation, and the hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model and data controls. Any mechanism intended to deliver synthesized audio into a Zoom Meeting requires Zoom architecture approval because that path is not implemented by the linked reference implementation.
+The app owner must verify the OAuth flow, each granular scope, endpoint validation, and the hosted MCP authorization behavior. OpenAI project owners must verify the selected realtime model and data controls. The reference implementation does not send audio into the meeting.
 
 ## Acceptance Criteria
 
