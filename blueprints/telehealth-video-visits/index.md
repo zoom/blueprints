@@ -8,7 +8,7 @@ verticals: ["apps"]
 solution_types: ["embedded-video", "data-integration"]
 author: "Ekaansh Arora"
 status: "published"
-updated: 2026-09-01
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/videosdk-web-telehealth"
 tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]
 seo_title: "Embed telehealth video visits in your patient portal"
@@ -16,7 +16,7 @@ seo_keywords: ["zoom video sdk telehealth", "telehealth video visit app", "teleh
 partners: ["vercel"]
 demo_url: "https://youtu.be/CgzVrKO0KR4"
 license_required: true
-license_note: "Requires a Zoom Video SDK account; cloud recording requires a Cloud Recording Storage Plan."
+license_note: "Requires a Zoom Video SDK account (free trial credits are available); cloud recording must be added to the account."
 stack: "Next.js · React · TypeScript · tRPC · Drizzle · Vercel · Neon Postgres · Vercel Blob, Amazon S3, or Cloudflare R2"
 deploy:
   - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0" }
@@ -30,7 +30,7 @@ External video apps pull patients out of the portal. A native waiting room keeps
 
 **What you'll need:**
 
-- [Video SDK credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/): SDK key and secret, plus API key and secret for recording
+- A Zoom Video SDK account (free trial credits are available) and its [credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/): SDK key and secret, plus API key and secret for recording. Cloud recording must be added to the account.
 - A backend to authorize appointments and issue short-lived session JWTs
 - A frontend for the waiting room and video session (Next.js on Vercel in this guide; any stack works)
 - A PostgreSQL database and private object store for appointments, notes, and patient documents
@@ -42,7 +42,7 @@ External video apps pull patients out of the portal. A native waiting room keeps
 - Role-based session access derived from the appointment record
 - In-session video, audio, chat, and live captions
 - Patient context and SOAP-format notes beside the call
-- Patient document uploads through time-limited storage URLs
+- Patient document uploads to a private object store
 - Optional cloud recording with consent
 
 If you'd rather buy than build, Zoom offers [Zoom for Healthcare](https://www.zoom.com/en/industry/healthcare/) with telehealth video visits out of the box, and [Clinical Note](https://www.zoom.com/en/industry/healthcare/solutions/clinical-notes/) for visit documentation. Use Video SDK when the visit must live inside your own portal, identity model, and clinical workflow.
@@ -63,7 +63,7 @@ The appointment record stores the clinician, invited patient, scheduled time, an
 
 When a user opens an appointment, the Next.js backend checks the authenticated user against the room creator and invite list. Only then does it sign a short-lived Video SDK JWT. The room ID becomes the session topic (`tpc`), so both participants receive tokens for the same isolated session. The appointment creator, normally the clinician, receives host role `1`. The invited participant receives role `0`.
 
-![Appointment details with notes and recordings](images/appointement.png)
+![Appointment details with notes and recordings](images/appointment.png)
 
 ```mermaid
 graph LR
@@ -72,9 +72,8 @@ graph LR
     A -->|Authorize, sign 2-hour JWT| U
     U -->|Preview, join with room ID and JWT| Z[Zoom Video SDK Session]
     Z -->|Video, audio, chat, captions| U
-    U -->|Request authorized storage URL| A
-    A -->|Return short-lived presigned URL| U
-    U -->|Direct upload or download| S[(S3-compatible Storage)]
+    U -->|Authorized upload or download| A
+    A -->|Private patient documents| S[(Vercel Blob, S3, or R2)]
     U -->|Start, stop recording| Z
     A -->|Video SDK API JWT| R[Zoom Video SDK Recording API]
     R -->|Recording metadata, download URL| A
@@ -98,7 +97,7 @@ Stop local preview tracks before `client.join()` starts. That avoids leaving the
 
 ### Clinical data layer
 
-Video SDK carries the live conversation. Your application owns the clinical workflow. The reference stack stores users, appointments, role-specific profiles, SOAP notes, transcripts, file metadata, and Zoom session IDs in Neon Postgres. A private Amazon S3 or Cloudflare R2 bucket holds patient documents.
+Video SDK carries the live conversation. Your application owns the clinical workflow. The reference stack stores users, appointments, role-specific profiles, SOAP notes, transcripts, file metadata, and Zoom session IDs in Neon Postgres. Patient documents live in a private object store: Vercel Blob in the default deployment, or an Amazon S3 or Cloudflare R2 bucket.
 
 ![Patient details and document upload during a video visit](images/details.png)
 
@@ -117,9 +116,9 @@ The reference stack uses:
 | Boundary          | Default                                             | Responsibility                                                |
 | ----------------- | --------------------------------------------------- | ------------------------------------------------------------- |
 | Web application   | Next.js on Vercel                                   | Patient portal, clinician workspace, server APIs              |
-| Identity          | Existing clinical identity provider through Auth.js | Authentication, MFA, session lifecycle                        |
+| Identity          | GitHub OAuth through Auth.js; replace with your clinical identity provider | Authentication, session lifecycle |
 | Application data  | Neon Postgres with Drizzle                          | Users, roles, appointments, notes, file metadata              |
-| Patient documents | Private Amazon S3 or Cloudflare R2 bucket           | Encrypted object storage through presigned URLs               |
+| Patient documents | Private Vercel Blob store, or an Amazon S3 or Cloudflare R2 bucket | Private object storage through auth-gated functions (Blob) or presigned URLs (S3, R2) |
 | Secrets           | Vercel environment variables                        | Video SDK, Video SDK API, auth, database, and storage secrets |
 | Real-time media   | Zoom Video SDK for Web                              | Preview, video, audio, chat, captions, recording controls     |
 
@@ -138,7 +137,7 @@ Before changing code, inventory the target application and produce a mapping for
 | Server-only secret access      | Existing secrets manager            | Vercel environment variables                                  |
 | Pre-call route                 | Existing appointment detail page    | `/appointments/:id/join` surface                              |
 | Clinical workspace             | Existing chart or encounter panel   | Role-gated patient context and SOAP notes                     |
-| File storage                   | Approved document service           | Private Amazon S3 or Cloudflare R2 bucket with presigned URLs |
+| File storage                   | Approved document service           | Private Vercel Blob store, or an S3 or R2 bucket with presigned URLs |
 
 Document which components the implementation reuses, adapts, creates, or omits. Recording, captions, notes, and documents are optional. Identity, appointment authorization, server-side token issuance, device preview, session cleanup, and visible failure states are required.
 
@@ -293,7 +292,9 @@ Clinical data remains outside the media session. Use this minimum model whether 
 | Patient document      | Patient ID, object key, media type, timestamps           |
 | Zoom session instance | Appointment ID, Zoom session ID, start/end state         |
 
-Clinicians may read patient context only when the appointment relationship permits it. Patients may manage only their own documents. The server issues short-lived Amazon S3 or Cloudflare R2 URLs; bucket credentials never reach the browser. Each module defines its own retention and audit events.
+Clinicians may read patient context only when the appointment relationship permits it. Patients may manage only their own documents. With Amazon S3 or Cloudflare R2, the server issues short-lived presigned URLs. With Vercel Blob, files pass through auth-gated functions. Storage credentials never reach the browser. Each module defines its own retention and audit events.
+
+The sample checks role only for documents: the owning patient or any signed-in doctor can open a file, and uploads are limited to PDF. Add the appointment check before production.
 
 Resolve documents from server-owned metadata instead of accepting an arbitrary object key from the browser:
 
@@ -325,7 +326,7 @@ The sample retrieves recordings on demand and includes no recording-completed we
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0)
 
-Vercel builds and hosts the Next.js app. The deploy flow provisions [Neon Postgres](https://vercel.com/marketplace/neon) and a private [Vercel Blob](https://vercel.com/docs/vercel-blob) store, injects `DATABASE_URL` and `BLOB_READ_WRITE_TOKEN`, applies the committed Drizzle migrations, and seeds demo accounts during the build. Seeding is a no-op once the database has users, so later deploys are unaffected.
+Vercel builds and hosts the Next.js app. The deploy flow provisions [Neon Postgres](https://vercel.com/marketplace/neon) and a private [Vercel Blob](https://vercel.com/docs/vercel-blob) store, injects `DATABASE_URL` and `BLOB_STORE_ID`, applies the committed Drizzle migrations, and seeds demo accounts during the build. Seeding is a no-op once the database has users, so later deploys are unaffected.
 
 <details>
 <summary><strong>Vercel configuration</strong></summary>
@@ -343,7 +344,7 @@ Enter these values in the Deploy Button's environment-variable form. If the form
 
 Vercel Blob requires no manual storage setup. The Deploy Button provisions a **private** store and connects it over OIDC, injecting `BLOB_STORE_ID` without a long-lived token. The app detects the store and switches to Blob automatically.
 
-Uploads and downloads go through auth-gated Functions that authenticate via OIDC. `/api/blob/upload` verifies the caller and streams the file to the store with the SDK's `put()`; `/api/blob/download` re-checks appointment ownership before calling `get()`. Private blobs are never publicly readable. Uploads pass through the Function, so keep files under the ~4.5 MB body limit or switch to client uploads, which need `BLOB_READ_WRITE_TOKEN`.
+Uploads and downloads go through auth-gated Functions that authenticate via OIDC. `/api/blob/upload` verifies the caller and streams the file to the store with the SDK's `put()`; `/api/blob/download` checks that the caller is the owning patient or a doctor before calling `get()`; it does not check appointment membership. Private blobs are never publicly readable. Uploads pass through the Function, so keep files under the ~4.5 MB body limit or switch to client uploads, which need `BLOB_READ_WRITE_TOKEN`.
 
 Review Blob's data-residency region and your BAA obligations before storing real PHI.
 
@@ -372,7 +373,7 @@ The implementation must pass these checks:
 <details>
 <summary><strong>Reference implementation appendix</strong></summary>
 
-The sample on the `main` branch uses Next.js, Auth.js, tRPC, Drizzle, PostgreSQL, and Amazon S3 or Cloudflare R2. It expects database, auth provider, Video SDK, Video SDK API, and storage credentials in server-side environment variables. For local development, the current branch uses these commands:
+The sample on the `main` branch uses Next.js, Auth.js with GitHub OAuth, tRPC, Drizzle, PostgreSQL, and Vercel Blob, Amazon S3, or Cloudflare R2. It needs Node.js 20.9 or newer and Bun. It expects database, auth provider, Video SDK, Video SDK API, and storage credentials in server-side environment variables. For local development, the current branch uses these commands:
 
 ```bash
 bun install
