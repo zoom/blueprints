@@ -19,7 +19,7 @@ seo_title: "Real-time compliance monitoring for Zoom meetings"
 seo_keywords: ["zoom real-time compliance monitoring", "rtms compliance app", "finra meeting supervision zoom", "build compliance advisor zoom api"]
 partners: ["anthropic", "openai"]
 license_required: true
-license_note: "Requires a paid Zoom Workplace plan with the RTMS entitlement"
+license_note: "Requires Zoom Developer Pack credits for RTMS."
 stack: "Node 22 · Express · @zoom/rtms · React · Postgres"
 demo_url: "https://youtu.be/FwzbkMaxUsE"
 deploy:
@@ -35,7 +35,7 @@ Compliance review normally happens weeks after the call, when a surveillance tea
 
 **What you'll need:**
 
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires a paid Zoom Workplace plan with RTMS entitlement; [request access](https://www.zoom.com/en/realtime-media-streams/#form))
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available)
 - The [`@zoom/rtms`](https://www.npmjs.com/package/@zoom/rtms) SDK, which needs Node.js 22 or higher on `darwin-arm64` or `linux-x64` (Node 24 LTS recommended)
 - A backend to screen segments and persist audit records (Express in this guide; the SDK also ships Python bindings)
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/create/) to render the advisor panel in-meeting
@@ -59,7 +59,7 @@ Follow along as we walk through the architecture.
 
 ## Architecture
 
-RTMS streams transcripts directly from Zoom's infrastructure. No bot joins the meeting, so the roster stays clean and the participant list in the audit record reflects only real attendees. The standard transcription notice displays to everyone.
+RTMS streams transcripts directly from Zoom's infrastructure. No bot joins the meeting, so the roster stays clean and the participant list in the audit record reflects only real attendees. Participants see Zoom's [RTMS disclosure](https://developers.zoom.us/docs/rtms/meetings/ux-participant/), "The content of this meeting is being sent to one or more apps."
 
 The [`@zoom/rtms`](https://github.com/zoom/rtms) SDK collapses what would otherwise be two services into one process. It exposes a webhook handler you mount on your existing Express app, and a `Client` that opens the media WebSocket to Zoom and delivers transcript segments to a callback. There is no separate RTMS microservice to run.
 
@@ -550,14 +550,21 @@ The [`manifest.json`](./manifest.json) pre-configures OAuth scopes, Surface App 
 | Scope | Required | Purpose |
 |-------|----------|---------|
 | `zoomapp:inmeeting` | Yes | Render the advisor panel in meetings |
+| `meeting:read:meeting_transcript` | Yes | Receive the live transcript through RTMS |
 
-One scope, and it is the one that makes the panel exist. Everything else this app needs arrives over the media stream: transcripts through RTMS, the attendee roster through `onParticipantEvent`, and the speaker on each segment through the transcript callback's `metadata`. Panel identity comes from the Zoom Apps SDK in-client, not from a REST call.
+Two scopes: one makes the panel exist and one selects the transcript stream. Everything else this app needs arrives over the media stream: transcripts through RTMS, the attendee roster through `onParticipantEvent`, and the speaker on each segment through the transcript callback's `metadata`. Panel identity comes from the Zoom Apps SDK in-client, not from a REST call.
 
 That means there is no server-side token exchange to implement, and no `meeting:read:meeting` or `user:read` to justify to a reviewer. Add them when you add the REST call that needs them, not before. A compliance app asking for scopes it never exercises is a poor advertisement for itself.
 
 ### RTMS Configuration
 
-In app settings: **Features** > **Zoom App SDK** > enable **Real-Time Media Streams** > select **Transcripts**. RTMS requires approval from Zoom. [Request access here](https://www.zoom.com/en/realtime-media-streams/#form).
+RTMS access is granted through scopes that select which meeting media your app receives. They are separate from the REST API scopes above.
+
+1. In your app settings, go to **Scopes**
+2. Choose **+ Add Scopes** and search for _RTMS_
+3. Add `meeting:read:meeting_transcript`
+
+RTMS scopes cannot be marked optional, so add only the media types the app uses. RTMS needs [Zoom Developer Pack](https://zoom.us/pricing/developer) credits on your account; free trial credits are available. See [Add Realtime Media Streams to your app](https://developers.zoom.us/docs/rtms/meetings/add-features/).
 
 The SDK authenticates with the same OAuth Client ID and Secret, supplied as `ZM_RTMS_CLIENT` and `ZM_RTMS_SECRET`.
 
@@ -594,7 +601,7 @@ Both failures happen when the container starts, not when it builds, and the seco
 
 **False positives:** Every alert the representative dismisses is a signal about pack quality. Log dismissals with the rule ID and review them on the same cadence you review the packs themselves.
 
-**Notice:** Participants see Zoom's standard transcription notice. Confirm with counsel whether your jurisdiction requires additional notice that live compliance screening is running.
+**Notice:** Participants see Zoom's [RTMS disclosure](https://developers.zoom.us/docs/rtms/meetings/ux-participant/), "The content of this meeting is being sent to one or more apps." RTMS makes media available to your app; it does not record the meeting. Confirm with counsel whether your jurisdiction requires additional notice that live compliance screening is running.
 
 **Scaling:** Each active meeting holds one RTMS client and one media WebSocket in your process. The deterministic pass is CPU-bound and cheap; LLM adjudication is the cost driver, so keep packs tight and the suppression window in place.
 
@@ -629,10 +636,10 @@ Use this checklist to verify the implementation:
 ## Related Resources
 
 - [rtms-compliance-sample-js](https://github.com/zoom/rtms-compliance-sample-js) - Reference implementation
-- [Zoom RTMS SDK](https://github.com/zoom/rtms) - Node, Python, and Go bindings for real-time media
+- [Zoom RTMS SDK](https://github.com/zoom/rtms) - Node.js and Python bindings for real-time media
 - [RTMS SDK API reference](https://zoom.github.io/rtms/js/) - Generated docs for the Node bindings
 - [rtms-quickstart-js](https://github.com/zoom/rtms-quickstart-js) - Smallest working RTMS app
-- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) - Real-Time Media Streams API reference
+- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) - Realtime Media Streams API reference
 - [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) - Building in-meeting experiences
 - [AI Meeting Notetaker](../ai-meeting-notetaker/) - Same transcript pipeline, general-purpose extraction
 - [Zoom Developer Forum](https://devforum.zoom.us/) - Community support

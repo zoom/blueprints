@@ -18,7 +18,8 @@ tags: ["notetaker", "transcription", "real-time", "action-items"]
 seo_title: "How to build a Zoom meeting notetaker"
 seo_keywords: ["zoom meeting notetaker", "zoom meeting bot", "rtms meeting assistant", "build zoom transcription app", "ai meeting notes zoom"]
 partners: ["anthropic", "openai"]
-license_required: false
+license_required: true
+license_note: "Requires Zoom Developer Pack credits for RTMS."
 stack: "Node · Express · React · MySQL"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
@@ -31,7 +32,7 @@ Most meeting notes happen after the call. Someone reviews the recording, writes 
 
 **What you'll need:**
 
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the notes panel in-meeting
 - An LLM for extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
@@ -155,7 +156,7 @@ Two implementation details matter: use the raw request body (don't re-serialize 
 - Clean up session on `onLeave` callback
 - Track sequence counter per session for segment ordering
 
-**Other languages:** The `@zoom/rtms` SDK is Node-only. For other stacks, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
+**Other languages:** The `@zoom/rtms` SDK supports Node.js and Python (`pip install rtms`). For other stacks, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
 
 See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the reference implementation.
 
@@ -271,7 +272,7 @@ Both platforms offer free tiers. After deploying, create a Zoom App in the [Mark
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs MySQL, Redis, and the services |
 | [ngrok](https://ngrok.com/) | Public HTTPS URL for Zoom webhooks |
 | [Zoom account](https://marketplace.zoom.us/) | To create and configure your Zoom App |
-| RTMS access | [Request access](https://www.zoom.com/en/realtime-media-streams/#form) if you don't have it |
+| RTMS access | [Zoom Developer Pack](https://zoom.us/pricing/developer) credits on your account; free trial credits are available |
 
 <details>
 <summary><strong>Step-by-step local setup</strong></summary>
@@ -296,8 +297,7 @@ Both platforms offer free tiers. After deploying, create a Zoom App in the [Mark
 
 4. **Configure the Zoom App:**
    - OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`
-   - Scopes: `meeting:read:meeting`, optionally `user:read`
-   - Zoom App SDK: enable **RTMS** > **Transcripts**
+   - Scopes: `meeting:read:meeting`, the RTMS scope `meeting:read:meeting_transcript`, optionally `user:read`
    - Surface: Home URL `https://YOUR-NGROK-URL`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
 
@@ -338,17 +338,18 @@ The [`manifest.json`](./manifest.json) in this directory pre-configures a Zoom A
 |-------|----------|---------|
 | `zoomapp:inmeeting` | Yes | Render the panel inside meetings |
 | `meeting:read:meeting` | Yes | Meeting metadata |
+| `meeting:read:meeting_transcript` | Yes | Receive the live transcript through RTMS |
 | `user:read` | Optional | User profile info |
 
 ### RTMS Configuration
 
-RTMS is a Zoom App SDK feature, configured separately from OAuth scopes:
+RTMS access is granted through scopes that select which meeting media your app receives. They are separate from the REST API scopes above.
 
-1. In your app settings, go to **Features** > **Zoom App SDK**
-2. Enable **Real-Time Media Streams**
-3. Select **Transcripts**
+1. In your app settings, go to **Scopes**
+2. Choose **+ Add Scopes** and search for _RTMS_
+3. Add `meeting:read:meeting_transcript`
 
-RTMS requires access approval from Zoom. [Request access here](https://www.zoom.com/en/realtime-media-streams/#form).
+RTMS scopes cannot be marked optional, so add only the media types the app uses. RTMS needs [Zoom Developer Pack](https://zoom.us/pricing/developer) credits on your account; free trial credits are available. See [Add Realtime Media Streams to your app](https://developers.zoom.us/docs/rtms/meetings/add-features/).
 
 ### Event Subscriptions
 
@@ -403,7 +404,7 @@ Use this checklist to verify the implementation:
 ## Related Resources
 
 - [Arlo Repository](https://github.com/zoom/arlo) - Reference implementation
-- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) - Real-Time Media Streams API reference
+- [RTMS Documentation](https://developers.zoom.us/docs/rtms/) - Realtime Media Streams API reference
 - [Zoom Apps SDK](https://developers.zoom.us/docs/zoom-apps/) - Building in-meeting experiences
 - [Zoom Developer Forum](https://devforum.zoom.us/) - Community support
 

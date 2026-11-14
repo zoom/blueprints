@@ -18,7 +18,7 @@ seo_title: "How to migrate a Zoom meeting bot to RTMS"
 seo_keywords: ["zoom meeting bot migration", "rtms vs meeting sdk", "zoom bot to rtms", "replace zoom bot"]
 partners: ["anthropic", "openai"]
 license_required: true
-license_note: "RTMS access via Zoom Developer Pack"
+license_note: "Requires Zoom Developer Pack credits for RTMS."
 stack: "Node · Express · React · MySQL"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
@@ -34,7 +34,7 @@ Meeting SDK bots join as participants. They appear in the roster, require host a
 **What you'll need:**
 
 - An existing Meeting SDK bot you want to migrate (or understanding of bot architecture)
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available)
 - A backend to receive webhooks and maintain WebSocket connections
 - A [Zoom General App](https://developers.zoom.us/docs/integrations/) with RTMS event subscriptions
 - Optional: A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) for in-meeting UI
@@ -49,7 +49,7 @@ Meeting SDK bots join as participants. They appear in the roster, require host a
 **What stays the same:**
 
 - Real-time transcript segments with speaker attribution
-- Mixed or separated audio streams (PCM L16, 16kHz or 24kHz)
+- Mixed or separated audio streams (L16 PCM at 8, 16, 32, or 48 kHz; see the [RTMS data types](https://developers.zoom.us/docs/rtms/data-types/))
 - Video frames (H.264, gallery view)
 - Screen share capture
 - Participant join/leave events
@@ -226,43 +226,36 @@ After validating the webhook, connect to the RTMS stream using the provided `ser
 **Output:** Active WebSocket connection receiving media frames
 
 **Invariants:**
-- Use the `@zoom/rtms` SDK for Node.js (or implement WebSocket protocol directly for other languages)
+- Use the `@zoom/rtms` SDK for Node.js or Python (or implement the WebSocket protocol directly for other languages)
 - Register all media handlers before calling `join()`
-- Handle `onLeave` callback for cleanup
+- Clean up when the `meeting.rtms_stopped` webhook arrives
 - Track connection state per `rtms_stream_id`
 - If stream drops mid-meeting, wait for new `meeting.rtms_started` webhook
 
 ```javascript
 // RTMS connection pattern
-const { RTMSClient } = require('@zoom/rtms');
+const rtms = require('@zoom/rtms').default;
 
-async function connectToStream(payload) {
-  const client = new RTMSClient({
-    streamId: payload.rtms_stream_id,
-    serverUrls: payload.server_urls,
-    credentials: { /* from your app config */ }
-  });
+function connectToStream(payload) {
+  // payload is the meeting.rtms_started webhook payload
+  const client = new rtms.Client();
 
   // Register handlers BEFORE joining
-  client.on('transcript', (segment) => {
-    // segment: { text, userId, userName, timestamp }
-    processTranscript(segment);
+  client.onTranscriptData((data, size, timestamp, metadata) => {
+    // data: transcript text as a Buffer; metadata: { userId, userName }
+    processTranscript({ text: data.toString('utf8'), timestamp, ...metadata });
   });
 
-  client.on('audio', (buffer) => {
-    // PCM L16 audio data
-    processAudio(buffer);
+  client.onAudioData((data, size, timestamp, metadata) => {
+    // L16 PCM audio data
+    processAudio(data);
   });
 
-  client.on('leave', () => {
-    cleanupSession(payload.rtms_stream_id);
-  });
-
-  await client.join();
+  client.join(payload);
 }
 ```
 
-**Other languages:** The `@zoom/rtms` SDK is Node.js only. For Python, Go, or other stacks, implement the [WebSocket protocol](https://developers.zoom.us/docs/rtms/) directly.
+**Other languages:** The `@zoom/rtms` SDK supports Node.js and Python (`pip install rtms`). For Go or other stacks, implement the [WebSocket protocol](https://developers.zoom.us/docs/rtms/) directly.
 
 ### Part 3: Handle Lifecycle Differences
 
@@ -434,7 +427,7 @@ Meeting ends → Finalize all recordings
 3. Create a Zoom General App at [marketplace.zoom.us](https://marketplace.zoom.us/):
    - Copy Client ID and Client Secret
    - Set OAuth Redirect URL to `https://YOUR-NGROK-URL/api/auth/callback`
-   - Enable RTMS under Features > Zoom App SDK > Real-Time Media Streams > Transcripts
+   - Under Scopes, add the RTMS scope `meeting:read:meeting_transcript`
    - Add Event Subscription for `meeting.rtms_started` and `meeting.rtms_stopped`
 
 4. Fill in `.env` with your credentials
@@ -456,14 +449,16 @@ The migration requires updating your Zoom App configuration from Meeting SDK to 
 |-------|---------|
 | `meeting:read:meeting` | Meeting metadata |
 | `user:read` | User profile for personalization |
-
-Note: RTMS access is configured via Zoom App SDK settings, not OAuth scopes.
+| `meeting:read:meeting_transcript` | Receive the live transcript through RTMS |
+| `meeting:read:meeting_audio` | Receive meeting audio through RTMS (only if you capture audio) |
 
 ### RTMS Configuration
 
-1. In your app settings, go to **Features** > **Zoom App SDK**
-2. Enable **Real-Time Media Streams**
-3. Select the media types you need:
+RTMS access is granted through scopes that select which meeting media your app receives. They are separate from the REST API scopes above, and they cannot be marked optional.
+
+1. In your app settings, go to **Scopes**
+2. Choose **+ Add Scopes** and search for _RTMS_
+3. Add a scope for each media type you need:
    - **Transcripts**: Speech-to-text segments
    - **Audio**: PCM audio stream
    - **Video**: H.264 video frames
@@ -480,7 +475,7 @@ Note: RTMS access is configured via Zoom App SDK settings, not OAuth scopes.
 
 For hands-free recording (no user action required each meeting):
 
-1. Go to **Features** > **Zoom App SDK** > **Real-Time Media Streams**
+1. Go to **Features** > **Zoom App SDK** > **Realtime Media Streams**
 2. Enable **Auto-start**
 3. Optionally disable **Host approval required** (admin setting)
 
@@ -529,9 +524,9 @@ For enterprise customers, individual OAuth flows per user create friction. Zoom 
 
 RTMS is receive-only streaming, not Zoom's cloud recording. This distinction affects compliance requirements.
 
-### No native recording indicator
+### Participant notice
 
-**RTMS does not trigger Zoom's recording indicator** (the red dot or "Recording" badge). From Zoom's perspective, RTMS streams data to your application; it is not "recording." If your jurisdiction requires visible notification that recording is active, you must implement this yourself.
+RTMS does not record. It makes meeting media available to your application, so Zoom notifies participants that an app is accessing content instead of showing the recording indicator. Participants see Zoom's [RTMS disclosure](https://developers.zoom.us/docs/rtms/meetings/ux-participant/), "The content of this meeting is being sent to one or more apps." They also see which app is accessing content and who is using it. If your application stores the media and your jurisdiction requires a recording notice, you must provide that yourself.
 
 #### Options for recording notification
 

@@ -18,7 +18,7 @@ tags: ["real-time", "rtms", "contact-center", "audio-capture", "monitoring"]
 seo_title: "Monitor contact center calls in real time"
 seo_keywords: ["zoom contact center rtms", "real-time media streams", "contact center monitoring", "supervisor dashboard"]
 license_required: true
-license_note: "Requires RTMS add-on license for Zoom Contact Center"
+license_note: "Requires Zoom Developer Pack credits for RTMS in Zoom Contact Center."
 stack: "Node.js · React · Express · WebSocket · ffmpeg"
 ---
 
@@ -34,7 +34,7 @@ Contact Center admins can monitor active engagements by streaming live audio and
 **What you'll need:**
 
 - Zoom Contact Center license with admin privileges
-- RTMS access via Zoom Contact Center (requires Contact Center license with RTMS add-on entitlement)
+- RTMS access via Zoom Contact Center (requires a Contact Center license and [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available)
 - A backend to receive webhooks
 - An RTMS media processor to handle WebSocket connections and audio encoding (Node.js)
 - A frontend dashboard for supervisors to control capture (React PWA)
@@ -691,7 +691,7 @@ This section walks through starting all three services (frontend, backend, RTMS 
 - Node.js ≥ 18.0.0
 - ffmpeg installed (`brew install ffmpeg` on macOS)
 - ngrok account for webhook delivery
-- Zoom Contact Center account with RTMS license
+- Zoom Contact Center account with [Zoom Developer Pack](https://zoom.us/pricing/developer) credits for RTMS
 
 **Quick Start:**
 
