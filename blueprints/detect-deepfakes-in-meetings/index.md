@@ -9,7 +9,7 @@ verticals: ["enterprise"]
 author: "Chun Siong Tan"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-09-02
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js"
 demo_url: "https://youtu.be/K05XU1SsVL4"
 solution_types: ["real-time-analysis", "security-encryption", "media-processing"]
@@ -17,19 +17,19 @@ tags: ["deepfake", "fraud", "risk", "audio", "video", "zoom-meetings"]
 seo_title: "Detect deepfakes in live Zoom calls"
 seo_keywords: ["zoom deepfake detection", "meeting deepfake detection", "live audio video fraud detection"]
 license_required: true
-license_note: "Requires a Zoom Developer Pack with RTMS access and an in-meeting Zoom App."
+license_note: "Requires Zoom Developer Pack credits for RTMS and an in-meeting Zoom App."
 stack: "Zoom Apps SDK · Node.js · RTMS · Customer inference service · HLS"
 ---
 
 Build an in-meeting review experience that sends selected audio and video to a customer-controlled detection service and shows the resulting risk signal in a Zoom App. Fraud and security teams can investigate suspicious media while the meeting is still active.
 
-This Blueprint sends [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio and video to a detection service that you choose. You can use a commercial API or host your own model from [Hugging Face](https://huggingface.co/docs/inference-endpoints/). A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) shows the result to an authorized reviewer in the meeting.
+This Blueprint sends [Zoom Realtime Media Streams (RTMS)](https://developers.zoom.us/docs/rtms/) audio and video to a detection service that you choose. You can use a commercial API or host your own model from [Hugging Face](https://huggingface.co/docs/inference-endpoints/). A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) shows the result in the meeting to the person running the app.
 
 Deepfake detection is not certain. A high score is not proof that someone is trying to deceive you. Results can change with the language, microphone, camera, connection quality, lighting, participant, or type of attack. Use the result as one signal in a documented fraud-review process. Do not use the score as an automatic decision.
 
 **What you'll need:**
 
-- A [Zoom Developer Pack](https://zoom.us/pricing/developer) with RTMS audio and video access
+- [Zoom Developer Pack](https://zoom.us/pricing/developer) credits for RTMS (free trial credits are available)
 - A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) for the in-meeting review experience
 - A commercial detection service or customer-hosted audio and video models
 - FFmpeg and temporary media storage on the backend
@@ -37,7 +37,7 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 
 **Features:**
 
-- Allow an authorized Zoom App user to choose the participant to review.
+- Let the Zoom App user choose the participant to review.
 - Send only that participant's configured audio and video windows to inference.
 - Show video and audio results separately with model and service status.
 - Distinguish an unavailable model from a low-confidence result.
@@ -60,6 +60,8 @@ A Zoom App starts RTMS from inside the meeting. The backend receives selected me
 The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/zoom_apps/stream_audio_and_video_deepfake_detection_js) uses the [Zoom Apps SDK](https://appssdk.zoom.us/), Express, Socket.IO, RTMSManager, FFmpeg, and HLS. It requests one participant's individual video stream, receives multi-stream audio, and filters the audio packets to the same selected RTMS user ID.
 
 By default, the reference implementation cuts video into two-second clips at five frames per second and audio into four-second PCM windows. It expects a separate inference service. The linked README names `Naman712/Deep-fake-detection` for video and `MelodyMachine/Deepfake-audio-detection-V2` for audio as examples. The customer owns the model or commercial service, hosting, credentials, evaluation, threshold, and data policy. Neither model service is included in this Blueprint repository.
+
+The reference implementation is a demo. It serves the HLS preview and the audio and video inference clips from its public web directory, and it accepts participant selection and start and stop commands over Socket.IO without authenticating the caller. Put both behind your own authentication before any real meeting media passes through it.
 
 ```mermaid
 flowchart LR
@@ -155,16 +157,17 @@ Create a General App in the [Zoom App Marketplace](https://marketplace.zoom.us/)
 | --- | --- |
 | Scopes | `zoomapp:inmeeting`, `meeting:read:meeting_audio`, `meeting:read:meeting_video` |
 | Events | `meeting.rtms_started`, `meeting.rtms_stopped` |
-| Zoom Apps APIs | `getMeetingContext`, `getMeetingUUID`, `getMeetingParticipants`, `getRunningContext`, `startRTMS`, `stopRTMS`, `showNotification` |
+| Zoom Apps APIs | `getSupportedJsApis`, `getAppContext`, `getMeetingContext`, `getMeetingUUID`, `getMeetingParticipants`, `getRunningContext`, `getUserContext`, `onRTMSStatusChange`, `startRTMS`, `stopRTMS`, `showNotification`, `onParticipantChange`, `clearWebView` |
 
-Use `manifest.json` as a starting point for the scopes and events. You still need to configure and check the Zoom App APIs and allowed domains in Marketplace.
+The audio and video scopes are RTMS media scopes: they select the media your app receives. The [`manifest.json`](manifest.json) in this directory has these scopes, events, and APIs, with placeholders for the allowed domains. An account admin must also turn on **Share realtime meeting content with apps** under **Account Settings** > **Zoom Apps**.
 
-Verify RTMS lifecycle webhooks over the raw request body, enforce a replay window, and use a timing-safe comparison.
+Verify RTMS lifecycle webhooks over the raw request body, enforce a replay window, and use a timing-safe comparison. The reference implementation does this in its shared `WebhookManager`. The check looks like this:
 
 ```javascript
 import crypto from 'node:crypto';
 
 function verifyZoomWebhook(rawBody, timestamp, signature, secret) {
+  if (typeof signature !== 'string') return false;
   if (Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp)) > 300) return false;
   const message = `v0:${timestamp}:${rawBody.toString('utf8')}`;
   const expected = `v0=${crypto.createHmac('sha256', secret).update(message).digest('hex')}`;
@@ -236,7 +239,7 @@ npm start
 
 Open the app inside a Zoom Meeting. Start RTMS, choose a participant whose video is on, load that participant's video, and start video or audio verification. The HLS preview requires FFmpeg on the backend host.
 
-The linked repository does not include the inference service, a tested one-click deployment, or a production identity and audit system. Deploy and operate those parts in your environment.
+The sample includes a Dockerfile; build it from the `rtms-samples` repository root. The linked repository does not include the inference service, a one-click deployment, or a production identity and audit system. Deploy and operate those parts in your environment.
 
 #### 6. Test under realistic conditions
 
@@ -254,7 +257,7 @@ Choose the production threshold from those test results and your organization's 
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this directory follows the current Zoom Marketplace manifest structure and pre-configures the in-meeting review: Zoom App, audio, and video scopes; the SDK APIs used by the frontend; domain placeholders; and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it. The manifest cannot encode the complete organizational approval, inference-provider contract, or model-risk policy.
+The [`manifest.json`](manifest.json) in this directory uses the Zoom Marketplace manifest structure and pre-configures the in-meeting review: Zoom App, audio, and video scopes; the SDK APIs used by the frontend; domain placeholders; and RTMS lifecycle subscriptions. Replace `your-development-domain` and `your-production-domain` before importing it. The manifest cannot encode the complete organizational approval, inference-provider contract, or model-risk policy.
 
 ### Scopes
 
@@ -269,9 +272,9 @@ The [`manifest.json`](manifest.json) in this directory follows the current Zoom 
 
 ### Zoom Apps configuration
 
-Enable the SDK capabilities used by the frontend and allow the app domain plus `https://appssdk.zoom.us/`. The configured APIs are `getSupportedJsApis`, `getAppContext`, `getMeetingContext`, `getMeetingUUID`, `getMeetingParticipants`, `getRunningContext`, `getUserContext`, `onRTMSStatusChange`, `startRTMS`, `stopRTMS`, `showNotification`, `onParticipantChange`, and `clearWebView`. Marketplace capability and domain settings still require verification after import.
+Enable the SDK capabilities used by the frontend and allow the app domain plus `https://appssdk.zoom.us/`. The manifest lists the same 13 APIs the frontend passes to `config()`, shown in the table in step 3. Check the capability and domain settings in Marketplace after import.
 
-The app owner must verify the current Marketplace schema, exact scopes, in-client APIs, redirect and webhook URLs, and domain allowlist. Security, privacy, legal, and AI-risk reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before production deployment.
+The app owner must check the in-client APIs, redirect and webhook URLs, and domain allowlist. Security, privacy, legal, and AI-risk reviewers must approve participant disclosures, inference data handling, evaluation results, threshold, escalation language, and intended use before production deployment.
 
 ## Acceptance Criteria
 
