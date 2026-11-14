@@ -10,8 +10,8 @@
     "short_name": "Remote Engagement Access",
     "long_description": "An engagement dashboard that captures live engagement audio, transcript, and events for admin management and control. Stream audio to browsers with sub-second latency, display real-time transcripts, and track metrics including hold time, transfers, and conferences. Admins have remote control over when media stream capture starts and stops, with real time insight and analytics.",
     "category": "Contact Center",
-    "support_url": "https://github.com/zoom/zcc-rtms-pwa-sample-js/issues",
-    "documentation_url": "https://github.com/zoom/zcc-rtms-pwa-sample-js#readme",
+    "support_url": "https://github.com/zoom/zcc-rtms-PWA_sample-js/issues",
+    "documentation_url": "https://github.com/zoom/zcc-rtms-PWA_sample-js#readme",
     "privacy_policy_url": "https://your-domain.com/privacy"
   },
 
