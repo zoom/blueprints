@@ -36,7 +36,7 @@ The current implementation listens to speech and returns text and tool results. 
 - A user-authorized Zoom OAuth token when Zoom MCP tools are enabled
 - A destination for text and tool results, if server logs are not enough
 
-**Features:**
+## Features
 
 - Receive mixed meeting audio through RTMS.
 - Resample 48 kHz L16 audio to 24 kHz PCM for OpenAI Realtime.

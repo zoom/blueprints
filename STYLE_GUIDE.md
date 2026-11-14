@@ -101,12 +101,12 @@ Add after the required four if they help developers succeed:
 
 ## The Intro Block, Field by Field
 
-The outcome-focused intro (before any heading) must follow this exact order:
+The opening of a blueprint must follow this exact order. Items 1 to 3 come before any heading, `## Features` is the first heading, and the product callout and transition follow the feature list:
 
 1. **What it does** (one sentence): Declarative, technical, no marketing fluff
 2. **Why it matters** (one sentence): The problem this solves
 3. **What you'll need** (bulleted list): Including Zoom license prerequisites (see next section)
-4. **Features** (bulleted list): What the finished app does. Use a bold `**Features:**` label inside the intro, not a `## Features` heading
+4. **Features** (bulleted list under a `## Features` heading): What the finished app does. Use the heading, not a bold `**Features:**` label, so the section gets an anchor and appears in the page outline
 5. **Zoom product callout**: The out-of-the-box Zoom product for readers who don't need to build. Be explicit about when to use native vs. build custom (e.g., "Build custom when you need [specific customizations]").
 6. **Transition** (one sentence): Bridge to the Architecture section
 
@@ -124,7 +124,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the coaching panel in-meeting
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
-**Features:**
+## Features
 
 - Live transcript stream with sub-second latency
 - Deal qualification tracker (BANT, MEDDIC, or custom criteria)

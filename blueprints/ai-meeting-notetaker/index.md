@@ -37,7 +37,7 @@ Most meeting notes happen after the call. Someone reviews the recording, writes 
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the notes panel in-meeting
 - An LLM for extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
-**Features:**
+## Features
 
 - **Live transcription**: Stream transcripts from Zoom meetings using RTMS
 - **Rolling summaries**: Generate summaries as the conversation progresses, not after

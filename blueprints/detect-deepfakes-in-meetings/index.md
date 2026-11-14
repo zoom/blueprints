@@ -35,7 +35,7 @@ Deepfake detection is not certain. A high score is not proof that someone is try
 - FFmpeg and temporary media storage on the backend
 - An approved review, notice, retention, and escalation policy
 
-**Features:**
+## Features
 
 - Let the Zoom App user choose the participant to review.
 - Send only that participant's configured audio and video windows to inference.

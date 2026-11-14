@@ -34,7 +34,7 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 * An [Anthropic API key](https://console.anthropic.com/) for the Zoom Chat Research Assistant bot.
 * [ngrok](https://ngrok.com). A free static domain is recommended so your Marketplace URLs do not change each time ngrok restarts.
 
-**Features:**
+## Features
 
 * **Live transcription (Observe):** Stream meeting transcripts through RTMS using the `meeting.rtms_started` and `meeting.rtms_stopped` lifecycle webhooks. Transcript segments are sent to the browser over server-sent events (SSE) for a live in-meeting view.
 * **AI task extraction (Recommend):** After the meeting ends, OpenAI analyzes the full transcript and uses Structured Outputs with a strict JSON Schema to return predictable task suggestions.

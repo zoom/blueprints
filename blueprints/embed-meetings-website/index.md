@@ -38,7 +38,7 @@ Sending a customer a Zoom link takes them off your site, often into a download p
 - A scheduled meeting for the appointment, plus its meeting number and passcode
 - A browser that supports WebAssembly, which every current browser does
 
-**Features:**
+## Features
 
 - Meeting renders inside your page, next to your own content, not in place of it
 - One-click join: no download, no Zoom account, no meeting number typed by hand
