@@ -32,7 +32,7 @@ Sending a customer a Zoom link takes them off your site, often into a download p
 
 **What you'll need:**
 
-- A Meeting SDK app in the [Zoom Marketplace](https://marketplace.zoom.us/) for the SDK Key and Secret (free to create on any Zoom account; see [Meeting SDK authorization](https://developers.zoom.us/docs/meeting-sdk/auth/))
+- A General app in the [Zoom App Marketplace](https://marketplace.zoom.us/) with Meeting SDK enabled, for its Client ID and Client Secret (free to create on any Zoom account; see [Create a Meeting SDK app](https://developers.zoom.us/docs/meeting-sdk/get-credentials/#create-a-meeting-sdk-app)). Older docs and the sample's variable names call these the SDK Key and SDK Secret.
 - The [`@zoom/meetingsdk`](https://developers.zoom.us/docs/meeting-sdk/web/) package (6.2.0 at the time of writing, MIT). It declares an exact peer dependency on `react@18.2.0`, so a React 19 project will not install it.
 - A backend that can sign an HS256 JWT (Node/Express in this guide; any stack works)
 - A scheduled meeting for the appointment, plus its meeting number and passcode
@@ -83,11 +83,11 @@ The visitor opens a page that already knows which appointment it is showing. The
 
 ### How the signature works
 
-The payload shape is fixed by Zoom. Your backend fills it in and signs with the SDK Secret:
+The payload shape is fixed by Zoom. Your backend fills it in and signs with the Client Secret (the SDK Secret):
 
 | Claim | Value |
 |-------|-------|
-| `appKey`, `sdkKey` | Your Meeting SDK Key, in both fields |
+| `appKey`, `sdkKey` | Your app's Client ID. Zoom requires `appKey`; the sample also sets `sdkKey` |
 | `mn` | The meeting number |
 | `role` | `0` for attendee, `1` for host |
 | `iat`, `exp` | Issued-at and expiry, in seconds |
@@ -268,13 +268,13 @@ await client.join({
 | Requirement | Purpose |
 |-------------|---------|
 | [Node.js 20+](https://nodejs.org/) | Runtime |
-| [Zoom account](https://marketplace.zoom.us/) | Create the Meeting SDK app |
+| [Zoom account](https://marketplace.zoom.us/) | Create the app and enable Meeting SDK |
 | A scheduled meeting | Something to join |
 
 <details>
 <summary><strong>Step-by-step local setup</strong></summary>
 
-1. Create a **Meeting SDK** app at [marketplace.zoom.us](https://marketplace.zoom.us/): **Develop** > **Build App** > **Meeting SDK**. Copy the **SDK Key** and **SDK Secret**.
+1. Create a **General** app at [marketplace.zoom.us](https://marketplace.zoom.us/). On the **Features** page, open the **Embed** tab and turn on **Meeting SDK**. Copy the **Client ID** and **Client Secret** from **Basic Information**; the sample calls them the SDK Key and SDK Secret.
 
 2. Clone and configure:
 
@@ -312,18 +312,20 @@ Reach for [`meetingsdk-web-sample`](https://github.com/zoom/meetingsdk-web-sampl
 
 ## App Manifest
 
-The [`manifest.json`](./manifest.json) in this directory records the Meeting SDK app configuration this blueprint assumes. A Meeting SDK app is simpler than a Zoom App: it has no OAuth scopes and no event subscriptions, because the credential it issues is used to sign meeting signatures rather than to call APIs on a user's behalf.
+The [`manifest.json`](./manifest.json) in this directory records the app configuration this blueprint assumes. The blueprint needs no OAuth scopes and no event subscriptions, because the app's credentials are used to sign meeting signatures rather than to call APIs on a user's behalf.
 
 ### Credentials
 
 | Value | Where it lives | Notes |
 |-------|----------------|-------|
-| **SDK Key** | Server and browser | Public. Returned to the page alongside the signature. |
-| **SDK Secret** | Server only | Signs the JWT. Never ship it to the browser or commit it. |
+| **Client ID** (SDK Key) | Server and browser | Public. Returned to the page alongside the signature. |
+| **Client Secret** (SDK Secret) | Server only | Signs the JWT. Never ship it to the browser or commit it. |
 
 ### App type
 
-In the Marketplace, choose **Develop** > **Build App** > **Meeting SDK**. This is a different app type from the General App used for Zoom Apps and OAuth integrations. A Meeting SDK app is what issues an SDK Key and Secret.
+Zoom has one app type, the General app. Create one, then on the **Features** page open the **Embed** tab and turn on **Meeting SDK**. The app's Client ID and Client Secret sign the Meeting SDK JWT. See [Create a Meeting SDK app](https://developers.zoom.us/docs/meeting-sdk/get-credentials/#create-a-meeting-sdk-app).
+
+To join meetings outside your own Zoom account, the app must be [reviewed by Zoom](https://developers.zoom.us/docs/build-flow/submitting-apps-for-review/).
 
 ### Domains
 

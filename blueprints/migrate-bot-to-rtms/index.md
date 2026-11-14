@@ -473,13 +473,12 @@ RTMS access is granted through scopes that select which meeting media your app r
 
 ### Auto-Start Configuration
 
-For hands-free recording (no user action required each meeting):
+For hands-free capture (no user action required each meeting), turn on auto-start. It is set where the app is used, not in the app's Marketplace build settings:
 
-1. Go to **Features** > **Zoom App SDK** > **Realtime Media Streams**
-2. Enable **Auto-start**
-3. Optionally disable **Host approval required** (admin setting)
+- **Account admin:** in the Zoom web portal, go to **Account Management** > **Account Settings** > **Zoom Apps** and turn on **Share realtime meeting content with apps**. Under **Apps that access content in meetings**, choose **+ Add app**, select your app, and set where it auto starts (**Meetings users own**, or **Meeting users attend** for internally or externally hosted meetings) and whether hosts are asked (**Always ask** or **Always allow**).
+- **App user:** a user who has installed the app can also choose which meeting types trigger auto-start for them.
 
-With auto-start enabled, RTMS begins automatically when the app owner's meeting starts.
+See [Host and admin tools and controls](https://developers.zoom.us/docs/rtms/meetings/ux-host-admin-tools-ctrls/).
 
 ### Enterprise Deployment (Admin Install)
 
@@ -488,7 +487,7 @@ For enterprise customers, individual OAuth flows per user create friction. Zoom 
 #### Admin install flow
 
 1. **Admin enables RTMS at the organization level**
-   - Zoom Admin Portal > Settings > "Allow apps to access real-time meeting content"
+   - Zoom web portal > **Account Management** > **Account Settings** > **Zoom Apps** > **Share realtime meeting content with apps**
    - This is the master switch. If disabled, RTMS will not work for any meeting hosted by this organization.
 
 2. **Admin installs your app for the organization**
@@ -497,8 +496,8 @@ For enterprise customers, individual OAuth flows per user create friction. Zoom 
    - Admin selects which users or groups the app is installed for (all users or a subset)
 
 3. **Admin configures RTMS settings**
-   - Enable auto-start for your app (Zoom Admin > Zoom Apps Settings)
-   - Optionally disable host approval requirement (recommended for seamless recording)
+   - Add your app under **Apps that access content in meetings** and choose where it auto starts
+   - Optionally set participant permissions to **Always allow** so hosts are not asked each time
    - Optionally enable "Allow meeting to start without host" (required if non-hosts need to trigger recording)
 
 #### Post-install behavior
@@ -511,10 +510,10 @@ For enterprise customers, individual OAuth flows per user create friction. Zoom 
 
 | Setting | Required Value | Where to Configure |
 |---------|----------------|-------------------|
-| Allow apps to access real-time meeting content | Enabled | Zoom Admin > Settings |
+| Share realtime meeting content with apps | Enabled | Account Settings > Zoom Apps |
 | Your RTMS app installed | Yes, for target users | Zoom Marketplace |
-| Auto-start for your RTMS app | Enabled | Zoom Admin > Zoom Apps Settings |
-| Host approval for RTMS | Disabled (recommended) | Zoom Admin > Settings |
+| Auto-start for your RTMS app | Set for the meetings you need | Account Settings > Zoom Apps > Apps that access content in meetings |
+| Permissions for participants | **Always allow** (recommended) | Same app entry |
 | Allow meeting to start without host | Enabled (if needed) | Zoom Admin > Meeting Settings |
 | Zoom client version | 6.5.5+ | All users |
 
