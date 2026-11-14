@@ -9,7 +9,7 @@ solution_types: ["data-integration"]
 author: "Ekaansh Arora"
 status: "published"
 updated: 2026-09-01
-github_repo: "https://github.com/zoom/VideoSDK-Web-Telehealth"
+github_repo: "https://github.com/zoom/videosdk-web-telehealth"
 tags: ["telehealth", "waiting-room", "healthcare", "web", "role-based-access"]
 seo_title: "Embed telehealth video visits in your patient portal"
 seo_keywords: ["zoom video sdk telehealth", "telehealth video visit app", "telehealth waiting room", "embed video in patient portal"]
@@ -19,7 +19,7 @@ license_required: true
 license_note: "Requires a Zoom Video SDK account; cloud recording requires a Cloud Recording Storage Plan."
 stack: "Next.js · React · TypeScript · tRPC · Drizzle · Vercel · Neon Postgres · Vercel Blob, Amazon S3, or Cloudflare R2"
 deploy:
-  - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0" }
+  - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0" }
 ---
 
 Run telehealth video visits inside your own application, built on the [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/). Patients open an appointment in your app, confirm their camera, microphone, and speaker in a device-ready check, then join a private session with their clinician. No Zoom account or separate meeting client is required on either side.
@@ -108,7 +108,7 @@ The media adapter reads the appointment ID and authorized role without owning cl
 
 ## Implementation Guide
 
-Map these capabilities onto the target codebase before changing it. Preserve existing identity and appointment systems, then add the missing boundaries. The [Zoom Telehealth Sample App](https://github.com/zoom/VideoSDK-Web-Telehealth/tree/main) demonstrates the core Next.js flow. Before handling sensitive data, add neutral authorization failures, scheduled access windows, appointment-level checks for notes, files, and recordings, and one cleanup path for every session exit.
+Map these capabilities onto the target codebase before changing it. Preserve existing identity and appointment systems, then add the missing boundaries. The [Zoom Telehealth Sample App](https://github.com/zoom/videosdk-web-telehealth/tree/main) demonstrates the core Next.js flow. Before handling sensitive data, add neutral authorization failures, scheduled access windows, appointment-level checks for notes, files, and recordings, and one cleanup path for every session exit.
 
 ### Reference stack
 
@@ -157,7 +157,7 @@ Document which components the implementation reuses, adapts, creates, or omits. 
 - The same ownership rule protects patient context, notes, documents, recordings, and appointment mutation.
 - Restrict production access to an organization-defined window around the scheduled visit.
 
-Return the same unavailable response when an appointment does not exist or the user is not a member, and return no Video SDK JWT in either case. Record the reason in a server-side audit event without disclosing it to the client. The reference [`session` router](https://github.com/zoom/VideoSDK-Web-Telehealth/blob/main/src/server/api/routers/session.ts) and [database schema](https://github.com/zoom/VideoSDK-Web-Telehealth/blob/main/src/server/db/schema.ts) show room membership and server-side token signing with tRPC and Drizzle. The example adds neutral errors, scheduled access windows, and audit events.
+Return the same unavailable response when an appointment does not exist or the user is not a member, and return no Video SDK JWT in either case. Record the reason in a server-side audit event without disclosing it to the client. The reference [`session` router](https://github.com/zoom/videosdk-web-telehealth/blob/main/src/server/api/routers/session.ts) and [database schema](https://github.com/zoom/videosdk-web-telehealth/blob/main/src/server/db/schema.ts) show room membership and server-side token signing with tRPC and Drizzle. The example adds neutral errors, scheduled access windows, and audit events.
 
 Use one server-side authorization function for the session and every related artifact. Return a neutral client error and keep the specific denial reason in the server audit log:
 
@@ -240,7 +240,7 @@ Implement the waiting room around one Video SDK client. Enumerate devices with `
 - Actionable permission and unsupported-browser errors
 - Optional virtual background selection
 
-Preview tracks, microphone testers, and speaker testers are disposable. Stop them when a device changes, when the component unmounts, and before `client.join()`. Carry the chosen device and mute state into the live session. The reference behavior is in [`Preview.tsx`](https://github.com/zoom/VideoSDK-Web-Telehealth/blob/main/src/components/videocall/Preview.tsx).
+Preview tracks, microphone testers, and speaker testers are disposable. Stop them when a device changes, when the component unmounts, and before `client.join()`. Carry the chosen device and mute state into the live session. The reference behavior is in [`Preview.tsx`](https://github.com/zoom/videosdk-web-telehealth/blob/main/src/components/videocall/Preview.tsx).
 
 ### Contract D: Video SDK session adapter
 
@@ -255,7 +255,7 @@ The adapter registers listeners before joining, calls `client.join()` with the a
 
 On failure or exit, it unregisters every listener, stops local media, detaches rendered video elements, and calls `client.leave()`. Connection changes, host termination, route navigation, and page unload must all converge on this cleanup path.
 
-The reference app implements this with the [`useSession`](https://www.npmjs.com/package/@zoom/videosdk-react) hook from `@zoom/videosdk-react`, which owns the client and handles join on mount and leave on unmount. Pass it the authorized `sessionName` and JWT with the chosen audio and video options; it surfaces join and media errors as state, and `useSessionUsers()` tracks who is present. See [`Videocall.tsx`](https://github.com/zoom/VideoSDK-Web-Telehealth/blob/main/src/components/videocall/Videocall.tsx). Listeners you register yourself, such as `connection-change`, must still be unregistered on teardown.
+The reference app implements this with the [`useSession`](https://www.npmjs.com/package/@zoom/videosdk-react) hook from `@zoom/videosdk-react`, which owns the client and handles join on mount and leave on unmount. Pass it the authorized `sessionName` and JWT with the chosen audio and video options; it surfaces join and media errors as state, and `useSessionUsers()` tracks who is present. See [`Videocall.tsx`](https://github.com/zoom/videosdk-web-telehealth/blob/main/src/components/videocall/Videocall.tsx). Listeners you register yourself, such as `connection-change`, must still be unregistered on teardown.
 
 ![Active telehealth video session](images/videocall.png)
 
@@ -323,7 +323,7 @@ The sample retrieves recordings on demand and includes no recording-completed we
 
 ### Vercel deployment
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2FVideoSDK-Web-Telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0)
 
 Vercel builds and hosts the Next.js app. The deploy flow provisions [Neon Postgres](https://vercel.com/marketplace/neon) and a private [Vercel Blob](https://vercel.com/docs/vercel-blob) store, injects `DATABASE_URL` and `BLOB_READ_WRITE_TOKEN`, applies the committed Drizzle migrations, and seeds demo accounts during the build. Seeding is a no-op once the database has users, so later deploys are unaffected.
 
@@ -391,7 +391,7 @@ The sample repository is **not built for protected health information (PHI)** an
 
 ## Related Resources
 
-- [Telehealth Sample App](https://github.com/zoom/VideoSDK-Web-Telehealth) - Reference implementation
+- [Telehealth Sample App](https://github.com/zoom/videosdk-web-telehealth) - Reference implementation
 - [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/) - SDK documentation
 - [Video SDK Recording API](https://developers.zoom.us/docs/api/video-sdk/) - Cloud recording REST API
 - [Zoom for Healthcare](https://www.zoom.com/en/industry/healthcare/) - Build vs. buy

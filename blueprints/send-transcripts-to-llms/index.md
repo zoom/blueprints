@@ -278,14 +278,14 @@ Marketplace schema and account policy can change. The app owner must import the 
 
 ## Acceptance Criteria
 
-- [ ] A valid Zoom webhook starts one RTMS session, while invalid or stale signatures are rejected.
-- [ ] Transcript state is isolated by stream and removed when the stream ends.
-- [ ] Duplicate segments do not create duplicate model requests or destination actions.
-- [ ] Model context stays within the configured time, turn, or token limit.
-- [ ] Provider timeouts and malformed responses do not interrupt transcript ingestion.
-- [ ] The configured destination receives a validated result with meeting context.
-- [ ] Zoom and provider credentials stay on the backend and out of logs.
-- [ ] Data handling, retention, and provider use match the customer's approved policy.
+- A valid Zoom webhook starts one RTMS session, while invalid or stale signatures are rejected.
+- Transcript state is isolated by stream and removed when the stream ends.
+- Duplicate segments do not create duplicate model requests or destination actions.
+- Model context stays within the configured time, turn, or token limit.
+- Provider timeouts and malformed responses do not interrupt transcript ingestion.
+- The configured destination receives a validated result with meeting context.
+- Zoom and provider credentials stay on the backend and out of logs.
+- Data handling, retention, and provider use match the customer's approved policy.
 
 ## Related Resources
 

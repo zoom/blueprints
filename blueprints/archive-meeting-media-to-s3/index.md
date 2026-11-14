@@ -272,15 +272,15 @@ The app owner must verify the current Marketplace schema and exact scopes, justi
 
 ## Acceptance Criteria
 
-- [ ] Invalid or stale webhook signatures are rejected before media capture begins.
-- [ ] Simultaneous meetings use separate temporary paths and stream state.
-- [ ] A test meeting produces synchronized, playable audio and video artifacts.
-- [ ] FFmpeg failure prevents the artifact from being marked ready or uploaded as successful.
-- [ ] Uploaded objects are private, encrypted, and stored under deterministic keys.
-- [ ] Duplicate lifecycle events and upload retries do not create conflicting objects.
-- [ ] An S3 outage leaves media recoverable through durable retry state.
-- [ ] Local media is removed only after verified upload and according to the approved cleanup policy.
-- [ ] Participant notice, access, retention, deletion, and regional storage behavior are approved for the target environment.
+- Invalid or stale webhook signatures are rejected before media capture begins.
+- Simultaneous meetings use separate temporary paths and stream state.
+- A test meeting produces synchronized, playable audio and video artifacts.
+- FFmpeg failure prevents the artifact from being marked ready or uploaded as successful.
+- Uploaded objects are private, encrypted, and stored under deterministic keys.
+- Duplicate lifecycle events and upload retries do not create conflicting objects.
+- An S3 outage leaves media recoverable through durable retry state.
+- Local media is removed only after verified upload and according to the approved cleanup policy.
+- Participant notice, access, retention, deletion, and regional storage behavior are approved for the target environment.
 
 ## Related Resources
 
