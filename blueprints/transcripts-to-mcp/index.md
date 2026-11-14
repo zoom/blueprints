@@ -461,7 +461,7 @@ The webhook URL must end at the `mcp_client` route configured by `WEBHOOK_PATH`.
 
 The manifest configures the Zoom-facing permissions and lifecycle events. The provider API key, internal router token, MCP server registry, server access tokens, tool allowlists, model limits, and network policy remain external application configuration.
 
-The app owner must confirm the current Marketplace schema, imported scopes, OAuth redirect URL, webhook endpoint, and RTMS entitlement before publishing the app.
+The app owner must confirm the current Marketplace schema, imported scopes, OAuth redirect URL, webhook endpoint, and Developer Pack credits before publishing the app.
 
 <details>
 <summary><strong>Reference implementation boundaries</strong></summary>

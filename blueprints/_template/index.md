@@ -27,7 +27,7 @@ github_repo: ""                    # sample code lives in its own repo, linked h
 # partners: ["anthropic"]                          # ids from /taxonomy.json → partners
 # demo_url: ""
 # license_required: false
-# license_note: "Requires RTMS add-on license"
+# license_note: "Requires Zoom Developer Pack credits for RTMS."
 # stack: "Node · TypeScript · Postgres"
 # deploy:                                             # Vercel preferred for Next.js/React
 #   - { label: "Deploy to Vercel", url: "https://vercel.com/new/clone?repository-url=..." }

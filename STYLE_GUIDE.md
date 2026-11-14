@@ -119,7 +119,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 
 **What you'll need:**
 
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires a paid Zoom Workplace plan with RTMS entitlement)
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the coaching panel in-meeting
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
@@ -146,7 +146,7 @@ The "What you'll need" section must state which Zoom license/plan is required to
 
 | Blueprint ingredient | Required Zoom license/entitlement |
 |---------------------|-----------------------------------|
-| **RTMS (Real-Time Media Streams)** | Paid Zoom Workplace plan + RTMS entitlement ([request access](https://www.zoom.com/en/realtime-media-streams/#form)) |
+| **RTMS (Realtime Media Streams)** | [Zoom Developer Pack](https://zoom.us/pricing/developer) credits, for Meetings, Phone, or Contact Center; free trial credits are available |
 | **Zoom Apps (Surface Apps)** | Any Zoom account; end users need Zoom client 5.9+ |
 | **Meeting SDK** | Meeting SDK license (different from Meetings) |
 | **Video SDK** | Video SDK license ([get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)) |
@@ -161,7 +161,7 @@ State the license requirement inline with the capability:
 
 **Do:**
 ```markdown
-- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires a paid Zoom Workplace plan with RTMS entitlement)
+- Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available)
 ```
 
 **Don't:**

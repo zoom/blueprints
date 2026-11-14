@@ -5,7 +5,8 @@ description: >-
   A Zoom Workplace agent that turns meeting context into suggested follow-up actions, while keeping a human in control before anything gets executed.
 products: ["rtms","zoom-apps","team-chat"]
 partners: ["anthropic", "openai"]
-license_required: false
+license_required: true
+license_note: "Requires Zoom Developer Pack credits for RTMS."
 stack: "Node · Express · Next.js · Oracle"
 solution_types: ["real-time-analysis", "agent-automation"]
 verticals: ["agents"]
@@ -25,7 +26,7 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 
 **What you'll need:**
 
-* [RTMS access](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer)). RTMS requires a paid Zoom Workplace plan with the appropriate entitlement.
+* [RTMS access](https://developers.zoom.us/docs/rtms/) ([pricing](https://zoom.us/pricing/developer)). RTMS requires Zoom Developer Pack credits; free trial credits are available.
 * A [Zoom Developer Account](https://developers.zoom.us) and a **General OAuth App** created in the [Zoom App Marketplace](https://marketplace.zoom.us/).
 * A backend that can receive webhooks, join the RTMS media stream, store meeting context, and call an LLM.
 * A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) that displays the dashboard and provides in-meeting controls for starting and stopping RTMS.
