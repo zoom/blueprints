@@ -223,9 +223,7 @@ function generateSignature(
 **Do not expose your credentials to the client. When using the Video SDK in production, use a backend service to sign tokens. Do not store credentials in plain text.**
 
 ## Scheduling Meetings
-A signed-in host fills out the scheduler (name, time, agenda, password, auto-recording). The server validates the input, creates the session with `POST /videosdk/sessions`, and saves the returned `session_id` in the Databaase alongside the host's user id.
-
-<Image src="images/scheduler.png" alt="Schedule a Zoom Session form with session name, password, agenda, date, time, timezone, duration, and recording and hold options" />
+A signed-in host fills out the scheduler (name, time, agenda, password, auto-recording). The server validates the input, creates the session with `POST /videosdk/sessions`, and saves the returned `session_id` in the database alongside the host's user id.
 
 ```js
 router.post('/create-session', requireAuth, async (req, res) => {
@@ -238,7 +236,7 @@ router.post('/create-session', requireAuth, async (req, res) => {
 ```
 
 ### Fetching Meeting Info
-The meeting list combines your Database records with session data from `GET /videosdk/sessions/{id}`.
+The meeting list combines your database records with session data from `GET /videosdk/sessions/{id}`.
 
 <Image src="images/meetinglist.png" alt="Scheduled Sessions list showing two sessions, each with a Join button and a delete button" />
 

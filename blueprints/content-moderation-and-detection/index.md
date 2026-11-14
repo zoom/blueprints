@@ -16,7 +16,7 @@ tags: ["real-time", "raw-data", "video", "security"]
 seo_title: "Moderate content in real-time video sessions"
 seo_keywords: ["zoom object detection ai", "image analysis zoom video sdk", "raw data video sdk"]
 license_required: false
-stack: "Node · Express · Javascript · TensorFlow"
+stack: "Node · Express · JavaScript · TensorFlow.js"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation" }
 ---
@@ -46,15 +46,15 @@ without identifying or exposing participants, meeting locations, or sensitive ob
 - An LLM trained for Object Detection (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
 **Features:**
-- Real-Time Objection in a multi-thread environment
-- Project structure offers Plug-and-play with of your own LLM
+- Real-time object detection in a multi-threaded environment
+- Project structure that lets you plug in your own model
 
 <Image src="images/contentmod-shot2.png" alt="Video SDK session where a company logo on a participant's shirt is detected and outlined with a 90% confidence label" />
 <Image src="images/contentmod-shot1.png" alt="The same Video SDK session with the detected logo blurred" />
 
 ## Architecture
 The client device requests for a JWT Token to a secure backend Server. The client receives the JWT Token and passed it to the Zoom Video SDK to start the session. On successful join into the session, `mediaStream.createProcessor()` is used to create the 
-Web Worker running our Video Processor. Once the client video is started, the SDK sends the preprocessor raw video frames to the web worker. The web worker runs a pre-trained object detection model via Tensorflow on the image to detect any objects listed on the filter list. Any detected objects are then covered by a gaussian blur using the WebGL library to run shaders on the devive gpu. The processed image is then sent to the Zoom MMR which relays to each participant in the session. 
+Web Worker running our Video Processor. Once the client video is started, the SDK sends the preprocessor raw video frames to the web worker. The web worker runs a pre-trained object detection model with TensorFlow.js on the image to detect any objects listed on the filter list. Any detected objects are then covered by a gaussian blur using the WebGL library to run shaders on the device GPU. The processed image is then sent to the Zoom MMR which relays to each participant in the session. 
 
 ```mermaid
 sequenceDiagram

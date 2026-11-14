@@ -1,5 +1,4 @@
 ---
-# ── Required — validation fails without these ───────────────────────────────
 title: "Monitor contact center calls in real time"
 slug: "engagement-remote-access"
 description: >-
@@ -11,11 +10,9 @@ status: "published"
 hero_image: "images/hero.png"
 updated: 2026-09-08
 
-# ── Strongly encouraged — the site hides blueprints without a repo ──────────
 github_repo: "https://github.com/zoom/zcc-rtms-pwa-sample-js"
 demo_url: "https://youtu.be/AwosG5X2dCs"
 
-# ── Optional — delete what you don't use ────────────────────────────────────
 solution_types: ["transcription-summarization", "real-time-analysis"]
 tags: ["real-time", "rtms", "contact-center", "audio-capture", "monitoring"]
 seo_title: "Monitor contact center calls in real time"

@@ -205,7 +205,11 @@ function verifyWebhookSignature(rawBody, timestamp, signature, secret) {
     .update(message)
     .digest('hex');
 
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  // timingSafeEqual throws if the buffers differ in length, so check first.
+  const received = Buffer.from(String(signature));
+  const computed = Buffer.from(expected);
+  if (received.length !== computed.length) return false;
+  return crypto.timingSafeEqual(received, computed);
 }
 ```
 

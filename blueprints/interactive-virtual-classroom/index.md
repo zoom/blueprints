@@ -1,9 +1,10 @@
 ---
-title: "Build virtual classroom with screensharing for iOS devices"
+title: "Build a virtual classroom with screen sharing on iOS"
 slug: "interactive-virtual-classroom"
 description: >-
   Build an interactive virtual classroom with real-time screen sharing and annotation for engaging, collaborative online learning.
 products: ["video-sdk"]
+solution_types: ["embedded-video"]
 verticals: ["apps"]
 author: "Boon Jun Tan"
 status: "published"
@@ -11,10 +12,10 @@ hero_image: "images/hero.png"
 updated: 2026-09-04
 github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom" 
 demo_url: "https://youtu.be/lwNA4Yj-G5Q"
-seo_title: "Build virtual classroom with screensharing for iOS devices"
+seo_title: "Build a virtual classroom with screen sharing on iOS"
 seo_keywords: ["screen sharing", "annotation", "virtual classroom"]
 license_required: false
-stack: "iOS - Swift UIKit"
+stack: "iOS · Swift · UIKit"
 ---
 
 An interactive virtual classroom app built using Zoom's Video SDK with live screen sharing and annotation tools, giving teachers and students a shared visual workspace and collaborate through real-time annotations without leaving your platform.
@@ -253,7 +254,7 @@ SessionViewController.view
 └── tabBar
 ```
 
-After the SDK joins the session, onSessionJoin() creates the local classroom view:
+After the SDK joins the session, `onSessionJoin()` creates the local classroom view:
 
 ```swift
 func onSessionJoin() {
@@ -263,11 +264,9 @@ func onSessionJoin() {
     tabBar.isHidden = false
     refreshParticipants()
 }
-
-The local camera canvas is attached to localView. A second square preview is attached to localViewDuringShare, which remains visible while a user is sharing content.
-
-
 ```
+
+The local camera canvas is attached to `localView`. A second square preview is attached to `localViewDuringShare`, which remains visible while a user is sharing content.
 
 ### Part 5: Render remote participants and maintain the participants list
 
@@ -353,10 +352,12 @@ enum ShareSelection {
 }
 ```
 
-handleShareToggle(_:) first checks for a conflicting active share and validates that in-app screen sharing is available. It then offers two choices:
+`handleShareToggle(_:)` first checks for a conflicting active share and validates that in-app screen sharing is available. It then offers two choices:
+
 - InAppScreenShare
 - Choose Math Lab PDF
-handleShareSelection(with:) starts the appropriate share mode:
+
+`handleShareSelection(with:)` starts the appropriate share mode:
 
 ```swift
 switch chosenShare {
