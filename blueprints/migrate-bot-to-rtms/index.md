@@ -21,8 +21,8 @@ license_required: true
 license_note: "RTMS access via Zoom Developer Pack"
 stack: "Node · Express · React · MySQL"
 deploy:
-  - { label: "Deploy to Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
-  - { label: "Deploy to Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
+  - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
+  - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
 ---
 
 Your meeting bot works. Users see it join. Hosts admit it from the waiting room. You manage infrastructure to keep a participant connected for the duration of the call. **Zoom RTMS** gives you the same data (audio, video, transcripts, screen share) without the bot.
@@ -37,7 +37,7 @@ Meeting SDK bots join as participants. They appear in the roster, require host a
 - Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
 - A backend to receive webhooks and maintain WebSocket connections
 - A [Zoom General App](https://developers.zoom.us/docs/integrations/) with RTMS event subscriptions
-- Optional: A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) for in-meeting UI
+- Optional: A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) for in-meeting UI
 
 **What changes:**
 
@@ -211,7 +211,7 @@ function verifyWebhookSignature(rawBody, timestamp, signature, secret) {
 
 **Other languages:** In Python, use `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`.
 
-See [Arlo's webhook handler](https://github.com/zoom/arlo/blob/main/backend/routes/rtms.js) for the complete implementation.
+See [Arlo's webhook handler](https://github.com/zoom/arlo/blob/main/backend/src/routes/rtms.js) for the complete implementation.
 
 ### Part 2: Connect to RTMS WebSocket
 
@@ -352,7 +352,7 @@ await zoom.chat.sendMessage({
 
 **Option B: Surface App**
 
-Build a [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) that displays recording status and cancel button in-meeting. The Surface App can use the Zoom Apps SDK `sendMessage()` method to send chat.
+Build a [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) that displays recording status and cancel button in-meeting. The Surface App can use the Zoom Apps SDK `sendMessage()` method to send chat.
 
 **Option C: Pre-meeting notification**
 

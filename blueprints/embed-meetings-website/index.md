@@ -51,20 +51,6 @@ If you'd rather not build this, [Zoom Scheduler](https://zoom.us/scheduler) hand
 
 Follow along as we walk through the architecture.
 
-<!-- TODO(images): capture and commit before review.
-     1. images/appointment-page.png - the embed inside your layout, sidebar visible
-     2. images/pre-join.png - booking details before the meeting is live
-     3. images/sdk-app-credentials.png - Meeting SDK app credentials screen
-     Then restore the block below:
-
-<div align="center">
-  <img src="images/appointment-page.png" alt="Meeting embedded in an appointment page" width="640" />
-  <img src="images/pre-join.png" alt="Pre-join state showing booking details" width="640" />
-</div>
-
-[Watch a 2-minute demo](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
--->
-
 ---
 
 ## Architecture
@@ -230,7 +216,7 @@ await client.join({
 
 `zoomAppRoot` is the only part that makes this Component View rather than Client View. In React, hold the node in a ref and call `init()` after the element has mounted, not during render.
 
-**Pin React to 18.2.0.** `@zoom/meetingsdk` 6.2.0 declares an exact peer dependency, not a range, so `npm install` fails outright against React 19. The canonical [`meetingsdk-web-sample/Components`](https://github.com/zoom/meetingsdk-web-sample/tree/main/Components) pins the same version. Reaching for `--legacy-peer-deps` to get around it means shipping the SDK against a React it was never tested with.
+**Pin React to 18.2.0.** `@zoom/meetingsdk` 6.2.0 declares an exact peer dependency, not a range, so `npm install` fails outright against React 19. The canonical [`meetingsdk-web-sample/Components`](https://github.com/zoom/meetingsdk-web-sample/tree/master/Components) pins the same version. Reaching for `--legacy-peer-deps` to get around it means shipping the SDK against a React it was never tested with.
 
 **Budget for the bundle.** A production build of the page in the companion sample is 3.25 MB, or 976 KB gzipped, almost all of it the SDK. That is fine behind a CDN with caching and slow on a first cold load, so it is worth knowing before someone reports the page as broken.
 
@@ -249,7 +235,7 @@ await client.join({
 - Handle `join()` rejection as a user-facing state. An expired signature and a meeting that has not started fail differently and read identically if you only log them.
 - Tear down on unmount, so a client-side route change does not leave a live meeting attached to a removed node.
 
-**Other frameworks:** Vue, Svelte, and plain JavaScript work identically; the SDK only needs an element. The canonical [`meetingsdk-web-sample/Components`](https://github.com/zoom/meetingsdk-web-sample/tree/main/Components) is React with TypeScript and Vite.
+**Other frameworks:** Vue, Svelte, and plain JavaScript work identically; the SDK only needs an element. The canonical [`meetingsdk-web-sample/Components`](https://github.com/zoom/meetingsdk-web-sample/tree/master/Components) is React with TypeScript and Vite.
 
 #### Pre-join and leave states
 

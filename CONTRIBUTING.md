@@ -62,7 +62,7 @@ Open `blueprints/<your-slug>/index.md` and complete the YAML block.
 
 See **[STYLE_GUIDE.md](STYLE_GUIDE.md)** for all content rules:
 - Intro structure and tone
-- Required sections (Features, Architecture, Implementation Guide, App Manifest)
+- Required sections (Architecture, Implementation Guide, App Manifest)
 - Code block conventions and Input/Output/Invariants contracts
 - Image and diagram requirements
 - What to avoid (AI slop patterns, hypothetical features)

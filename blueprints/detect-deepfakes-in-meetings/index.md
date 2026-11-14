@@ -49,12 +49,6 @@ Follow along as we walk through the architecture.
 
 ---
 
-## Features
-
-The in-meeting Zoom App shows the selected participant, separate audio and
-video service states, and the latest normalized inference result.
-
-
 ## Architecture
 
 ### The reusable pattern

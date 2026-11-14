@@ -55,20 +55,6 @@ If you'd rather buy than build, Zoom offers [Zoom Compliance Manager](https://ww
 
 Follow along as we walk through the architecture.
 
-<!-- TODO(images): capture and commit before review.
-     1. images/disclosure-checklist.png - advisor panel with two disclosures satisfied, one pending
-     2. images/prohibited-claim-alert.png - a high-severity alert with quote and suggested language
-     3. images/audit-export.png - post-meeting compliance summary
-     Then restore the block below:
-
-<div align="center">
-  <img src="images/disclosure-checklist.png" alt="Disclosure Checklist" width="640" />
-  <img src="images/prohibited-claim-alert.png" alt="Prohibited Claim Alert" width="640" />
-</div>
-
-[Watch a 2-minute demo](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
--->
-
 ---
 
 ## Architecture

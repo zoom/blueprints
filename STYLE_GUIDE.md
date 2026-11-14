@@ -93,7 +93,7 @@ Zoom App configuration reference. Explains what the `manifest.json` configures (
 
 Add after the required four if they help developers succeed:
 
-- **Acceptance Criteria**: Verification checklist for implementations
+- **Acceptance Criteria**: Verification list for implementations. Use plain bullets (`- item`), not task-list checkboxes (`- [ ]`); the site renders a checkbox as a bullet plus an empty box.
 - **Production Considerations**: Scaling, security, compliance notes (use collapsible `<details>`)
 - **Related Resources**: Links to docs, repos, forums
 
@@ -106,7 +106,7 @@ The outcome-focused intro (before any heading) must follow this exact order:
 1. **What it does** (one sentence): Declarative, technical, no marketing fluff
 2. **Why it matters** (one sentence): The problem this solves
 3. **What you'll need** (bulleted list): Including Zoom license prerequisites (see next section)
-4. **Features** (bulleted list): What the finished app does
+4. **Features** (bulleted list): What the finished app does. Use a bold `**Features:**` label inside the intro, not a `## Features` heading
 5. **Zoom product callout**: The out-of-the-box Zoom product for readers who don't need to build. Be explicit about when to use native vs. build custom (e.g., "Build custom when you need [specific customizations]").
 6. **Transition** (one sentence): Bridge to the Architecture section
 
@@ -121,7 +121,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 
 - Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (requires a paid Zoom Workplace plan with RTMS entitlement)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
-- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the coaching panel in-meeting
+- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the coaching panel in-meeting
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
 **Features:**
@@ -276,6 +276,11 @@ For centered images with sizing:
 </div>
 ```
 
+The site also provides an `<Image>` component. Always give it alt text:
+```markdown
+<Image src="images/screenshot.png" alt="Description" />
+```
+
 **Hero image** (optional): Add `hero_image: images/hero.png` to frontmatter. If omitted, the site auto-generates a thumbnail from metadata.
 
 ### Demo video (required)
@@ -411,10 +416,14 @@ Every video must include the **Zoom Developers bumper** (3 seconds) at the begin
 
 ---
 
-**Format:** Upload to YouTube (unlisted is fine). Link in the intro after images:
+**Format:** Upload to YouTube (unlisted is fine). Set `demo_url` in frontmatter to the short link with no timestamp, and embed the video in the intro after images with the `<YouTube>` component:
 
 ```markdown
-[Watch the demo](https://www.youtube.com/watch?v=...)
+demo_url: https://youtu.be/VIDEO_ID
+```
+
+```markdown
+<YouTube id="VIDEO_ID" />
 ```
 
 ---
@@ -540,7 +549,7 @@ Use Input/Output/Invariants contracts for business logic. This makes Blueprints 
 - Register transcript handlers before calling `join()`
 - Clean up session on `onLeave` callback
 
-See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/services/rtms) for the reference implementation.
+See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the reference implementation.
 ```
 
 ### Keep security-critical code concrete
@@ -563,7 +572,11 @@ function verifyWebhookSignature(rawBody, timestamp, signature, secret) {
     .update(message)
     .digest('hex');
 
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  // timingSafeEqual throws if the buffers differ in length, so check first.
+  const received = Buffer.from(String(signature));
+  const computed = Buffer.from(expected);
+  if (received.length !== computed.length) return false;
+  return crypto.timingSafeEqual(received, computed);
 }
 ```
 
@@ -574,7 +587,7 @@ The on-page content may differ from the clipboard/agent-export version. The expo
 **Link the repo, don't paste large blocks.** For implementation details that may change, link to the source:
 
 **Do:**
-> See [Arlo's AI routes](https://github.com/zoom/arlo/tree/main/backend/routes/ai) for the reference implementation.
+> See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes/ai.js) for the reference implementation.
 
 **Don't:**
 > Paste 200 lines of code that will drift from the repo.
@@ -682,7 +695,7 @@ Reference these blueprints when writing or reviewing. They demonstrate the patte
 - Implementation Guide uses Input/Output/Invariants contracts for business logic
 - HMAC verification stays as concrete code (security-critical)
 - LLM prompt visible for customization
-- Acceptance criteria checklist at the end
+- Acceptance criteria list at the end
 - Links to Arlo repo for full implementation; doesn't paste large code blocks
 
 ### [AI Meeting Notetaker](./blueprints/ai-meeting-notetaker/)

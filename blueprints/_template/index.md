@@ -38,7 +38,8 @@ github_repo: ""                    # sample code lives in its own repo, linked h
      Delete them as you fill in each section.
 
      Body rules:
-     - GitHub-flavored markdown ONLY. No JSX/MDX components.
+     - GitHub-flavored markdown ONLY. The only components allowed are
+       <YouTube id="..." /> and <Image src="images/..." alt="..." />.
      - No inline style attributes on HTML elements (causes hydration errors).
        Use width/height attributes for sizing. Avoid &nbsp; between elements.
      - Diagrams are ```mermaid fences (inline in index.md is the single source of truth).
@@ -48,8 +49,11 @@ github_repo: ""                    # sample code lives in its own repo, linked h
        RELATIVE path — ![Coaching panel](images/coaching-panel.png). The site
        rewrites it to /img/blueprints/<slug>/…; never hand-write that /img path
        (it 404s in GitHub preview). Validation errors on a ref with no file.
-     - The four H2 sections below (Features, Architecture, Implementation Guide,
-       App Manifest) are REQUIRED and validated by CI.
+     - The H2 sections below (Architecture, Implementation Guide, and App
+       Manifest for Zoom Apps) are REQUIRED and validated by CI. Features is
+       a bold label inside the intro, not a heading.
+     - Acceptance criteria use plain bullets (- item), not task-list
+       checkboxes (- [ ]).
      - Do NOT write an Agent Skill Export section — it is auto-generated
        from this content by the build pipeline. -->
 
@@ -60,7 +64,7 @@ github_repo: ""                    # sample code lives in its own repo, linked h
      Ground it in a real use-case pattern — no hypotheticals. Bold Zoom
      products on first mention. -->
 
-## Features
+**Features:**
 
 <!-- Succinct bullet list of what the finished application does. Follow with
      screenshots (width attribute, no inline styles) and a demo video link
@@ -93,6 +97,6 @@ graph LR
      event subscriptions, redirect URLs) and how to use it for one-click app
      creation via the Zoom Marketplace manifests API. -->
 
-<!-- Optional sections — add after the required four if you have them:
+<!-- Optional sections — add after the required sections if you have them:
      ## Demo | ## Deployment Guide | ## Video Walkthrough
      ## Related Blueprints | ## Customer Stories -->

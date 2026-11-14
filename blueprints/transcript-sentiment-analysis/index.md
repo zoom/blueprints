@@ -44,7 +44,7 @@ already frustrated, and the opportunity to respond in the moment is gone.
 - Live Sentiment Detection with sub-second latency
 - Project structure offers Plug-and-play with of your own LLM
 
-<Image src="images/sentimentpic.png"/>
+<Image src="images/sentimentpic.png" alt="Video with the live caption 'Thank you for the roses.' and the label 'Detected Sentiment: gratitude' above it" />
 
 <YouTube id="oNI-y98B8jQ" />
 
@@ -91,10 +91,6 @@ graph LR
     A -- 4a display result in client --> E
     A -- 4b sentiment backend processing/storage --> B
 ```
-
-<!-- Expand: component walkthrough (RTMS webhook → WebSocket ingest, AI
-     orchestration, coaching-cue loop), per docs/ARCHITECTURE.md in the
-     arlo repo. -->
 
 ## Implementation Guide
 
@@ -338,7 +334,7 @@ The sample app trains a simple model on server startup using TensorFlow.js, base
   
 ## App Manifest
 
-Skip this section. Video SDK Product does not support Marketplace Manifests
+Video SDK apps are not configured through a Marketplace app manifest, so this blueprint has no `manifest.json`. The app authenticates with your Video SDK key and secret instead.
 
 ## Acceptance Criteria
 

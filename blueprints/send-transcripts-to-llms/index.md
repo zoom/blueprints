@@ -46,8 +46,6 @@ The transcript is only the starting point. Change the prompt, send the answer to
 
 Follow along as we walk through the architecture.
 
-## Features
-
 The reference implementations show the live Zoom Meeting transcript and the
 model response produced from that transcript.
 
