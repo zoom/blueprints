@@ -5,9 +5,8 @@ graph LR
     A -->|Authorize, sign 2-hour JWT| U
     U -->|Preview, join with room ID and JWT| Z[Zoom Video SDK Session]
     Z -->|Video, audio, chat, captions| U
-    U -->|Request authorized storage URL| A
-    A -->|Return short-lived presigned URL| U
-    U -->|Direct upload or download| S[(S3-compatible Storage)]
+    U -->|Authorized upload or download| A
+    A -->|Private patient documents| S[(Vercel Blob, S3, or R2)]
     U -->|Start, stop recording| Z
     A -->|Video SDK API JWT| R[Zoom Video SDK Recording API]
     R -->|Recording metadata, download URL| A
