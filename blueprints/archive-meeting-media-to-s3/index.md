@@ -36,7 +36,7 @@ Archive only the meetings and media your use case requires. Tell participants, g
 - An Amazon S3 bucket and approved AWS workload identity
 - Retention, access, encryption, and participant-notice policies
 
-**Features:**
+## Features
 
 - Capture mixed meeting audio and the configured RTMS video stream.
 - Produce playable media after RTMS stops.

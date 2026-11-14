@@ -49,9 +49,9 @@ github_repo: ""                    # sample code lives in its own repo, linked h
        RELATIVE path — ![Coaching panel](images/coaching-panel.png). The site
        rewrites it to /img/blueprints/<slug>/…; never hand-write that /img path
        (it 404s in GitHub preview). Validation errors on a ref with no file.
-     - The H2 sections below (Architecture, Implementation Guide, and App
-       Manifest for Zoom Apps) are REQUIRED and validated by CI. Features is
-       a bold label inside the intro, not a heading.
+     - The H2 sections below are REQUIRED. CI validates Architecture,
+       Implementation Guide, and App Manifest (for Zoom Apps). Features is
+       an H2 heading (## Features), not a bold label.
      - Acceptance criteria use plain bullets (- item), not task-list
        checkboxes (- [ ]).
      - Do NOT write an Agent Skill Export section — it is auto-generated
@@ -64,7 +64,7 @@ github_repo: ""                    # sample code lives in its own repo, linked h
      Ground it in a real use-case pattern — no hypotheticals. Bold Zoom
      products on first mention. -->
 
-**Features:**
+## Features
 
 <!-- Succinct bullet list of what the finished application does. Follow with
      screenshots (width attribute, no inline styles) and a demo video link

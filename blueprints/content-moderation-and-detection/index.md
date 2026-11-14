@@ -45,7 +45,7 @@ without identifying or exposing participants, meeting locations, or sensitive ob
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
 - An LLM trained for Object Detection (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
-**Features:**
+## Features
 - Real-time object detection in a multi-threaded environment
 - Project structure that lets you plug in your own model
 

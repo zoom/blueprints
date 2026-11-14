@@ -37,7 +37,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 - A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the coaching panel in-meeting
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
-**Features:**
+## Features
 
 - Live transcript stream with sub-second latency
 - Deal qualification tracker (BANT, MEDDIC, or custom criteria) with detected signals and suggested questions

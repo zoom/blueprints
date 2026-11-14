@@ -37,7 +37,7 @@ The router combines fixed security rules with a deployment-specific task prompt.
 - An API key and tool-capable model from [Anthropic](https://platform.claude.com/docs/en/about-claude/models/overview), [OpenAI](https://platform.openai.com/docs/models), or [OpenRouter](https://openrouter.ai/docs/quickstart)
 - Node.js 22 or Docker for the reference implementation
 
-**Features:**
+## Features
 
 - Authenticate Zoom webhook deliveries and reject stale requests.
 - Keep transcript state isolated by RTMS stream.

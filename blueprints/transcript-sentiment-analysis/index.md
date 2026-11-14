@@ -40,7 +40,7 @@ already frustrated, and the opportunity to respond in the moment is gone.
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
-**Features:**
+## Features
 - Live Sentiment Detection with sub-second latency
 - Project structure that lets you plug in your own model
 

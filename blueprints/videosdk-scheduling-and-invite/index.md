@@ -35,7 +35,7 @@ or the session password.
 - A Neon Postgres database (any Postgres works)
 - Node.js, Express, and React
 
-**Features:**
+## Features
 - Email and password accounts with hashed passwords and hashed session tokens
 - Scheduled sessions created through the Video SDK REST API
 - Opaque invite links for hosts and guests

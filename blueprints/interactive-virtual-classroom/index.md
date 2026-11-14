@@ -27,7 +27,7 @@ Remote learning often falls apart at exactly this moment: the teacher is explain
 - Zoom developer account with Video SDK license via [get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)
 - At least 2 iPhones with iOS 15+ for test deployment
 
-**Features:**
+## Features
 
 - **Screen sharing**: Broadcast the teacher's screen or any in-app content view to all participants in real time
 - **Live annotation**: Renders a synchronized annotation canvas overlaid on the shared screen, visible to all participants

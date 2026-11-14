@@ -40,7 +40,7 @@ Contact Center admins can monitor active engagements by streaming live audio and
 - A frontend dashboard for supervisors to control capture (React PWA)
 - ffmpeg for audio file conversion
 
-**Features:**
+## Features
 
 - **Remote RTMS control**: Supervisor-initiated Start/Stop controls from the browser PWA for active engagements
 - **Real-time audio playback**: Live audio streamed to browser via Server-Sent Events with sub-200ms latency

@@ -42,7 +42,7 @@ Compliance review normally happens weeks after the call, when a surveillance tea
 - An LLM to adjudicate flagged phrases in context (OpenRouter, OpenAI, Anthropic, or self-hosted)
 - A rule pack for your jurisdiction, reviewed and signed off by your compliance team
 
-**Features:**
+## Features
 
 - Deterministic screening of every transcript segment against a versioned rule pack, under 5ms per segment
 - Prohibited-claim alerts with the triggering quote, the rule ID, and approved replacement language

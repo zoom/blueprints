@@ -34,7 +34,7 @@ These files are a starting point. Search them, summarize them, attach them to a 
 - Writable local storage for the quickstart, or customer-managed storage for production
 - A Zoom Meeting with RTMS enabled for testing
 
-**Features:**
+## Features
 
 - Receive a live transcript without adding a participant bot.
 - Create one VTT, SRT, and TXT file for the meeting.
