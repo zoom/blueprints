@@ -33,7 +33,7 @@ Most meeting notes happen after the call. Someone reviews the recording, writes 
 
 - Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
-- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the notes panel in-meeting
+- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the notes panel in-meeting
 - An LLM for extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
 **Features:**
@@ -44,7 +44,7 @@ Most meeting notes happen after the call. Someone reviews the recording, writes 
 - **Key moments**: Highlight decisions, announcements, and open questions
 - **In-meeting panel**: Surface everything in a sidebar visible to all participants
 
-If you'd rather buy than build, Zoom offers [AI Companion](https://zoom.us/ai) with similar note-taking capabilities.
+If you'd rather buy than build, Zoom offers [AI Companion](https://www.zoom.com/en/products/ai-assistant/) with similar note-taking capabilities.
 
 Follow along as we walk through the architecture.
 
@@ -157,7 +157,7 @@ Two implementation details matter: use the raw request body (don't re-serialize 
 
 **Other languages:** The `@zoom/rtms` SDK is Node-only. For other stacks, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
 
-See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/services/rtms) for the reference implementation.
+See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the reference implementation.
 
 #### Transcript segment handling
 
@@ -217,7 +217,7 @@ Return JSON only:
 
 **Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling.
 
-See [Arlo's AI routes](https://github.com/zoom/arlo/tree/main/backend/routes/ai) for the reference implementation.
+See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes/ai.js) for the reference implementation.
 
 #### Frontend state management
 

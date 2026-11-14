@@ -51,15 +51,13 @@ The router combines fixed security rules with a deployment-specific task prompt.
 - Record audit metadata without transcript text, tool arguments, tool results, meeting IDs, or credentials.
 - Enable `LOG_CONTENT` during local testing to inspect transcript and model-response text in the service logs.
 
-If you prefer built-in meeting assistance, [Zoom AI Companion](https://zoom.us/ai) offers related meeting search and assistance capabilities.
+If you prefer built-in meeting assistance, [Zoom AI Companion](https://www.zoom.com/en/products/ai-assistant/) offers related meeting search and assistance capabilities.
 
 Follow along as we walk through the architecture.
 
 <YouTube id="kAATjicBxsM" />
 
 ---
-
-## Features
 
 The reference implementation reports RTMS transcript batching, environment-configured MCP server discovery, allowlisted tool calls, and responses through structured service logs. The screenshot shows a transcript asking for Zoom's stock price and the model response returned through the router with local content logging enabled.
 

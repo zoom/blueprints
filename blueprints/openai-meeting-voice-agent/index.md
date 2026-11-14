@@ -52,13 +52,6 @@ Follow along as we walk through the architecture.
 
 ---
 
-## Features
-
-The reference implementation reports the OpenAI Realtime session, text
-responses, approved Zoom MCP tool calls, and bounded usage metadata through
-server logs.
-
-
 ## Architecture
 
 ### The reusable pattern

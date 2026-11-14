@@ -40,7 +40,7 @@ or the session password.
 - Scheduled sessions created through the Video SDK REST API
 - Opaque invite links for hosts and guests
 
-<Image src="images/scheduler.png"/>
+<Image src="images/scheduler.png" alt="Schedule a Zoom Session form with session name, password, agenda, date, time, timezone, duration, and recording and hold options" />
 
 ## Architecture
 
@@ -225,7 +225,7 @@ function generateSignature(
 ## Scheduling Meetings
 A signed-in host fills out the scheduler (name, time, agenda, password, auto-recording). The server validates the input, creates the session with `POST /videosdk/sessions`, and saves the returned `session_id` in the Databaase alongside the host's user id.
 
-<Image src="images/scheduler.png"/>
+<Image src="images/scheduler.png" alt="Schedule a Zoom Session form with session name, password, agenda, date, time, timezone, duration, and recording and hold options" />
 
 ```js
 router.post('/create-session', requireAuth, async (req, res) => {
@@ -240,7 +240,7 @@ router.post('/create-session', requireAuth, async (req, res) => {
 ### Fetching Meeting Info
 The meeting list combines your Database records with session data from `GET /videosdk/sessions/{id}`.
 
-<Image src="images/meetinglist.png"/>
+<Image src="images/meetinglist.png" alt="Scheduled Sessions list showing two sessions, each with a Join button and a delete button" />
 
 - **Paginate** in the UI and API once a host has more than a handful of meetings, rather than fetching every session on each load.
 - **Cache on the server.** Zoom rate-limits the REST API, so hold responses briefly (for example 30-60 seconds) and invalidate on create or delete. 
@@ -267,7 +267,7 @@ const inviteId = randomBytes(16).toString('base64url');
 ## Structuring Invitations
 Give each meeting two links built from the same invite ID: a guest link (`/s/:inviteId`) and a host link (`/s/:inviteId/host`). The invite message shows only the guest link and details. The host link stays in the host's own scheduler view.
 
-<Image src="images/invite.png"/>
+<Image src="images/invite.png" alt="Host link and invite text with the session name, date, time, timezone, password, and join link, each with a Copy button" />
 
 Send the password through a different channel than the link. Whoever has only the link still needs the password.
 
@@ -309,7 +309,7 @@ router.post('/token', async (req, res) => {
 
 ## App Manifest
 
-Skip this section. Video SDK Product does not support Marketplace Manifests
+Video SDK apps are not configured through a Marketplace app manifest, so this blueprint has no `manifest.json`. The app authenticates with your Video SDK key and secret instead.
 
 ## Acceptance Criteria
 

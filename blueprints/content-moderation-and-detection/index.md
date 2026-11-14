@@ -49,8 +49,8 @@ without identifying or exposing participants, meeting locations, or sensitive ob
 - Real-Time Objection in a multi-thread environment
 - Project structure offers Plug-and-play with of your own LLM
 
-<Image src="images/contentmod-shot2.png"/>
-<Image src="images/contentmod-shot1.png"/>
+<Image src="images/contentmod-shot2.png" alt="Video SDK session where a company logo on a participant's shirt is detected and outlined with a 90% confidence label" />
+<Image src="images/contentmod-shot1.png" alt="The same Video SDK session with the detected logo blurred" />
 
 ## Architecture
 The client device requests for a JWT Token to a secure backend Server. The client receives the JWT Token and passed it to the Zoom Video SDK to start the session. On successful join into the session, `mediaStream.createProcessor()` is used to create the 
@@ -212,7 +212,7 @@ The sample app trains a simple model on server startup using TensorFlow.js, base
   
 ## App Manifest
 
-Skip this section. Video SDK Product does not support Marketplace Manifests
+Video SDK apps are not configured through a Marketplace app manifest, so this blueprint has no `manifest.json`. The app authenticates with your Video SDK key and secret instead.
 
 ## Acceptance Criteria
 

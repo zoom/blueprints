@@ -1,10 +1,10 @@
+%% Keep this file in sync with the mermaid fence in index.md.
 flowchart LR
-    A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS MCP client]
-    B -->|Transcript request| C[LLM router]
-    C -->|MCP tools/list and tools/call| D[Retrieval MCP server]
-    C -->|MCP tools/list and tools/call| E[Business API MCP server]
-    D -->|Vector search| F[Chroma]
-    E -->|Authenticated request| G[Customer systems]
-    D -->|Tool result| C
-    E -->|Tool result| C
-    C -->|Answer or proposed action| B
+    A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
+    Z[Zoom lifecycle webhook] -->|Authenticated start and stop events| B
+    B -->|Five-second transcript batch| C[Private LLM router]
+    C -->|Transcript and approved tool schemas| D[Configured AI provider]
+    D -->|Tool request| C
+    C -->|Allowlisted tools/list and tools/call| E[Configured MCP servers]
+    E -->|Meeting, recording, or document result| C
+    C -->|Text response| B

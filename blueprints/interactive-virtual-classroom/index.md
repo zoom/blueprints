@@ -34,9 +34,9 @@ Remote learning often falls apart at exactly this moment: the teacher is explain
 - **In-session panel**: Surface everything in a tab bar visible to all participants
 
 <div align="center">
-  <img src="images/virtual-classroom-join-session.jpg" alt="" width="320" />
-  <img src="images/virtual-classroom-share-pdf.jpg" alt="" width="320" />
-  <img src="images/virtual-classroom-annotation.jpg" alt="" width="320" />
+  <img src="images/virtual-classroom-join-session.jpg" alt="Join screen with a Student or Teacher role toggle, name and class code fields, and a Start classroom button" width="320" />
+  <img src="images/virtual-classroom-share-pdf.jpg" alt="Shared PDF worksheet in a live session with the teacher's video thumbnail and session controls" width="320" />
+  <img src="images/virtual-classroom-annotation.jpg" alt="Handwritten annotations on the shared worksheet with the Pen, Mark, Arrow, and Erase toolbar open" width="320" />
 </div>
 
 **See it in action:**
@@ -154,7 +154,7 @@ We will proceed with handing off the information to SessionViewController which 
 ```
 
 <div align="center">
-  <img src="images/virtual-classroom-join-session.jpg" alt="" width="320" />
+  <img src="images/virtual-classroom-join-session.jpg" alt="Join screen with a Student or Teacher role toggle, name and class code fields, and a Start classroom button" width="320" />
 </div>
 
 ### Part 3: Join the classroom
@@ -308,7 +308,7 @@ Hosts and managers rank first and are labelled Teacher. Other users are labelled
 Call refreshParticipants() whenever user state changes. The sample already does this for joins, leaves, video changes, audio changes, name changes, host changes, and manager changes.
 
 <div align="center">
-  <img src="images/virtual-classroom-participants.jpg" alt="" width="320" />
+  <img src="images/virtual-classroom-participants.jpg" alt="Class participants panel listing a teacher and a student with their video and audio status" width="320" />
 </div>
 
 ### Part 6: Control video, audio, sharing, and participants
@@ -390,7 +390,7 @@ sharedPDFView.isHidden = false
 onUserShareStatusChanged(_:user:shareAction:) updates the UI as sharing starts or stops. Local shares reveal the floating pencil button. Remote shares subscribe the incoming share canvas to sharerView.
 
 <div align="center">
-  <img src="images/virtual-classroom-share-pdf.jpg" alt="" width="320" />
+  <img src="images/virtual-classroom-share-pdf.jpg" alt="Shared PDF worksheet in a live session with the teacher's video thumbnail and session controls" width="320" />
 </div>
 
 ### Part 8: Start, stop, and control annotation
@@ -448,7 +448,7 @@ helper.clear(.all)
 ```
 
 <div align="center">
-  <img src="images/virtual-classroom-annotation.jpg" alt="" width="320" />
+  <img src="images/virtual-classroom-annotation.jpg" alt="Handwritten annotations on the shared worksheet with the Pen, Mark, Arrow, and Erase toolbar open" width="320" />
 </div>
 
 ### Part 9: Protect drawing from zoom annotation and PDFView gesture conflicts

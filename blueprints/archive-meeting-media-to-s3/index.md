@@ -50,12 +50,6 @@ Follow along as we walk through the architecture.
 
 ---
 
-## Features
-
-The reference implementation produces playable media and uploads the finalized
-objects to the configured customer-controlled S3 bucket.
-
-
 ## Architecture
 
 ### The reusable pattern

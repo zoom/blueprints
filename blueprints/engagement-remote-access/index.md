@@ -54,7 +54,7 @@ Contact Center admins can monitor active engagements by streaming live audio and
 
 Zoom Contact Center includes native supervisor features for live monitoring. Build custom when you need remote access without joining calls, custom metrics tracking, or integration with your quality assurance tools.
 
-This blueprint uses [Zoom Contact Center RTMS](https://developers.zoom.us/docs/contact-center/real-time-media-streams/) to access live media streams. Follow along as we walk through the architecture.
+This blueprint uses [Zoom Contact Center RTMS](https://developers.zoom.us/docs/rtms/contact-center/) to access live media streams. Follow along as we walk through the architecture.
 
 ---
 

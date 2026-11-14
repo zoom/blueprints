@@ -33,7 +33,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 
 - Transcript access via [RTMS](https://developers.zoom.us/docs/rtms/) (available through the [Zoom Developer Pack](https://zoom.us/pricing/developer); try 20 credits free)
 - A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
-- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/guides/building-a-surface/) to render the coaching panel in-meeting
+- A [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) to render the coaching panel in-meeting
 - An LLM for signal extraction (OpenRouter, OpenAI, Anthropic, or self-hosted)
 
 **Features:**
@@ -45,7 +45,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 - Filler-word alerts
 - Post-call summary and action items
 
-If you'd rather buy than build, Zoom offers [AI Companion](https://zoom.us/ai) and [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities.
+If you'd rather buy than build, Zoom offers [AI Companion](https://www.zoom.com/en/products/ai-assistant/) and [Revenue Accelerator](https://zoom.us/revenue-accelerator) with similar capabilities.
 
 Follow along as we walk through the architecture.
 
@@ -160,7 +160,7 @@ Use `express.raw()` to preserve the exact bytes Zoom sent; re-serialized JSON pr
 
 **Other languages:** The `@zoom/rtms` SDK is Node-only. For other stacks, implement the WebSocket protocol directly; the [RTMS documentation](https://developers.zoom.us/docs/rtms/) covers the wire format.
 
-See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/services/rtms) for the reference implementation.
+See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the reference implementation.
 
 #### Transcript segment handling
 
@@ -234,7 +234,7 @@ Return JSON only:
 
 **Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling.
 
-See [Arlo's AI routes](https://github.com/zoom/arlo/tree/main/backend/routes/ai) for the reference implementation.
+See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes/ai.js) for the reference implementation.
 
 #### Frontend state management
 
