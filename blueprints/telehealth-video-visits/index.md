@@ -16,7 +16,7 @@ seo_keywords: ["zoom video sdk telehealth", "telehealth video visit app", "teleh
 partners: ["vercel"]
 demo_url: "https://youtu.be/CgzVrKO0KR4"
 license_required: true
-license_note: "Requires a Zoom Video SDK account; cloud recording requires a Cloud Recording Storage Plan."
+license_note: "Requires a Zoom Video SDK account (free trial credits are available); cloud recording must be added to the account."
 stack: "Next.js · React · TypeScript · tRPC · Drizzle · Vercel · Neon Postgres · Vercel Blob, Amazon S3, or Cloudflare R2"
 deploy:
   - { label: "Vercel", url: "https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain&env=AUTH_SECRET%2CGITHUB_CLIENT_ID%2CGITHUB_CLIENT_SECRET%2CZOOM_SDK_KEY%2CZOOM_SDK_SECRET%2CZOOM_API_KEY%2CZOOM_API_SECRET&envDescription=Auth.js%2C%20Zoom%20Video%20SDK%2C%20and%20Zoom%20API%20credentials%20required%20by%20the%20app.&envLink=https%3A%2F%2Fgithub.com%2Fzoom%2Fvideosdk-web-telehealth%2Ftree%2Fmain%23environment-variables&project-name=zoom-telehealth&repository-name=zoom-telehealth&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D&skippable-integrations=0" }
@@ -30,7 +30,7 @@ External video apps pull patients out of the portal. A native waiting room keeps
 
 **What you'll need:**
 
-- [Video SDK credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/): SDK key and secret, plus API key and secret for recording
+- A Zoom Video SDK account (free trial credits are available) and its [credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/): SDK key and secret, plus API key and secret for recording. Cloud recording must be added to the account.
 - A backend to authorize appointments and issue short-lived session JWTs
 - A frontend for the waiting room and video session (Next.js on Vercel in this guide; any stack works)
 - A PostgreSQL database and private object store for appointments, notes, and patient documents
