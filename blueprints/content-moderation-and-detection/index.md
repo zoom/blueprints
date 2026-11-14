@@ -217,8 +217,8 @@ Skip this section. Video SDK Product does not support Marketplace Manifests
 ## Acceptance Criteria
 
 **General**
-- [ ] Ensure SDK credentials are not exposed when producing a JWT. Keep token generation off the frontend; store credentials only on the backend and never in plain text.
-- [ ] Do not log credentials or JWTs.
-- [ ] Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
-- [ ] Release and tear down the web worker.
+- Ensure SDK credentials are not exposed when producing a JWT. Keep token generation off the frontend; store credentials only on the backend and never in plain text.
+- Do not log credentials or JWTs.
+- Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
+- Release and tear down the web worker.
 

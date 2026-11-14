@@ -281,15 +281,15 @@ The app owner must verify the current Marketplace schema, exact scopes, in-clien
 
 ## Acceptance Criteria
 
-- [ ] Only an authorized reviewer can start a participant review.
-- [ ] Invalid or stale RTMS lifecycle webhooks are rejected.
-- [ ] The selected video stream and matching participant audio produce bounded clips.
-- [ ] Audio and video results identify the service and model and remain separate.
-- [ ] An inference outage is displayed differently from a low-risk result.
-- [ ] Invalid scores or malformed provider responses are rejected by the adapter.
-- [ ] No model score automatically accuses a participant or changes meeting access.
-- [ ] Temporary clips and audit records follow the approved retention and deletion policy.
-- [ ] The chosen model, threshold, meeting conditions, and known error rates are documented from an approved evaluation.
+- Only an authorized reviewer can start a participant review.
+- Invalid or stale RTMS lifecycle webhooks are rejected.
+- The selected video stream and matching participant audio produce bounded clips.
+- Audio and video results identify the service and model and remain separate.
+- An inference outage is displayed differently from a low-risk result.
+- Invalid scores or malformed provider responses are rejected by the adapter.
+- No model score automatically accuses a participant or changes meeting access.
+- Temporary clips and audit records follow the approved retention and deletion policy.
+- The chosen model, threshold, meeting conditions, and known error rates are documented from an approved evaluation.
 
 ## Related Resources
 

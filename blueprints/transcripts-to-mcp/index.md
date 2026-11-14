@@ -480,24 +480,24 @@ The app owner must confirm the current Marketplace schema, imported scopes, OAut
 
 ## Acceptance Criteria
 
-- [ ] Invalid signatures and webhook timestamps older than five minutes are rejected.
-- [ ] Duplicate `rtms_stream_id` start events do not create another connection.
-- [ ] Signaling and media heartbeats receive the required response.
-- [ ] Transcript batches remain isolated by stream and never exceed 12,000 characters.
-- [ ] A missing or incorrect internal bearer token is rejected.
-- [ ] An MCP request without a valid initialized session is rejected.
-- [ ] Invalid MCP server JSON, duplicate IDs, non-HTTPS URLs, missing tokens, and empty allowlists stop startup.
-- [ ] `AI_PROVIDER` selects Anthropic, OpenAI, or OpenRouter and requires only that provider's key and model.
-- [ ] `AI_TASK_PROMPT` is appended without removing the fixed security rules.
-- [ ] A task prompt longer than 4,000 characters stops startup.
-- [ ] The selected model receives only tools that are both discovered and allowlisted.
-- [ ] Model-facing tool names include the server namespace and route to the corresponding upstream server.
-- [ ] No more than three tools execute for one transcript request with the default configuration.
-- [ ] With `LOG_CONTENT=false`, transcript text and model responses are absent from audit logs.
-- [ ] Tool arguments, tool results, meeting IDs, stream IDs, account IDs, and credentials are always absent from audit logs.
-- [ ] Provider and MCP failures return sanitized errors without closing the RTMS stream.
-- [ ] Transcript and model-response content appears in logs only when `LOG_CONTENT=true`.
-- [ ] Both services close connections and stop on `SIGINT` and `SIGTERM`.
+- Invalid signatures and webhook timestamps older than five minutes are rejected.
+- Duplicate `rtms_stream_id` start events do not create another connection.
+- Signaling and media heartbeats receive the required response.
+- Transcript batches remain isolated by stream and never exceed 12,000 characters.
+- A missing or incorrect internal bearer token is rejected.
+- An MCP request without a valid initialized session is rejected.
+- Invalid MCP server JSON, duplicate IDs, non-HTTPS URLs, missing tokens, and empty allowlists stop startup.
+- `AI_PROVIDER` selects Anthropic, OpenAI, or OpenRouter and requires only that provider's key and model.
+- `AI_TASK_PROMPT` is appended without removing the fixed security rules.
+- A task prompt longer than 4,000 characters stops startup.
+- The selected model receives only tools that are both discovered and allowlisted.
+- Model-facing tool names include the server namespace and route to the corresponding upstream server.
+- No more than three tools execute for one transcript request with the default configuration.
+- With `LOG_CONTENT=false`, transcript text and model responses are absent from audit logs.
+- Tool arguments, tool results, meeting IDs, stream IDs, account IDs, and credentials are always absent from audit logs.
+- Provider and MCP failures return sanitized errors without closing the RTMS stream.
+- Transcript and model-response content appears in logs only when `LOG_CONTENT=true`.
+- Both services close connections and stop on `SIGINT` and `SIGTERM`.
 
 ## Related Resources
 

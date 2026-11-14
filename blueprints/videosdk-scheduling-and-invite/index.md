@@ -314,18 +314,18 @@ Skip this section. Video SDK Product does not support Marketplace Manifests
 ## Acceptance Criteria
 
 **General**
-- [ ] Credentials and JWTs are never logged or exposed to the frontend.
-- [ ] `.env` is git-ignored, `chmod 600`, and excluded from Docker images; production uses a keystore.
-- [ ] Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
+- Credentials and JWTs are never logged or exposed to the frontend.
+- `.env` is git-ignored, `chmod 600`, and excluded from Docker images; production uses a keystore.
+- Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
 
 **Server-side**
-- [ ] Passwords are stored as salted `scrypt` hashes (`salt:hash`).
-- [ ] Login tokens are stored as hashes with a 7-day expiry; cookie is `httpOnly`, `secure`, `sameSite`.
-- [ ] Invite links use a random invite ID with no session name, password, or role.
-- [ ] Host tokens require a signed-in owner; guest tokens never include the password.
-- [ ] Token responses send `Cache-Control: no-store` and token routes are rate limited.
-- [ ] Zoom responses are cached and meeting lists are paginated.
+- Passwords are stored as salted `scrypt` hashes (`salt:hash`).
+- Login tokens are stored as hashes with a 7-day expiry; cookie is `httpOnly`, `secure`, `sameSite`.
+- Invite links use a random invite ID with no session name, password, or role.
+- Host tokens require a signed-in owner; guest tokens never include the password.
+- Token responses send `Cache-Control: no-store` and token routes are rate limited.
+- Zoom responses are cached and meeting lists are paginated.
 
 **Client-side**
-- [ ] Guests are prompted for the password at join when the meeting requires one.
-- [ ] No Zoom credentials appear in the client bundle (no `VITE_` secrets).
+- Guests are prompted for the password at join when the meeting requires one.
+- No Zoom credentials appear in the client bundle (no `VITE_` secrets).

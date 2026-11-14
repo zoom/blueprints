@@ -288,15 +288,15 @@ The app owner must verify the current Zoom Marketplace schema, the app type and 
 
 ## Acceptance Criteria
 
-- [ ] Invalid or stale Zoom webhook signatures are rejected before audio processing begins.
-- [ ] Each RTMS stream has its own audio buffer and OpenAI Realtime session.
-- [ ] 48 kHz L16 input is converted to the configured 24 kHz PCM format without unbounded buffering.
-- [ ] Speech produces a text response while the reference implementation remains text-only.
-- [ ] The model cannot call a Zoom MCP tool outside the configured allowlist.
-- [ ] Expired OAuth tokens, slow tools, and model disconnects do not close the RTMS stream unexpectedly.
-- [ ] Session, audio buffer, and token state is removed when a meeting stream ends.
-- [ ] Participant notice, provider data handling, tool permissions, rate limits, and spend limits match the target policy.
-- [ ] The implementation is not described as a two-way voice agent unless a supported meeting audio-output path is tested.
+- Invalid or stale Zoom webhook signatures are rejected before audio processing begins.
+- Each RTMS stream has its own audio buffer and OpenAI Realtime session.
+- 48 kHz L16 input is converted to the configured 24 kHz PCM format without unbounded buffering.
+- Speech produces a text response while the reference implementation remains text-only.
+- The model cannot call a Zoom MCP tool outside the configured allowlist.
+- Expired OAuth tokens, slow tools, and model disconnects do not close the RTMS stream unexpectedly.
+- Session, audio buffer, and token state is removed when a meeting stream ends.
+- Participant notice, provider data handling, tool permissions, rate limits, and spend limits match the target policy.
+- The implementation is not described as a two-way voice agent unless a supported meeting audio-output path is tested.
 
 ## Related Resources
 

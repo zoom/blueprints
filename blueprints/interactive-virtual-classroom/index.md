@@ -10,7 +10,7 @@ status: "published"
 hero_image: "images/hero.png"
 updated: 2026-09-04
 github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom" 
-demo_url: "https://youtu.be/-xiWmnCwIP4"
+demo_url: "https://youtu.be/lwNA4Yj-G5Q"
 seo_title: "Build virtual classroom with screensharing for iOS devices"
 seo_keywords: ["screen sharing", "annotation", "virtual classroom"]
 license_required: false
@@ -41,7 +41,7 @@ Remote learning often falls apart at exactly this moment: the teacher is explain
 
 **See it in action:**
 
-<YouTube id="-xiWmnCwIP4" />
+<YouTube id="lwNA4Yj-G5Q" />
 
 ---
 

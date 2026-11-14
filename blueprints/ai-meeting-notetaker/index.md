@@ -386,17 +386,17 @@ The patterns above work for development and moderate scale. For production deplo
 
 Use this checklist to verify the implementation:
 
-- [ ] Webhook signature verification rejects invalid or stale requests
-- [ ] Duplicate `rtms_stream_id` webhooks are ignored
-- [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
-- [ ] Transcript segments broadcast to clients before persisting to database
-- [ ] WebSocket connections require valid JWT
-- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
-- [ ] LLM extraction runs on interval, not on every segment
-- [ ] Extraction results parse as valid JSON and handle malformed responses
-- [ ] Action items dedupe by task text; key moments dedupe by similarity
-- [ ] Panel renders existing notes on connect and updates on new extractions
-- [ ] No SDK credentials in client bundles or logs
+- Webhook signature verification rejects invalid or stale requests
+- Duplicate `rtms_stream_id` webhooks are ignored
+- Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
+- Transcript segments broadcast to clients before persisting to database
+- WebSocket connections require valid JWT
+- WebSocket cleanup runs on disconnect, navigation, and page unload
+- LLM extraction runs on interval, not on every segment
+- Extraction results parse as valid JSON and handle malformed responses
+- Action items dedupe by task text; key moments dedupe by similarity
+- Panel renders existing notes on connect and updates on new extractions
+- No SDK credentials in client bundles or logs
 
 ---
 

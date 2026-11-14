@@ -372,21 +372,21 @@ Add every origin that will embed the meeting to your app's domain allow list, in
 
 Use this checklist to verify the implementation:
 
-- [ ] The SDK Secret appears in no client bundle, no log line, and no API response
-- [ ] The signature endpoint accepts a booking identifier, never a meeting number
-- [ ] A request for a booking the visitor is not party to is rejected before any signing happens
-- [ ] `role` defaults to `0`; `1` is granted only to the booking's host
-- [ ] Signature expiry is between 1800 and 172800 seconds and is scoped to the appointment
-- [ ] The signature is requested on the visitor's click, not on page load
-- [ ] `init()` resolves before `join()` is called
-- [ ] `init()` is called exactly once per page load
-- [ ] The mount element exists and has non-zero size before `init()`
-- [ ] The passcode is passed as `password` on `join()`, not embedded in the signature
-- [ ] An expired signature and a not-yet-started meeting produce different user-facing messages
-- [ ] Leaving the meeting returns the visitor to your page with the layout intact
-- [ ] Unmounting the page tears the client down rather than orphaning it
-- [ ] Every embedding origin is on the app's domain allow list
-- [ ] React is pinned to 18.2.0 rather than installed with `--legacy-peer-deps`
+- The SDK Secret appears in no client bundle, no log line, and no API response
+- The signature endpoint accepts a booking identifier, never a meeting number
+- A request for a booking the visitor is not party to is rejected before any signing happens
+- `role` defaults to `0`; `1` is granted only to the booking's host
+- Signature expiry is between 1800 and 172800 seconds and is scoped to the appointment
+- The signature is requested on the visitor's click, not on page load
+- `init()` resolves before `join()` is called
+- `init()` is called exactly once per page load
+- The mount element exists and has non-zero size before `init()`
+- The passcode is passed as `password` on `join()`, not embedded in the signature
+- An expired signature and a not-yet-started meeting produce different user-facing messages
+- Leaving the meeting returns the visitor to your page with the layout intact
+- Unmounting the page tears the client down rather than orphaning it
+- Every embedding origin is on the app's domain allow list
+- React is pinned to 18.2.0 rather than installed with `--legacy-peer-deps`
 
 ---
 

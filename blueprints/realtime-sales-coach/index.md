@@ -13,7 +13,7 @@ status: "published"
 hero_image: "images/hero.png"
 updated: 2026-08-13
 github_repo: "https://github.com/zoom/arlo"
-demo_url: "https://youtu.be/sCkZACLtDns"
+demo_url: "https://youtu.be/Y7P9ssfMizU"
 tags: ["sales", "coaching", "real-time"]
 seo_title: "Real-time sales coaching inside Zoom calls"
 seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant app", "rtms sales call intelligence", "build sales assistant zoom api"]
@@ -54,7 +54,7 @@ Follow along as we walk through the architecture.
   <img src="images/competitor-intel.png" alt="Competitor Intel" width="640" />
 </div>
 
-<YouTube id="sCkZACLtDns" />
+<YouTube id="Y7P9ssfMizU" />
 
 ---
 
@@ -351,16 +351,16 @@ Transcript data may contain sensitive information. Plan retention policies, user
 
 Use this checklist to verify the implementation:
 
-- [ ] Webhook signature verification rejects invalid or stale requests
-- [ ] Duplicate `rtms_stream_id` webhooks are ignored
-- [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
-- [ ] Transcript segments broadcast to clients before persisting to database
-- [ ] WebSocket connections require valid JWT
-- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload
-- [ ] LLM extraction runs on interval, not on every segment
-- [ ] Extraction results parse as valid JSON and handle malformed responses
-- [ ] Panel renders existing signals on connect and updates on new extractions
-- [ ] No SDK credentials in client bundles or logs
+- Webhook signature verification rejects invalid or stale requests
+- Duplicate `rtms_stream_id` webhooks are ignored
+- Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
+- Transcript segments broadcast to clients before persisting to database
+- WebSocket connections require valid JWT
+- WebSocket cleanup runs on disconnect, navigation, and page unload
+- LLM extraction runs on interval, not on every segment
+- Extraction results parse as valid JSON and handle malformed responses
+- Panel renders existing signals on connect and updates on new extractions
+- No SDK credentials in client bundles or logs
 
 ---
 

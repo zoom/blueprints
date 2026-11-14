@@ -620,23 +620,23 @@ Both failures happen when the container starts, not when it builds, and the seco
 
 Use this checklist to verify the implementation:
 
-- [ ] Webhook signature verification rejects invalid or stale requests
-- [ ] `endpoint.url_validation` is answered before signature verification runs
-- [ ] Callbacks and `setTranscriptParams()` are registered before `join()`
-- [ ] An explicit `srcLanguage` is set, so screening starts without the auto-detect delay
-- [ ] Duplicate `rtms_stream_id` webhooks are ignored
-- [ ] Stream failover (new `rtms_stream_id`, same meeting) calls `leave()` on the old client
-- [ ] `onMediaConnectionInterrupted` writes a coverage gap to the audit log
-- [ ] An invalid rule pack fails the service at startup rather than screening with partial rules
-- [ ] The rule pack version is pinned at session start and stamped on every audit record
-- [ ] Clean segments never reach the LLM
-- [ ] Repeat candidates for the same rule are suppressed within the 60-second window
-- [ ] A malformed or timed-out LLM response still produces an alert at reduced confidence
-- [ ] Disclosures move from pending to satisfied only, and store the satisfying quote
-- [ ] Audit chain verifies from genesis; tampering with any record breaks verification
-- [ ] Alerts render only for the assigned representative, never for other participants
-- [ ] WebSocket connections require valid JWT and clean up on disconnect
-- [ ] No SDK credentials in client bundles or logs
+- Webhook signature verification rejects invalid or stale requests
+- `endpoint.url_validation` is answered before signature verification runs
+- Callbacks and `setTranscriptParams()` are registered before `join()`
+- An explicit `srcLanguage` is set, so screening starts without the auto-detect delay
+- Duplicate `rtms_stream_id` webhooks are ignored
+- Stream failover (new `rtms_stream_id`, same meeting) calls `leave()` on the old client
+- `onMediaConnectionInterrupted` writes a coverage gap to the audit log
+- An invalid rule pack fails the service at startup rather than screening with partial rules
+- The rule pack version is pinned at session start and stamped on every audit record
+- Clean segments never reach the LLM
+- Repeat candidates for the same rule are suppressed within the 60-second window
+- A malformed or timed-out LLM response still produces an alert at reduced confidence
+- Disclosures move from pending to satisfied only, and store the satisfying quote
+- Audit chain verifies from genesis; tampering with any record breaks verification
+- Alerts render only for the assigned representative, never for other participants
+- WebSocket connections require valid JWT and clean up on disconnect
+- No SDK credentials in client bundles or logs
 
 ---
 

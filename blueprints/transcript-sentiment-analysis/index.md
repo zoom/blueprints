@@ -12,7 +12,7 @@ status: "published"
 hero_image: "images/hero.png"
 updated: 2026-08-31
 github_repo: "https://github.com/zoom/videosdk-rtms-sentiment-analysis, https://developers.zoom.us/blog/sentiment-analysis-with-live-transcriptions/"
-demo_url: "https://youtu.be/uVcAsuKQe3E"
+demo_url: "https://youtu.be/oNI-y98B8jQ"
 tags: ["sales", "coaching", "real-time"]
 seo_title: "Analyze meeting sentiment in real time"
 seo_keywords: ["zoom live transcripts ai", "live transcription sentiment analysis", "rtms ai sentiment"]
@@ -20,7 +20,7 @@ license_required: false
 stack: "Node · Express · React · TensorFlow"
 deploy:
   - { label: "Render (Server-side)", url: "https://render.com/deploy?repo=https://github.com/zoom/zoom-rtms-sentiment-sample" }
-  - { label: "Render (Client-side)", url: "https://render.com/deploy?repo=https://github.com/zoom/videosdk-LTT-sentiment-analysis"}
+  - { label: "Render (Client-side)", url: "https://render.com/deploy?repo=https://github.com/zoom/videosdk-ltt-sentiment-analysis"}
 ---
 
 A real-time sentiment analyzer streams Video SDK transcripts to a TensorFlow
@@ -46,7 +46,7 @@ already frustrated, and the opportunity to respond in the moment is gone.
 
 <Image src="images/sentimentpic.png"/>
 
-<YouTube id="uVcAsuKQe3E" />
+<YouTube id="oNI-y98B8jQ" />
 
 ---
 
@@ -343,19 +343,19 @@ Skip this section. Video SDK Product does not support Marketplace Manifests
 ## Acceptance Criteria
 
 **General**
-- [ ] Ensure SDK credentials are not exposed when producing a JWT. Keep token generation off the frontend; store credentials only on the backend and never in plain text.
-- [ ] Do not log credentials or JWTs.
-- [ ] Use a transcription buffer for better context.
-- [ ] Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
+- Ensure SDK credentials are not exposed when producing a JWT. Keep token generation off the frontend; store credentials only on the backend and never in plain text.
+- Do not log credentials or JWTs.
+- Use a transcription buffer for better context.
+- Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
 
 **Server-side**
-- [ ] WebSocket connections require valid JWT
-- [ ] WebSocket cleanup runs on disconnect, navigation, and page unload 
-- [ ] Duplicate `rtms_stream_id` webhooks are ignored
-- [ ] Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
+- WebSocket connections require valid JWT
+- WebSocket cleanup runs on disconnect, navigation, and page unload 
+- Duplicate `rtms_stream_id` webhooks are ignored
+- Stream failover (new `rtms_stream_id`, same meeting) tears down old session and joins new
 
 **Client-side**
-- [ ] Check `payload.done` before sending the transcript to the sentiment worker.
-- [ ] Release and tear down the web worker.
-- [ ] Properly delete transcription data from browser storage.
+- Check `payload.done` before sending the transcript to the sentiment worker.
+- Release and tear down the web worker.
+- Properly delete transcription data from browser storage.
 

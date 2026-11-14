@@ -226,14 +226,14 @@ Before publication, the app owner must import it into the target Zoom Marketplac
 
 ## Acceptance Criteria
 
-- [ ] Invalid or stale webhook signatures are rejected before RTMS work begins.
-- [ ] Two simultaneous meetings write to separate state and output directories.
-- [ ] One test meeting produces readable VTT, SRT, and TXT files.
-- [ ] VTT and SRT timestamps remain monotonic across pauses and reconnections.
-- [ ] Duplicate transcript events do not create duplicate cues.
-- [ ] A stopped or failed stream releases its session state and file resources.
-- [ ] Restarting the service does not overwrite a completed transcript unexpectedly.
-- [ ] Production storage, retention, encryption, and deletion behavior are documented for the target environment.
+- Invalid or stale webhook signatures are rejected before RTMS work begins.
+- Two simultaneous meetings write to separate state and output directories.
+- One test meeting produces readable VTT, SRT, and TXT files.
+- VTT and SRT timestamps remain monotonic across pauses and reconnections.
+- Duplicate transcript events do not create duplicate cues.
+- A stopped or failed stream releases its session state and file resources.
+- Restarting the service does not overwrite a completed transcript unexpectedly.
+- Production storage, retention, encryption, and deletion behavior are documented for the target environment.
 
 ## Related Resources
 
