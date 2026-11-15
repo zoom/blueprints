@@ -69,7 +69,7 @@ RTMS delivers transcript segments over WebSocket with sub-second latency. Your b
 | Component | Responsibility | Our stack (yours may differ) |
 |-----------|----------------|------------------------------|
 | **Transcript access** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
-| **Backend** | Orchestrate AI calls and broadcast to clients; persist transcripts if you need history | Express + OpenRouter. Arlo runs in demo mode with no database: transcripts are broadcast, not stored |
+| **Backend** | Persist transcripts, orchestrate AI calls, broadcast to clients | Express + OpenRouter |
 | **Frontend** | Display transcript, summaries, action items in real time | React Surface App via Zoom Apps SDK |
 
 ```mermaid
@@ -80,7 +80,7 @@ graph LR
     B -->|4. prompt| L[LLM]
     L -->|5. structured output| B
     B -->|6. WebSocket| P[In-Meeting Panel]
-    B -.->|optional| D[(Database)]
+    B --> D[(Database)]
 ```
 
 When RTMS starts in a meeting, Zoom sends a webhook with stream credentials. Your backend verifies it, joins the stream, and receives transcript segments as each phrase is spoken. Segments are broadcast to the in-meeting panel in under a second. Summaries and other notes are extracted on an interval, so they follow the conversation by seconds to minutes.
@@ -104,7 +104,7 @@ If you're grafting this into an existing codebase, check what you already have b
 | Webhook endpoint | Existing API routes | Express router or equivalent |
 | Signature verification | Existing HMAC middleware | `verifyWebhookSignature()` |
 | WebSocket server | Existing real-time layer | ws or Socket.io server |
-| Database (optional) | Existing Postgres/MySQL | Schema for transcripts, if you need history; Arlo's demo mode has none |
+| Database | Existing Postgres/MySQL | Schema for transcripts |
 | LLM client | Existing OpenAI/Anthropic setup | OpenRouter client |
 | Auth/JWT | Existing session tokens | JWT signing for WebSocket auth |
 
@@ -171,16 +171,16 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 - Assign monotonic sequence number per session
 - Convert timestamp from microseconds to milliseconds
 - Broadcast to clients immediately (don't block on persistence)
-- If you persist, do it asynchronously with an upsert on `(meetingId, seqNo)` for idempotency
+- Persist asynchronously with upsert on `(meetingId, seqNo)` for idempotency
 - Handle missing userId/userName gracefully with defaults
 
-**Databases:** In demo mode Arlo keeps nothing after the meeting. To store transcripts, use MySQL, Postgres, MongoDB, or a time-series database.
+**Databases:** Works with MySQL, Postgres, MongoDB, or a time-series database.
 
 ### Part 2: Building the Intelligence Layer
 
 With the transcript pipeline in place, you have a live stream of what's being said. Now extract meeting intelligence from it.
 
-In Arlo, the panel drives extraction over HTTP. It posts recent transcript text to `/api/ai/summary-live` after every 20 new segments, and sends segments to `/api/ai/key-moment` to detect key moments. Arlo ships with demo mode on, and in demo mode the Decisions and Open Questions panels show sample data. The contract below describes the same extraction run on the server and pushed over the WebSocket.
+In Arlo, the panel drives extraction over HTTP. It posts recent transcript text to `/api/ai/summary-live` after every 20 new segments, and sends segments to `/api/ai/key-moment` to detect key moments. The contract below describes the same extraction run on the server and pushed over the WebSocket.
 
 #### Meeting notes extraction
 
@@ -257,7 +257,7 @@ You can also add domain-specific extraction. For engineering meetings, detect te
 
 ### Part 3: Running the Reference Implementation ([Arlo](https://github.com/zoom/arlo))
 
-Arlo is the reference implementation. It runs in demo mode: no database, and sample data in some panels. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
+Arlo is the reference implementation. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
 
 #### One-click deploy
 
@@ -374,7 +374,7 @@ The patterns above work for development and moderate scale. For production deplo
 | Area | Development | Production |
 |------|-------------|------------|
 | **Credentials** | `.env` file | Secrets manager (AWS, Vault, etc.) |
-| **Token storage** | In memory, encrypted | Durable store with encryption at rest and key rotation |
+| **Token storage** | Encrypted | Add key rotation and a durable store |
 | **Sessions** | In-memory | Redis (survives restarts, scales horizontally) |
 | **WebSockets** | Single instance | Redis pub/sub for multi-instance broadcast |
 | **HTTPS** | ngrok | Load balancer with TLS termination |
