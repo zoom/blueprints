@@ -10,7 +10,7 @@ solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-11-03
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://youtu.be/-Zr7LejQjgc"
 tags: ["migration", "meeting-bot", "rtms", "transcription", "real-time"]
@@ -44,13 +44,13 @@ Meeting SDK bots join as participants. They appear in the roster, require host a
 - **No participant**: RTMS streams data without joining the meeting. Users see your app in the Apps panel, not the participant list.
 - **Webhook-driven lifecycle**: Instead of joining via SDK, you receive `meeting.rtms_started` when streaming begins.
 - **User-scoped authorization**: The app is installed per-user (or org-wide by admin). The user's presence determines stream availability.
-- **Host approval model**: Hosts can require approval before RTMS starts. Configure auto-start to skip this for trusted apps.
+- **Host approval model**: Hosts can allow or deny an app's request to access content. A host can choose **Always allow in my meetings**, and an admin can set an app to **Always allow**, so trusted apps are not asked each time.
 
 **What stays the same:**
 
 - Real-time transcript segments with speaker attribution
 - Mixed or separated audio streams (L16 PCM at 8, 16, 32, or 48 kHz; see the [RTMS data types](https://developers.zoom.us/docs/rtms/data-types/))
-- Video frames (H.264, gallery view)
+- Video frames of the active speaker, or of one participant you choose (JPG or PNG at 5 fps or less, H.264 above that)
 - Screen share capture
 - Participant join/leave events
 
@@ -125,7 +125,7 @@ graph LR
 **Characteristics:**
 - No participant tile (app appears in Apps panel only)
 - Webhook-driven: Zoom initiates the connection
-- Single WebSocket per stream (not per participant)
+- One signaling connection and one or more media connections per stream, not per participant
 - User installs app once; all their meetings can stream
 
 ### Migration Decision Matrix
@@ -133,7 +133,7 @@ graph LR
 | Capability | Meeting SDK Bot | RTMS | Notes |
 |------------|-----------------|------|-------|
 | Receive audio | Yes | Yes | RTMS offers mixed or per-participant |
-| Receive video | Yes | Yes (gallery) | Speaker view on Zoom roadmap |
+| Receive video | Yes | Yes | Active speaker by default, or [one chosen participant](https://developers.zoom.us/docs/rtms/meetings/video-single-stream/) |
 | Receive transcript | Manual (ASR) | Yes (built-in) | RTMS includes Zoom's ASR |
 | Receive screen share | Yes | Yes | JPEG/PNG or H.264 |
 | Send audio | Yes | No | Bots can speak; RTMS is receive-only |
@@ -191,7 +191,7 @@ With RTMS, Zoom calls you. Set up a webhook endpoint to receive `meeting.rtms_st
 - Verify webhook signature using HMAC-SHA256 with timing-safe comparison
 - Enforce 5-minute replay window on timestamp
 - Respond with 200 OK within 3 seconds (process asynchronously)
-- Deduplicate by `rtms_stream_id` (not `meeting_uuid`)
+- Track streams by `rtms_stream_id` (not `meeting_uuid`), and never open a second session for a stream you already have
 
 ```javascript
 // Webhook signature verification (security-critical, keep concrete)
@@ -230,7 +230,7 @@ After validating the webhook, connect to the RTMS stream using the provided `ser
 - Register all media handlers before calling `join()`
 - Clean up when the `meeting.rtms_stopped` webhook arrives
 - Track connection state per `rtms_stream_id`
-- If stream drops mid-meeting, wait for new `meeting.rtms_started` webhook
+- If a connection drops mid-meeting, reconnect as described in [Reconnection](#reconnection); do not wait for a new webhook
 
 ```javascript
 // RTMS connection pattern
@@ -265,7 +265,7 @@ Meeting SDK bots control their own lifecycle. RTMS streams are controlled by use
 
 RTMS starts when ALL conditions are met:
 - The meeting host's organization has RTMS enabled at the account level
-- The meeting host's Zoom client is version 6.5.5+
+- For in-meeting start through the Zoom Apps SDK, the Zoom desktop client is version 6.5.5 or later
 - The app is installed for the user (app owner)
 - Account/group/user policy allows RTMS
 - Host approves (if required) or auto-start is enabled
@@ -280,7 +280,7 @@ RTMS starts when ALL conditions are met:
 | Host disables sharing | Bot unaffected | Stream stops; new `rtms_started` if re-enabled |
 | Host handoff to org with RTMS disabled | Bot unaffected | Stream stops permanently |
 | App owner moves to breakout room | N/A | Stream stops; may resume when returning to main room |
-| Network disconnect | Bot reconnects | WebSocket closes; must wait for new `meeting.rtms_started` webhook |
+| Network disconnect | Bot reconnects | Your app reconnects within the window Zoom allows (see [Reconnection](#reconnection)) |
 
 **WARNING: App owner leaving kills the stream.** This is the most common migration surprise. With bots, you control when to leave. With RTMS, if the app owner leaves the meeting, the stream terminates even if other participants remain. Plan for this in your product flow.
 
@@ -299,6 +299,21 @@ This means:
 1. Fall back to a participant who is your user, accepting the risk that the stream may die if they leave
 2. Prompt the external scheduler to install your app (may not be practical)
 3. For critical meetings, keep a bot fallback ready
+
+#### Reconnection
+
+RTMS uses a signaling connection that manages the session and media connections that carry the data. What you reconnect depends on which one dropped. Zoom's [Failover and reconnection](https://developers.zoom.us/docs/rtms/meetings/failover-reconnection/) guide has the full procedure and sample code.
+
+| Scenario | How you find out | What to do |
+|----------|------------------|------------|
+| RTMS server failure | `meeting.rtms_started` arrives for an `rtms_stream_id` you already have | Tear down the existing connections and reconnect with the new `server_urls`. The `meeting_uuid` and `rtms_stream_id` stay the same |
+| Signaling connection dropped | `meeting.rtms_interrupted` webhook | Reconnect signaling and media. The server waits about 60 seconds |
+| Media connection dropped | `MEDIA_CONNECTION_INTERRUPTED` event on the signaling connection | Reconnect the affected media connection. The server waits about 30 seconds |
+| Stream terminated | `meeting.rtms_stopped` with a `stop_reason` of 10 to 19, or 24 | The reconnection window was missed. Start the RTMS connection process again from the beginning |
+
+Retry with exponential backoff, starting at 3 seconds and doubling to a cap of 30 seconds. If the attempts run out, treat the stream as unrecoverable and stop retrying.
+
+`meeting.rtms_stopped` carries a [`stop_reason`](https://developers.zoom.us/docs/rtms/data-types/#rtms_stop_reason) that tells you why the stream ended: for example `1` (host triggered), `2` (user triggered), `3` (the app user left the meeting), `5` (host disabled the app), or `6` (meeting ended). Store it with the session.
 
 #### Handling multiple users
 
@@ -349,7 +364,7 @@ await zoom.chat.sendMessage({
 
 **Option B: Surface App**
 
-Build a [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) that displays recording status and cancel button in-meeting. The Surface App can use the Zoom Apps SDK `sendMessage()` method to send chat.
+Build a [Zoom Surface App](https://developers.zoom.us/docs/zoom-apps/) that displays recording status and cancel button in-meeting. 
 
 **Option C: Pre-meeting notification**
 
@@ -367,9 +382,13 @@ Bots fail visibly: the bot doesn't join, or it disconnects and participants noti
 | Zoom client too old (< 6.5.5) | No `meeting.rtms_started` received | Fall back to bot; prompt user to update Zoom |
 | Host denies RTMS approval | No `meeting.rtms_started`, or `meeting.rtms_stopped` fires immediately | Fall back to bot; notify user that host declined |
 | WebSocket connection failure | Connection error or timeout when connecting to `server_urls` | Retry with exponential backoff; fall back to bot if retries exhausted |
-| Stream drops mid-meeting | WebSocket close event without `meeting.rtms_stopped` | Log the gap timestamp; wait 30 seconds for new `meeting.rtms_started`; if none arrives, finalize partial recording |
-| App owner leaves (stream dies) | `meeting.rtms_stopped` webhook while meeting is still active | If another app owner is in the meeting, their webhook may arrive; otherwise finalize partial recording |
+| Signaling connection drops | `meeting.rtms_interrupted` webhook | Log the gap timestamp; reconnect signaling and media within about 60 seconds, with backoff |
+| Media connection drops | `MEDIA_CONNECTION_INTERRUPTED` event | Log the gap timestamp; reconnect the media connection within about 30 seconds |
+| Reconnection window missed | `meeting.rtms_stopped` with `stop_reason` 10 to 19, or 24 | Restart the RTMS connection process; if that fails, finalize partial recording |
+| App owner leaves (stream dies) | `meeting.rtms_stopped` with `stop_reason` 3 while meeting is still active | If another app owner is in the meeting, their webhook may arrive; otherwise finalize partial recording |
 | Duplicate webhooks | Multiple `meeting.rtms_started` for same `meeting_uuid` | Deduplicate; process only one stream; ignore others |
+| RTMS server failover | `meeting.rtms_started` with an `rtms_stream_id` you already have | Tear down and reconnect with the new `server_urls` |
+| Concurrent stream limit reached | Streams fail to start once the account is at its limit (5 on the free trial, 2,000 with a Developer Pack) | Reduce separate media connections per meeting; raise the limit with your account team |
 | Webhook signature invalid | HMAC verification fails | Reject the request; log for security review |
 | Webhook replay attack | Timestamp outside 5-minute window | Reject the request |
 
@@ -391,11 +410,11 @@ Meeting starts
 RTMS stream active
   │
   ├── Stream healthy → Continue recording
-  ├── Stream drops (WebSocket close)
-  │     ├── Wait 30s for new meeting.rtms_started
-  │     │     ├── New webhook → Reconnect, log gap
-  │     │     └── No webhook → Finalize partial recording; optionally deploy bot for remainder
-  │     └── meeting.rtms_stopped → Finalize recording
+  ├── Connection drops (meeting.rtms_interrupted or MEDIA_CONNECTION_INTERRUPTED)
+  │     ├── Reconnect with backoff inside the window (about 60s signaling, 30s media), log gap
+  │     └── Window missed (meeting.rtms_stopped, stop_reason 10-19 or 24)
+  │           └── Restart RTMS; if that fails, finalize partial recording; optionally deploy bot for remainder
+  ├── meeting.rtms_stopped for any other reason → Finalize recording
   │
 Meeting ends → Finalize all recordings
 ```
@@ -427,8 +446,9 @@ Meeting ends → Finalize all recordings
 3. Create a Zoom General App at [marketplace.zoom.us](https://marketplace.zoom.us/):
    - Copy Client ID and Client Secret
    - Set OAuth Redirect URL to `https://YOUR-NGROK-URL/api/auth/callback`
-   - Under Scopes, add the RTMS scope `meeting:read:meeting_transcript`
-   - Add Event Subscription for `meeting.rtms_started` and `meeting.rtms_stopped`
+   - Under Scopes, add `zoomapp:inmeeting`, `meeting:read:meeting`, and the RTMS scope `meeting:read:meeting_transcript`
+   - Under Surface, set the Home URL to `https://YOUR-NGROK-URL`
+   - Add an Event Subscription with endpoint `https://YOUR-NGROK-URL/api/rtms/webhook` for `meeting.rtms_started`, `meeting.rtms_stopped`, and `meeting.rtms_interrupted`
 
 4. Fill in `.env` with your credentials
 
@@ -469,7 +489,8 @@ RTMS access is granted through scopes that select which meeting media your app r
 | Event | When it fires | Your action |
 |-------|---------------|-------------|
 | `meeting.rtms_started` | User starts RTMS or auto-start triggers | Connect to WebSocket |
-| `meeting.rtms_stopped` | Stream ends (host stops, meeting ends, etc.) | Finalize recording |
+| `meeting.rtms_stopped` | Stream ends (host stops, meeting ends, etc.) | Read `stop_reason`; finalize recording, or restart if the reconnection window was missed |
+| `meeting.rtms_interrupted` | The signaling connection dropped | Reconnect signaling and media |
 
 ### Auto-Start Configuration
 
@@ -536,13 +557,13 @@ RTMS does not record. It makes meeting media available to your application, so Z
 | **Pre-meeting email/calendar** | Simple to implement; reaches external participants | No in-meeting cancel capability; participants may not read it |
 | **Post-join external notification** | Can include links to cancel/consent page | Disruptive (email/SMS during meeting); may be too late |
 
-**Recommendation:** If compliance requires in-meeting notification, build a Zoom Surface App. The Surface App and your RTMS General App can share the same Zoom App registration. The Surface App can display recording status, consent text, and a cancel button. It can also use the Zoom Apps SDK `sendMessage()` method to send chat messages on behalf of the app.
+**Recommendation:** If compliance requires in-meeting notification, build a Zoom Surface App. The Surface App and your RTMS General App can share the same Zoom App registration. The Surface App can display recording status, consent text, and a cancel button.
 
 ### Pause, resume, and cancel recording
 
 RTMS streams continuously while active. To implement pause/resume or cancel functionality:
 
-- **Pause/Resume**: Your app stops processing the stream but keeps the WebSocket open. Mark pause/resume timestamps and strip paused sections in post-processing. Alternatively, close the WebSocket on pause and wait for a new `meeting.rtms_started` on resume (but this is less reliable).
+- **Pause/Resume**: An RTMS session can be paused and resumed by the app user or the host, and a Surface App can call the Zoom Apps SDK `pauseRTMS` and `resumeRTMS` methods. Your app can also pause on its own side: it stops processing the stream but keeps the WebSocket open. Mark pause/resume timestamps and strip paused sections in post-processing. Alternatively, close the WebSocket on pause and wait for a new `meeting.rtms_started` on resume (but this is less reliable).
 - **Cancel**: Close the WebSocket connection and discard captured media. The stream will stop. If you need to restart, the user must manually trigger RTMS again (or wait for conditions to re-trigger auto-start, which may not happen mid-meeting).
 
 A Surface App provides the best UX for these controls, with pause/cancel buttons visible in-meeting.
@@ -564,7 +585,7 @@ Use this checklist to verify your migration:
 **Webhook and connection:**
 - Webhook endpoint validates signatures with timing-safe comparison
 - Webhook endpoint enforces 5-minute replay window
-- Duplicate `rtms_stream_id` webhooks are ignored
+- A `meeting.rtms_started` for a stream already being handled triggers a reconnect, not a second session
 - WebSocket handlers registered before `join()` call
 - Stream cleanup runs on `onLeave` and `meeting.rtms_stopped`
 - Multiple app owners in same meeting deduplicated by `meeting_uuid`
@@ -576,8 +597,8 @@ Use this checklist to verify your migration:
 **Lifecycle and reliability:**
 - Fallback logic implemented for when RTMS is unavailable (if applicable)
 - Stream persistence strategy defined for long meetings (scheduler-as-app-owner pattern)
-- Gap detection and logging implemented for mid-meeting stream drops
-- Reconnection handling tested (new `meeting.rtms_started` after drop)
+- Gap detection and logging implemented for mid-meeting connection drops
+- Reconnection tested for `meeting.rtms_interrupted`, a dropped media connection, and a restart after `stop_reason` 10 to 19 or 24
 
 **Compliance (if required by your use case):**
 - Recording notification mechanism implemented (Surface App, disclaimer, or pre-meeting email)
