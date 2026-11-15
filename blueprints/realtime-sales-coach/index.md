@@ -20,7 +20,7 @@ seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant ap
 partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires Zoom Developer Pack credits for RTMS."
-stack: "Node · Express · React · MySQL"
+stack: "Node · Express · React"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
@@ -68,7 +68,7 @@ RTMS streams transcripts directly from Zoom's infrastructure. The transcript app
 | Component | Responsibility | Our stack (yours may differ) |
 |-----------|----------------|------------------------------|
 | **Transcript access** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
-| **Backend** | Orchestrate LLM calls and broadcast to clients; persist transcripts if you need history | Express + OpenRouter. Arlo's `main` branch runs in demo mode with no database; its `feature/database-enabled` branch adds Prisma and MySQL |
+| **Backend** | Orchestrate LLM calls and broadcast to clients; persist transcripts if you need history | Express + OpenRouter. Arlo runs in demo mode with no database: transcripts are broadcast, not stored |
 | **Frontend** | Display transcript, qualification tracker, competitor mentions | React Surface App via Zoom Apps SDK |
 
 ```mermaid
@@ -177,7 +177,7 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 - If you persist, do it asynchronously with an upsert on `(meetingId, seqNo)` for idempotency
 - Handle missing userId/userName gracefully with defaults
 
-**Databases:** In demo mode Arlo keeps nothing after the meeting. Its database-enabled branch uses MySQL; Postgres, MongoDB, or a time-series database also work.
+**Databases:** In demo mode Arlo keeps nothing after the meeting. To store transcripts, use MySQL, Postgres, MongoDB, or a time-series database.
 
 #### WebSocket delivery
 
@@ -199,7 +199,7 @@ Arlo rejects an invalid token but accepts a connection with no token as a guest.
 
 With transcripts flowing, extract sales signals: qualification criteria, competitor mentions, and commitments.
 
-Arlo's `main` branch ships with demo mode on. In demo mode the Sales panels for qualification, competitors, commitments, and the deal tracker show sample data, and the filler-word coach runs on the live transcript.
+Arlo ships with demo mode on. In demo mode the Sales panels for qualification, competitors, commitments, and the deal tracker show sample data, and the filler-word coach runs on the live transcript.
 
 #### Sales signal extraction
 
@@ -259,7 +259,7 @@ See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes
 
 ### Part 3: Running the Reference Implementation ([Arlo](https://github.com/zoom/arlo))
 
-Arlo implements the patterns above. Its `main` branch runs in demo mode: no database, and sample data in the Sales panels. Use it to see the patterns working, then fork or reference it for your own build.
+Arlo is the reference implementation. It runs in demo mode: no database, and sample data in the Sales panels. Use it to see the transcript pipeline working, then fork or reference it for your own build.
 
 #### One-click deploy
 
