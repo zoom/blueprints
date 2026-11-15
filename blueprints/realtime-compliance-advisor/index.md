@@ -12,7 +12,7 @@ solution_types: ["real-time-analysis", "compliance-auditing"]
 author: "Max Mansfield"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-08-26
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/rtms-compliance-sample-js"
 tags: ["compliance", "finance", "real-time", "audit", "supervision"]
 seo_title: "Real-time compliance monitoring for Zoom meetings"
@@ -92,13 +92,13 @@ When transcription starts, Zoom sends `meeting.rtms_started` to the webhook hand
 
 ### How screening works
 
-Every feature in the compliance layer follows the same three-stage path:
+Every feature in the compliance layer follows the same three steps:
 
 1. **Match**: Run the segment against the rule pack lexicon. Deterministic, no network call, under 5ms
 2. **Adjudicate**: Send matched candidates plus 30 seconds of surrounding context to the LLM for a violation verdict and suggested correction
 3. **Record**: Broadcast the verdict to the panel and append it to the audit log with the rule ID, model version, and quote
 
-The two stages stay separate in storage. Each audit record keeps the deterministic rule ID and the model verdict in different fields, so a reviewer can tell which part of an alert was a pattern match and which part was a model judgment. A rule pack version is stamped on every record, so replaying an old meeting uses the rules that were in force at the time.
+The two screening stages, match and adjudicate, stay separate in storage. Each audit record keeps the deterministic rule ID and the model verdict in different fields, so a reviewer can tell which part of an alert was a pattern match and which part was a model judgment. A rule pack version is stamped on every record, so replaying an old meeting uses the rules that were in force at the time.
 
 Disclosure tracking runs on a different cadence. Every 20 seconds the backend checks the full transcript against the pack's required disclosures and updates each item to satisfied or pending.
 
@@ -108,7 +108,7 @@ If you're grafting this into an existing codebase, check what you already have b
 
 | Required capability | Reuse when present | Add when missing |
 |--------------------|--------------------|------------------|
-| HTTP server | Existing Express/Fastify app | `rtms.createWebhookHandler()` on a new route |
+| HTTP server | Existing Express/Fastify app | A raw-body webhook route on that app |
 | Signature verification | Existing HMAC middleware | `verifySignature()` over the raw body |
 | RTMS client | Nothing to reuse | `@zoom/rtms` |
 | WebSocket server | Existing real-time layer | ws or Socket.io server |
@@ -139,7 +139,7 @@ Prebuilt binaries exist for `darwin-arm64` and `linux-x64`. A Node version below
 
 #### Mount the webhook route
 
-The SDK offers two ways in. `rtms.onWebhookEvent()` runs its own HTTP server, which is the fastest path for a standalone listener. `rtms.createWebhookHandler(callback, path)` mounts on an Express app you already own, which is what a compliance app needs, since it also serves the Surface App and the audit API.
+The SDK offers two ways in. `rtms.onWebhookEvent()` runs its own HTTP server, which is the fastest path for a standalone listener. `rtms.createWebhookHandler(callback, path)` mounts on an Express app you already own. A compliance app needs its own Express app, since it also serves the Surface App and the audit API. This guide goes one step further and handles the webhook route itself, so the signature check is code you can test directly.
 
 Take the raw body on that route rather than parsed JSON. Zoom signs the exact bytes it sent, and re-serializing a parsed object produces different bytes and a different HMAC:
 
@@ -291,7 +291,7 @@ With transcripts flowing, screen them. The rule pack is the contract between you
 - Compliance owns pack content; engineering owns the loader
 
 ```yaml
-id: fin-us-retail-v3
+id: fin-us-retail-v4
 jurisdiction: US
 applies_to: [retail-investment-review]
 prohibited:
@@ -432,7 +432,7 @@ function buildAuditRecord(meetingId, prevHash, record) {
 - Sort active alerts by severity, then recency
 - An alert stays visible until the representative dismisses it; dismissal writes an audit record
 - Show existing alerts and disclosure state on reconnect, then apply incremental updates
-- Never render an alert to a participant who is not the assigned representative
+- Never render an alert to a participant who is not the assigned representative or the host
 
 **Other frameworks:** Works with Vue, Svelte, or vanilla JS. The Surface App runs inside the Zoom client via iframe; standard web tech applies.
 
@@ -460,7 +460,7 @@ The [sample repo](https://github.com/zoom/rtms-compliance-sample-js) implements 
 | [Deploy to Render](https://render.com/deploy?repo=https://github.com/zoom/rtms-compliance-sample-js) | Backend, frontend, database |
 | [Deploy to Railway](https://railway.app/new?repo=https://github.com/zoom/rtms-compliance-sample-js) | Backend, frontend, database |
 
-Both have free tiers. After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), set `ZM_RTMS_CLIENT` and `ZM_RTMS_SECRET` to your app's OAuth credentials, and point the OAuth redirect URL at your backend.
+After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), set `ZM_RTMS_CLIENT` and `ZM_RTMS_SECRET` to your app's OAuth credentials, and point the OAuth redirect URL at your backend.
 
 **Deploy anywhere:** The repo includes a platform-agnostic [Dockerfile](https://github.com/zoom/rtms-compliance-sample-js/blob/main/Dockerfile) for any container platform. It uses `node:24-trixie-slim`; see the platform constraint below before changing the base image.
 
@@ -473,7 +473,7 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
 | [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Postgres and services |
 | [ngrok](https://ngrok.com/) | Public URL for webhooks |
 | [Zoom account](https://marketplace.zoom.us/) | App configuration |
-| RTMS access | [Request here](https://www.zoom.com/en/realtime-media-streams/#form) |
+| RTMS access | [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available |
 
 <details>
 <summary><strong>Step-by-step local setup</strong></summary>
@@ -484,7 +484,8 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
    git clone https://github.com/zoom/rtms-compliance-sample-js.git
    cd rtms-compliance-sample-js
    nvm use            # reads .nvmrc, pins Node 24
-   cp .env.example .env
+   npm install
+   npm run env:init   # writes .env and generates JWT_SECRET
    ```
 
 2. Start ngrok with a [free static domain](https://dashboard.ngrok.com/domains):
@@ -494,9 +495,10 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
    ```
 
 3. Create your Zoom App at [marketplace.zoom.us](https://marketplace.zoom.us/):
-   - OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`
+   - OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`. The form requires it, but the sample never completes a token exchange and has no such route.
    - Scopes: `zoomapp:inmeeting` and the RTMS scope `meeting:read:meeting_transcript`
-   - Surface: Home URL `https://YOUR-NGROK-URL`
+   - Surface: Home URL `https://YOUR-NGROK-URL`; add `YOUR-NGROK-URL` and `appssdk.zoom.us` to the domain allow list
+   - Zoom App SDK APIs: `getMeetingContext`, `getMeetingUUID`, `getRunningContext`, `getUserContext`, `startRTMS`, `onRTMSStatusChange`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
 
 4. Fill `.env`. The SDK reads the `ZM_RTMS_*` variables directly from the environment; the rest are the app's:
@@ -506,25 +508,18 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
    ZM_RTMS_CLIENT=your_client_id
    ZM_RTMS_SECRET=your_client_secret
    ZM_RTMS_WEBHOOK_SECRET=your_webhook_secret_token
-   ZM_RTMS_LOG_LEVEL=info
-   ZM_RTMS_LOG_FORMAT=json
 
    # Read by the app
-   ZOOM_HOST=https://zoom.us          # https://zoomgov.com for Zoom for Government
    PUBLIC_URL=https://your-subdomain.ngrok-free.app
-   DATABASE_URL=postgresql://compliance@localhost:5432/compliance
-   RULE_PACK_ID=fin-us-retail-v3
-   TRANSCRIPT_LANGUAGE=ENGLISH
+   RULE_PACK_ID=fin-us-retail-v4
+   ADJUDICATION_ENABLED=true          # send rule matches to the LLM for a verdict
    LLM_API_KEY=your_llm_api_key
+   # ZOOM_HOST=https://zoomgov.com    # only for Zoom for Government
    ```
 
-   Generate `SESSION_SECRET`, `JWT_SECRET`, and `TOKEN_ENCRYPTION_KEY` with:
+   `npm run env:init` already generated `JWT_SECRET`, and `DATABASE_URL` defaults to the Postgres that Docker Compose starts. `RULE_PACK_ID` has no default: choosing the rules in force is a compliance decision. All three `ZM_RTMS_*` values must come from the same Zoom app.
 
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-   ```
-
-   Startup fails with every missing variable named at once, rather than at the first webhook.
+   With `NODE_ENV=production`, startup fails with every missing variable named at once, rather than at the first webhook.
 
 5. Start:
 
@@ -534,9 +529,9 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
 
 </details>
 
-Services: Postgres 5432, backend 3000 (Express plus the RTMS client in-process), frontend 3001. Rule packs load from `rule-packs/` at startup; the sample ships `fin-us-retail-v3` and `health-us-intake-v1`. Join a meeting, open Apps, select your app, choose a pack, and start transcription.
+Services: Postgres 5432 and the app on 3000 (Express, the RTMS client, and the built panel in one process). Rule packs load from `rule-packs/` at startup; the sample ships `fin-us-retail-v4` and `health-us-intake-v1`. Join a meeting as the host, open Apps, and select your app. Screening starts when the panel opens, and the badge reads **Live** once the server is receiving the transcript.
 
-Set `ZM_RTMS_LOG_FORMAT=json` and `ZM_RTMS_LOG_LEVEL=debug` when a stream fails to join. The SDK logs the join handshake, which is usually where credential and entitlement problems surface.
+Set `ZM_RTMS_LOG_FORMAT=json` and `ZM_RTMS_LOG_LEVEL=debug` when a stream fails to join. The SDK logs the join handshake, which is usually where credential problems surface.
 
 ---
 
@@ -626,7 +621,7 @@ Use this checklist to verify the implementation:
 - A malformed or timed-out LLM response still produces an alert at reduced confidence
 - Disclosures move from pending to satisfied only, and store the satisfying quote
 - Audit chain verifies from genesis; tampering with any record breaks verification
-- Alerts render only for the assigned representative, never for other participants
+- Alerts render only for the assigned representative and the host, never for other participants
 - WebSocket connections require valid JWT and clean up on disconnect
 - No SDK credentials in client bundles or logs
 
