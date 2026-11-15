@@ -11,7 +11,7 @@ solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-08-13
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://youtu.be/ATnbAbBV7Cs"
 tags: ["notetaker", "transcription", "real-time", "action-items"]
@@ -20,7 +20,7 @@ seo_keywords: ["zoom meeting notetaker", "zoom meeting bot", "rtms meeting assis
 partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires Zoom Developer Pack credits for RTMS."
-stack: "Node · Express · React · MySQL"
+stack: "Node · Express · React"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
@@ -69,7 +69,7 @@ RTMS delivers transcript segments over WebSocket with sub-second latency. Your b
 | Component | Responsibility | Our stack (yours may differ) |
 |-----------|----------------|------------------------------|
 | **Transcript access** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
-| **Backend** | Persist transcripts, orchestrate AI calls, broadcast to clients | Express + Prisma (MySQL) + OpenRouter |
+| **Backend** | Persist transcripts, orchestrate AI calls, broadcast to clients | Express + OpenRouter |
 | **Frontend** | Display transcript, summaries, action items in real time | React Surface App via Zoom Apps SDK |
 
 ```mermaid
@@ -83,7 +83,7 @@ graph LR
     B --> D[(Database)]
 ```
 
-When RTMS starts in a meeting, Zoom sends a webhook with stream credentials. Your backend verifies it, joins the stream, and receives transcript segments as each phrase is spoken. Segments flow through your AI layer for extraction, then broadcast to the in-meeting panel. End-to-end latency is under a second.
+When RTMS starts in a meeting, Zoom sends a webhook with stream credentials. Your backend verifies it, joins the stream, and receives transcript segments as each phrase is spoken. Segments are broadcast to the in-meeting panel in under a second. Summaries and other notes are extracted on an interval, so they follow the conversation by seconds to minutes.
 
 **Our stack vs. your options:** We use Node/Express, but Python/FastAPI, Go, or Ruby work the same way. The requirements are a webhook endpoint Zoom can reach, a WebSocket client for RTMS, an LLM, and a way to push updates to the frontend.
 
@@ -104,7 +104,7 @@ If you're grafting this into an existing codebase, check what you already have b
 | Webhook endpoint | Existing API routes | Express router or equivalent |
 | Signature verification | Existing HMAC middleware | `verifyWebhookSignature()` |
 | WebSocket server | Existing real-time layer | ws or Socket.io server |
-| Database | Existing Postgres/MySQL | Prisma schema for transcripts |
+| Database | Existing Postgres/MySQL | Schema for transcripts |
 | LLM client | Existing OpenAI/Anthropic setup | OpenRouter client |
 | Auth/JWT | Existing session tokens | JWT signing for WebSocket auth |
 
@@ -174,11 +174,13 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 - Persist asynchronously with upsert on `(meetingId, seqNo)` for idempotency
 - Handle missing userId/userName gracefully with defaults
 
-**Other databases:** Works with Postgres, MongoDB, or a time-series database.
+**Databases:** Works with MySQL, Postgres, MongoDB, or a time-series database.
 
 ### Part 2: Building the Intelligence Layer
 
 With the transcript pipeline in place, you have a live stream of what's being said. Now extract meeting intelligence from it.
+
+In Arlo, the panel drives extraction over HTTP. It posts recent transcript text to `/api/ai/summary-live` after every 20 new segments, and sends segments to `/api/ai/key-moment` to detect key moments. The contract below describes the same extraction run on the server and pushed over the WebSocket.
 
 #### Meeting notes extraction
 
@@ -230,11 +232,13 @@ See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes
 
 - Require valid JWT on every WebSocket connection
 - Client sends `{ type: 'subscribe', meetingId }` after connecting
-- Server broadcasts `{ type: 'transcript_segment', data }` and `{ type: 'notes_update', data }`
+- Server broadcasts `{ type: 'transcript.segment', data }`; if you extract on the server, push `{ type: 'notes_update', data }` the same way
 - Append segments in `seqNo` order
 - Dedupe action items by task text
 - Dedupe key moments by text similarity
 - Show existing notes on reconnect, then apply incremental updates
+
+Arlo rejects an invalid token but accepts a WebSocket connection with no token as a guest. Require a token before production.
 
 **Other frameworks:** Works with Vue, Svelte, or vanilla JS. The Surface App runs inside the Zoom client via iframe; standard web tech applies.
 
@@ -253,7 +257,7 @@ You can also add domain-specific extraction. For engineering meetings, detect te
 
 ### Part 3: Running the Reference Implementation ([Arlo](https://github.com/zoom/arlo))
 
-Arlo implements everything above as a working application. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
+Arlo is the reference implementation. Use it to see the patterns in action, then fork and customize or use as a reference for your own build.
 
 #### One-click deploy
 
@@ -262,14 +266,14 @@ Arlo implements everything above as a working application. Use it to see the pat
 | [**Deploy to Render**](https://render.com/deploy?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, managed database |
 | [**Deploy to Railway**](https://railway.app/new?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, managed database |
 
-Both platforms offer free tiers. After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), add `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN` to the environment, and point your app's OAuth redirect URL at the deployed backend.
+After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), add `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN` to the environment, and point your app's OAuth redirect URL at the deployed backend.
 
 #### Local setup
 
 | Requirement | Purpose |
 |-------------|---------|
 | [Node.js 20+](https://nodejs.org/) | Runtime for all services |
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs MySQL, Redis, and the services |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs the backend, frontend, and RTMS services |
 | [ngrok](https://ngrok.com/) | Public HTTPS URL for Zoom webhooks |
 | [Zoom account](https://marketplace.zoom.us/) | To create and configure your Zoom App |
 | RTMS access | [Zoom Developer Pack](https://zoom.us/pricing/developer) credits on your account; free trial credits are available |
@@ -297,7 +301,7 @@ Both platforms offer free tiers. After deploying, create a Zoom App in the [Mark
 
 4. **Configure the Zoom App:**
    - OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`
-   - Scopes: `meeting:read:meeting`, the RTMS scope `meeting:read:meeting_transcript`, optionally `user:read`
+   - Scopes: `zoomapp:inmeeting`, `meeting:read:meeting`, the RTMS scope `meeting:read:meeting_transcript`, optionally `user:read`
    - Surface: Home URL `https://YOUR-NGROK-URL`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
 
@@ -320,7 +324,7 @@ Both platforms offer free tiers. After deploying, create a Zoom App in the [Mark
    docker-compose up --build
    ```
 
-7. **Test:** Start a Zoom meeting, open **Apps** > your app, select the **Notes** vertical, and start transcription.
+7. **Test:** Start a Zoom meeting, open **Apps** > your app, select the **Notes** vertical, and choose **Start Arlo** to begin transcription.
 
 </details>
 
@@ -370,7 +374,7 @@ The patterns above work for development and moderate scale. For production deplo
 | Area | Development | Production |
 |------|-------------|------------|
 | **Credentials** | `.env` file | Secrets manager (AWS, Vault, etc.) |
-| **Token storage** | Database | Add encryption at rest, key rotation |
+| **Token storage** | Encrypted | Add key rotation and a durable store |
 | **Sessions** | In-memory | Redis (survives restarts, scales horizontally) |
 | **WebSockets** | Single instance | Redis pub/sub for multi-instance broadcast |
 | **HTTPS** | ngrok | Load balancer with TLS termination |
