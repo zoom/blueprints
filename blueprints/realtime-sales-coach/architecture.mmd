@@ -5,5 +5,5 @@ graph LR
     Z -->|3. media WS| R
     R -->|4. segments| B
     B -->|5. WS broadcast| P[Seller's Panel]
-    B --> D[(Database)]
+    B -.->|optional| D[(Database)]
     B <--> L[LLM]

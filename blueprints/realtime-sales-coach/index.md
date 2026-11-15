@@ -11,7 +11,7 @@ solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-08-13
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://youtu.be/Y7P9ssfMizU"
 tags: ["sales", "coaching", "real-time"]
@@ -20,7 +20,7 @@ seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant ap
 partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires Zoom Developer Pack credits for RTMS."
-stack: "Node · Express · React · MySQL"
+stack: "Node · Express · React"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
@@ -68,7 +68,7 @@ RTMS streams transcripts directly from Zoom's infrastructure. The transcript app
 | Component | Responsibility | Our stack (yours may differ) |
 |-----------|----------------|------------------------------|
 | **Transcript access** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
-| **Backend** | Persist transcripts, orchestrate LLM calls, broadcast to clients | Express + Prisma (MySQL) + OpenRouter |
+| **Backend** | Orchestrate LLM calls and broadcast to clients; persist transcripts if you need history | Express + OpenRouter. Arlo runs without a database: transcripts are broadcast, not stored |
 | **Frontend** | Display transcript, qualification tracker, competitor mentions | React Surface App via Zoom Apps SDK |
 
 ```mermaid
@@ -78,11 +78,11 @@ graph LR
     Z -->|3. media WS| R
     R -->|4. segments| B
     B -->|5. WS broadcast| P[Seller's Panel]
-    B --> D[(Database)]
+    B -.->|optional| D[(Database)]
     B <--> L[LLM]
 ```
 
-When transcription starts, Zoom sends a webhook to the backend. The backend verifies it, forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. Segments flow to the backend, which broadcasts them to the panel and persists them. End-to-end latency is under a second.
+When transcription starts, Zoom sends a webhook to the backend. The backend verifies it, forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. Segments flow to the backend, which broadcasts them to the panel. Arlo does not store them; add a database if you need history. End-to-end latency is under a second.
 
 **Our stack vs. your options:** We use Node/Express, but Python/FastAPI, Go, or Ruby work the same way. The requirements are a webhook endpoint Zoom can reach, a WebSocket client for RTMS, an LLM, and a way to push updates to the frontend.
 
@@ -103,7 +103,7 @@ If you're grafting this into an existing codebase, check what you already have b
 | Webhook endpoint | Existing API routes | Express router or equivalent |
 | Signature verification | Existing HMAC middleware | `verifyWebhookSignature()` |
 | WebSocket server | Existing real-time layer | ws or Socket.io server |
-| Database | Existing Postgres/MySQL | Prisma schema for transcripts |
+| Database (optional) | Existing Postgres/MySQL | Schema for transcripts, if you need history; Arlo has none |
 | LLM client | Existing OpenAI/Anthropic setup | OpenRouter client |
 | Auth/JWT | Existing session tokens | JWT signing for WebSocket auth |
 
@@ -174,10 +174,10 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 - Assign monotonic sequence number per session
 - Convert timestamp from microseconds to milliseconds
 - Broadcast to clients immediately (don't block on persistence)
-- Persist asynchronously with upsert on `(meetingId, seqNo)` for idempotency
+- If you persist, do it asynchronously with an upsert on `(meetingId, seqNo)` for idempotency
 - Handle missing userId/userName gracefully with defaults
 
-**Other databases:** Works with Postgres, MongoDB, or a time-series database.
+**Databases:** Arlo keeps nothing after the meeting. To store transcripts, use MySQL, Postgres, MongoDB, or a time-series database.
 
 #### WebSocket delivery
 
@@ -193,9 +193,13 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 - Clean up subscriptions on disconnect
 - Panel appends segments in `seqNo` order
 
+Arlo rejects an invalid token but accepts a connection with no token as a guest. Require a token before production.
+
 ### Part 2: Building the Sales Intelligence Layer
 
 With transcripts flowing, extract sales signals: qualification criteria, competitor mentions, and commitments.
+
+This part is a pattern for you to build. In Arlo today, the Sales panels for qualification, competitors, commitments, and the deal tracker display built-in demo data, and the backend has no sales-signal extraction route. Arlo's filler-word coach is the Sales feature that runs on the live transcript. Use Arlo's summary and action-item routes as the model for the LLM call, and the contracts below for the sales logic.
 
 #### Sales signal extraction
 
@@ -235,7 +239,7 @@ Return JSON only:
 
 **Other LLMs:** Works with OpenAI, Anthropic, or self-hosted models. For reliability, use the provider's JSON mode or function calling.
 
-See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes/ai.js) for the reference implementation.
+See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes/ai.js) for how its summary and action-item extraction calls the LLM.
 
 #### Frontend state management
 
@@ -246,7 +250,7 @@ See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes
 **Invariants:**
 
 - Append segments in `seqNo` order
-- Dedupe action items by task text
+- Dedupe commitments by text
 - Dedupe competitor mentions by quote text
 - Show existing state on reconnect, then apply incremental updates
 - Trigger extraction on debounce interval while `isLive` is true
@@ -255,7 +259,7 @@ See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes
 
 ### Part 3: Running the Reference Implementation ([Arlo](https://github.com/zoom/arlo))
 
-Arlo implements everything above. Use it to see the patterns working, then fork or reference for your own build.
+Arlo implements the transcript pipeline in Part 1 and shows the Sales panels with demo data. Use it to see the pipeline working, then fork it and add the extraction from Part 2.
 
 #### One-click deploy
 
@@ -264,14 +268,14 @@ Arlo implements everything above. Use it to see the patterns working, then fork 
 | [Deploy to Render](https://render.com/deploy?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, database |
 | [Deploy to Railway](https://railway.app/new?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, database |
 
-Both have free tiers. After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), add `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN`, and set the OAuth redirect URL to your backend.
+After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), add `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN`, and set the OAuth redirect URL to your backend.
 
 #### Local setup
 
 | Requirement | Purpose |
 |-------------|---------|
 | [Node.js 20+](https://nodejs.org/) | Runtime |
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | MySQL, Redis, services |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | Runs the backend, frontend, and RTMS services |
 | [ngrok](https://ngrok.com/) | Public URL for webhooks |
 | [Zoom account](https://marketplace.zoom.us/) | App configuration |
 | RTMS access | [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available |
@@ -288,7 +292,7 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
 
 3. Create your Zoom App at [marketplace.zoom.us](https://marketplace.zoom.us/):
    - OAuth Redirect URL: `https://YOUR-NGROK-URL/api/auth/callback`
-   - Scopes: `meeting:read:meeting` and the RTMS scope `meeting:read:meeting_transcript`
+   - Scopes: `zoomapp:inmeeting`, `meeting:read:meeting`, and the RTMS scope `meeting:read:meeting_transcript`
    - Surface: Home URL `https://YOUR-NGROK-URL`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
 
@@ -302,7 +306,7 @@ Both have free tiers. After deploying, create a Zoom App in the [Marketplace](ht
    docker-compose up --build
    ```
 
-Services: MySQL 3306, backend 3000, frontend 3001, RTMS 3002. Join a meeting, open Apps, select your app, pick the Sales vertical, start transcription.
+Services: backend 3000, frontend 3001, RTMS 3002 (internal to Docker). There is no database. Join a meeting, open Apps, select your app, pick the Sales vertical, and choose **Start Arlo** to begin transcription.
 
 ---
 
