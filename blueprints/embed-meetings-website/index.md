@@ -11,7 +11,7 @@ solution_types: ["embedded-video"]
 author: "Max Mansfield"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-08-26
+updated: 2026-11-14
 github_repo: "https://github.com/zoom/meetingsdk-appointment-sample-js"
 tags: ["meeting-sdk", "embed", "component-view", "appointments"]
 seo_title: "Embed a Zoom meeting in your website"
@@ -57,7 +57,7 @@ Follow along as we walk through the architecture.
 
 Component View mounts the meeting into a DOM node your page owns. That is the whole difference from Client View, which replaces your page with the full Zoom experience. Component View is the right choice when the surrounding page still matters during the call: the booking details, the intake form, the order being discussed.
 
-One rule shapes everything else. The Meeting SDK Secret never reaches the browser. The browser asks your backend for a signature, and the backend returns a short-lived JWT naming exactly one meeting and one role. A signature in client-side code is a signature anyone can mint.
+One rule shapes everything else. The Meeting SDK Secret never reaches the browser. The browser asks your backend for a signature, and the backend returns a short-lived JWT naming exactly one meeting and one role. A Secret in client-side code lets anyone mint a signature for any meeting.
 
 ### Components
 
@@ -79,7 +79,7 @@ graph LR
 
 The visitor opens a page that already knows which appointment it is showing. The page asks the backend for a signature, identifying the booking rather than the meeting. The backend decides whether this visitor may join that booking, then signs a JWT for the meeting behind it. The page calls `init()` with the element to render into, then `join()` with the signature.
 
-**Our stack vs. your options:** We use Node/Express and React, but the backend only needs to sign an HS256 JWT, which every stack can do. The frontend only needs a DOM node and the SDK; Vue, Svelte, or plain JavaScript work the same way. The canonical [`meetingsdk-web-sample`](https://github.com/zoom/meetingsdk-web-sample) ships React, Webpack, and CDN variants.
+**Our stack vs. your options:** We use Node/Express and React, but the backend only needs to sign an HS256 JWT, which every stack can do. The frontend only needs a DOM node and the SDK; Vue, Svelte, or plain JavaScript work the same way. The canonical [`meetingsdk-web-sample`](https://github.com/zoom/meetingsdk-web-sample) ships three variants in its `CDN`, `Components`, and `Local` folders.
 
 ### How the signature works
 
@@ -118,7 +118,7 @@ This blueprint deliberately does not restate the Meeting SDK. Zoom maintains two
 
 | Repo | What it demonstrates |
 |------|---------------------|
-| [`meetingsdk-web-sample`](https://github.com/zoom/meetingsdk-web-sample) | Component View, Client View, and CDN variants of the raw SDK integration |
+| [`meetingsdk-web-sample`](https://github.com/zoom/meetingsdk-web-sample) | The raw SDK integration in three variants: `CDN`, `Components` (Component View), and `Local` |
 | [`meetingsdk-auth-endpoint-sample`](https://github.com/zoom/meetingsdk-auth-endpoint-sample) | The signature endpoint on its own, with request validation |
 
 What this blueprint adds is the part those samples deliberately leave out: turning a meeting-number input box into an appointment page, where the visitor never sees a meeting number and the backend decides what they may join. [`meetingsdk-appointment-sample-js`](https://github.com/zoom/meetingsdk-appointment-sample-js) is the small companion app that shows only that.
@@ -163,14 +163,14 @@ function createSignature({ meetingNumber, role, sdkKey, sdkSecret, expiresInSeco
 
 **Input:** A booking identifier from the page, plus whatever identifies the visitor (session cookie, signed link token, logged-in user)
 
-**Output:** `{ signature, sdkKey, meetingNumber }` for exactly one meeting
+**Output:** `{ signature, sdkKey, meetingNumber, passcode, userName, role }` for exactly one meeting
 
 **Invariants:**
 
 - Take a booking ID from the client, never a meeting number. A client that can name its own meeting number can join any meeting on your account.
 - Authorize before signing. Resolve the booking, confirm this visitor is party to it, and only then look up the meeting number.
 - Default `role` to `0`. Grant `1` only to the staff member the booking says is the host.
-- Return the SDK Key alongside the signature. It is public; the Secret is not.
+- Never return the Secret. The SDK Key is public, and the sample returns it, but `join()` does not need it: the signature already carries it.
 - Never log the signature or the Secret.
 - Reject a request for a booking whose appointment window has passed.
 
@@ -214,7 +214,7 @@ await client.join({
 });
 ```
 
-`zoomAppRoot` is the only part that makes this Component View rather than Client View. In React, hold the node in a ref and call `init()` after the element has mounted, not during render.
+Importing from `@zoom/meetingsdk/embedded` is what selects Component View rather than Client View; `zoomAppRoot` tells it which element to render into. In React, hold the node in a ref and call `init()` after the element has mounted, not during render.
 
 **Pin React to 18.2.0.** `@zoom/meetingsdk` 6.2.0 declares an exact peer dependency, not a range, so `npm install` fails outright against React 19. The canonical [`meetingsdk-web-sample/Components`](https://github.com/zoom/meetingsdk-web-sample/tree/master/Components) pins the same version. Reaching for `--legacy-peer-deps` to get around it means shipping the SDK against a React it was never tested with.
 
@@ -222,7 +222,7 @@ await client.join({
 
 #### Init and join
 
-**Input:** A mounted DOM node, and `{ signature, sdkKey, meetingNumber, passcode, userName }` from your backend
+**Input:** A mounted DOM node, and `{ signature, meetingNumber, passcode, userName }` from your backend
 
 **Output:** A joined meeting rendering inside your layout
 
@@ -292,15 +292,16 @@ await client.join({
    ZOOM_MEETING_SDK_SECRET=your_sdk_secret
    ```
 
-4. Schedule a meeting in your Zoom client and put its number and passcode into `bookings.js`, which stands in for your database.
+4. Schedule a meeting in your Zoom client. Put its number and passcode into the seeded booking in `src/bookings.js`, which stands in for your database, and set `startsAt` to roughly now. The sample only lets a visitor join from 15 minutes before the start until 30 minutes after the end, so the default date is rejected with "This appointment has ended".
 
-5. Start:
+5. Build the page and start the server:
 
    ```bash
-   npm run dev
+   npm run build
+   npm start
    ```
 
-6. Open the appointment link the console prints, and click **Join**.
+6. Open the customer link the server prints, and click **Join your appointment**. The staff link it prints joins the same meeting as host.
 
 </details>
 
@@ -312,7 +313,7 @@ Reach for [`meetingsdk-web-sample`](https://github.com/zoom/meetingsdk-web-sampl
 
 ## App Manifest
 
-The [`manifest.json`](./manifest.json) in this directory records the app configuration this blueprint assumes. The blueprint needs no OAuth scopes and no event subscriptions, because the app's credentials are used to sign meeting signatures rather than to call APIs on a user's behalf.
+The [`manifest.json`](./manifest.json) in this directory describes the app configuration this blueprint assumes. It is a description, not a file you can import into the Zoom App Marketplace. The blueprint needs no OAuth scopes and no event subscriptions, because the app's credentials are used to sign meeting signatures rather than to call APIs on a user's behalf.
 
 ### Credentials
 
@@ -381,7 +382,7 @@ Use this checklist to verify the implementation:
 ## Related Resources
 
 - [meetingsdk-appointment-sample-js](https://github.com/zoom/meetingsdk-appointment-sample-js) - The companion sample for this blueprint
-- [meetingsdk-web-sample](https://github.com/zoom/meetingsdk-web-sample) - Canonical Component View, Client View, and CDN samples
+- [meetingsdk-web-sample](https://github.com/zoom/meetingsdk-web-sample) - Canonical samples in `CDN`, `Components`, and `Local` variants
 - [meetingsdk-auth-endpoint-sample](https://github.com/zoom/meetingsdk-auth-endpoint-sample) - Canonical signature endpoint
 - [Meeting SDK for Web](https://developers.zoom.us/docs/meeting-sdk/web/) - SDK documentation
 - [Component View reference](https://developers.zoom.us/docs/meeting-sdk/web/component-view/) - The API used here
