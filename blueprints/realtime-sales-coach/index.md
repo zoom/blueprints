@@ -20,7 +20,7 @@ seo_keywords: ["zoom real-time sales coaching", "zoom meeting sales assistant ap
 partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires Zoom Developer Pack credits for RTMS."
-stack: "Node · Express · React"
+stack: "Node · Express · React · MySQL"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/arlo" }
   - { label: "Railway", url: "https://railway.app/new?repo=https://github.com/zoom/arlo" }
@@ -68,7 +68,7 @@ RTMS streams transcripts directly from Zoom's infrastructure. The transcript app
 | Component | Responsibility | Our stack (yours may differ) |
 |-----------|----------------|------------------------------|
 | **Transcript access** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
-| **Backend** | Orchestrate LLM calls and broadcast to clients; persist transcripts if you need history | Express + OpenRouter. Arlo runs without a database: transcripts are broadcast, not stored |
+| **Backend** | Orchestrate LLM calls and broadcast to clients; persist transcripts if you need history | Express + OpenRouter. Arlo's `main` branch runs in demo mode with no database; its `feature/database-enabled` branch adds Prisma and MySQL |
 | **Frontend** | Display transcript, qualification tracker, competitor mentions | React Surface App via Zoom Apps SDK |
 
 ```mermaid
@@ -82,7 +82,7 @@ graph LR
     B <--> L[LLM]
 ```
 
-When transcription starts, Zoom sends a webhook to the backend. The backend verifies it, forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. Segments flow to the backend, which broadcasts them to the panel. Arlo does not store them; add a database if you need history. End-to-end latency is under a second.
+When transcription starts, Zoom sends a webhook to the backend. The backend verifies it, forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. Segments flow to the backend, which broadcasts them to the panel. In demo mode Arlo does not store them. End-to-end latency is under a second.
 
 **Our stack vs. your options:** We use Node/Express, but Python/FastAPI, Go, or Ruby work the same way. The requirements are a webhook endpoint Zoom can reach, a WebSocket client for RTMS, an LLM, and a way to push updates to the frontend.
 
@@ -103,7 +103,7 @@ If you're grafting this into an existing codebase, check what you already have b
 | Webhook endpoint | Existing API routes | Express router or equivalent |
 | Signature verification | Existing HMAC middleware | `verifyWebhookSignature()` |
 | WebSocket server | Existing real-time layer | ws or Socket.io server |
-| Database (optional) | Existing Postgres/MySQL | Schema for transcripts, if you need history; Arlo has none |
+| Database (optional) | Existing Postgres/MySQL | Schema for transcripts, if you need history; Arlo's demo mode has none |
 | LLM client | Existing OpenAI/Anthropic setup | OpenRouter client |
 | Auth/JWT | Existing session tokens | JWT signing for WebSocket auth |
 
@@ -177,7 +177,7 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 - If you persist, do it asynchronously with an upsert on `(meetingId, seqNo)` for idempotency
 - Handle missing userId/userName gracefully with defaults
 
-**Databases:** Arlo keeps nothing after the meeting. To store transcripts, use MySQL, Postgres, MongoDB, or a time-series database.
+**Databases:** In demo mode Arlo keeps nothing after the meeting. Its database-enabled branch uses MySQL; Postgres, MongoDB, or a time-series database also work.
 
 #### WebSocket delivery
 
@@ -199,7 +199,7 @@ Arlo rejects an invalid token but accepts a connection with no token as a guest.
 
 With transcripts flowing, extract sales signals: qualification criteria, competitor mentions, and commitments.
 
-This part is a pattern for you to build. In Arlo today, the Sales panels for qualification, competitors, commitments, and the deal tracker display built-in demo data, and the backend has no sales-signal extraction route. Arlo's filler-word coach is the Sales feature that runs on the live transcript. Use Arlo's summary and action-item routes as the model for the LLM call, and the contracts below for the sales logic.
+Arlo's `main` branch ships with demo mode on. In demo mode the Sales panels for qualification, competitors, commitments, and the deal tracker show sample data, and the filler-word coach runs on the live transcript.
 
 #### Sales signal extraction
 
@@ -259,7 +259,7 @@ See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes
 
 ### Part 3: Running the Reference Implementation ([Arlo](https://github.com/zoom/arlo))
 
-Arlo implements the transcript pipeline in Part 1 and shows the Sales panels with demo data. Use it to see the pipeline working, then fork it and add the extraction from Part 2.
+Arlo implements the patterns above. Its `main` branch runs in demo mode: no database, and sample data in the Sales panels. Use it to see the patterns working, then fork or reference it for your own build.
 
 #### One-click deploy
 
@@ -306,7 +306,7 @@ After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom
    docker-compose up --build
    ```
 
-Services: backend 3000, frontend 3001, RTMS 3002 (internal to Docker). There is no database. Join a meeting, open Apps, select your app, pick the Sales vertical, and choose **Start Arlo** to begin transcription.
+Services: backend 3000, frontend 3001, RTMS 3002 (internal to Docker). Demo mode uses no database. Join a meeting, open Apps, select your app, pick the Sales vertical, and choose **Start Arlo** to begin transcription.
 
 ---
 
