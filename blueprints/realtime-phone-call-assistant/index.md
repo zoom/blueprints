@@ -7,7 +7,7 @@ description: >-
   a Zoom Surface App while the call is still in progress.
 products: ["rtms", "phone", "zoom-apps"]
 verticals: ["agents"]
-solution_types: ["realtime-analysis", "transcription-summarization"]
+solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Elisa Levet"
 status: "draft"
 updated: 2026-11-16
@@ -34,12 +34,12 @@ Agents on phone calls listen, look things up, and take notes at the same time. T
 
 **Features:**
 
-- Call context from the Zoom Phone client: call ID and answer start time
-- Live transcript, streamed to the panel by speaker and saved to one text file per call
-- Keyword chips with mention counts, and live prompts that expire after 10 seconds
-- Rolling call summary with one new bullet every 30 seconds
-- Per-call audio saved as a 16 kHz, 16-bit WAV when the call ends
-- OAuth 2.0 with automatic token refresh and per-user token storage in Redis
+- **Call context**: Call ID and answer start time from the Zoom Phone client
+- **Live transcript**: Streamed to the panel by speaker and saved to one text file per call
+- **Keyword chips and prompts**: Mention counts for frequent terms, and live prompts that expire after 10 seconds
+- **Rolling summary**: One new bullet every 30 seconds, not a summary after the call
+- **Per-call audio**: A 16 kHz, 16-bit WAV written when the call ends
+- **Secure access**: OAuth 2.0 with automatic token refresh and per-user token storage in Redis
 
 If you'd rather start from what your Zoom Phone plan already includes, begin there. Build custom when you need keyword rules tuned to your call scripts, transcript and audio files stored on your own infrastructure, or a summary pipeline you control.
 
@@ -68,13 +68,14 @@ The RTMS service opens a signaling WebSocket to the `server_urls` in the start p
 
 The RTMS service keeps all per-call state in memory. Tokens and the active user ID live in Redis. The panel only receives events. It calls the backend for Zoom API requests and never talks to RTMS directly.
 
-| Component | Role | Our stack | Alternatives |
-|-----------|------|-----------|--------------|
-| **Zoom Phone** | Sends RTMS webhooks and streams audio and transcript | Zoom platform | None |
-| **Backend** (`backend/`) | Verifies webhooks, runs OAuth, relays events over SSE, proxies Zoom API calls | Express | Any HTTP framework that can verify raw-body HMAC |
-| **RTMS service** (`rtms/`) | Opens signaling, audio, and transcript sockets. Runs keyword, summary, transcript, and audio features | Node.js with `ws` | Any WebSocket client in a runtime that can run the feature modules |
-| **Redis** | Per-user OAuth tokens and the active user ID | Redis 7 (Docker Compose) | Any store with atomic key writes and a network-reachable endpoint |
-| **Zoom Apps panel** (`frontend/`) | Renders the four panel sections inside the Zoom client | React, Vite, Zoom Apps SDK 0.16.37 | Any SPA framework that can call the Zoom Apps SDK |
+### Components
+
+| Component | Responsibility | Our stack |
+|-----------|----------------|-----------|
+| **RTMS service** (`rtms/`) | Opens signaling, audio, and transcript WebSockets to Zoom. Writes transcript and audio files. Runs keyword, summary, transcript, and audio features | Node.js, `ws`, Express, FFmpeg |
+| **Backend** (`backend/`) | Verifies webhooks, runs OAuth, relays events over SSE, proxies Zoom API calls | Express |
+| **Redis** | Per-user OAuth tokens and the active user ID | Redis 7 (Docker Compose) |
+| **Zoom Apps panel** (`frontend/`) | Renders the four panel sections inside the Zoom client | React, Vite, Zoom Apps SDK |
 
 ```mermaid
 graph LR
@@ -107,6 +108,23 @@ sequenceDiagram
     B->>R: POST / with event and payload
     R->>R: Close sockets, write WAV
 ```
+
+### Why this architecture
+
+The RTMS service runs apart from the backend because it holds long-lived WebSocket connections and per-call state in memory. The backend handles public HTTP, webhook verification, and OAuth, and keeps only its SSE connections in memory. You can restart or replace the RTMS service without changing the webhook endpoint that Zoom calls. The trade-off is that every event for one stream must reach the same RTMS process. See [Production Considerations](#production-considerations).
+
+### Agent integration map
+
+If you're adding this to an existing codebase, check what you already have before adding anything:
+
+| Required capability | Reuse when present | Add when missing |
+|--------------------|--------------------|------------------|
+| Webhook endpoint | Existing API routes | Express route for `POST /api/webhooks/zoom` |
+| Signature verification | Existing HMAC middleware that reads the raw body | `verifyZoomSignature()` from the Implementation Guide |
+| WebSocket client to Zoom | Existing WebSocket client library | `ws` client in an RTMS service |
+| Real-time push to the panel | Existing WebSocket or SSE layer | SSE endpoint (`/api/events`) |
+| Token storage | Existing Redis or database token store | Per-user token storage keyed by Zoom user ID |
+| Panel | Existing React or SPA frontend | Zoom Apps SDK initialization and an EventSource client |
 
 ## Implementation Guide
 
@@ -152,6 +170,8 @@ function verifyZoomSignature(rawBody, timestamp, signature, secretToken) {
 ```
 
 The sample's `validateZoomWebhook` compares the signature with `!==` and does not check the timestamp age. Use the version above when you adapt it. See [Production Considerations](#production-considerations).
+
+**Other languages:** In Python, use `hmac` with `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`. Keep the 5-minute window and the length check in every language.
 
 ### RTMS session lifecycle
 
@@ -206,6 +226,8 @@ function generateSignature(callId, streamId, clientId, clientSecret) {
     .digest('hex');
 }
 ```
+
+**Other languages:** The sample uses `ws` for every socket. Any WebSocket client works, as long as it sends the handshakes in the order shown in the table.
 
 ### Transcript pipeline
 
@@ -368,6 +390,31 @@ File: `frontend/src/App.jsx`
 - Remove each prompt 10 seconds after it arrives. Keep transcript lines for the life of the panel.
 - Scroll the newest transcript line into view on each update
 
+### Customizing the sample
+
+The keyword rules and the tuning constants are the main customization points.
+
+**Keyword rules by call type.** These are starting points. Each row lists terms to add to `keywords.json` as rules with their own prompt text.
+
+| Call type | Rule ideas | Prompt focus |
+|-----------|------------|--------------|
+| **Support** | Outage, billing, escalation (the sample defaults) | Verify the account, then check status or history |
+| **Sales** | Competitor names, pricing objections, next-step phrases | Surface the competitor battlecard or the next question |
+| **Collections** | Payment arrangement, hardship, dispute | Offer approved options, avoid promises outside policy |
+| **Compliance-sensitive** | Recording consent, required disclosures | Read the approved script line |
+
+**Tuning constants.** Change these in code, then restart the RTMS service.
+
+| Constant | Value | File |
+|----------|-------|------|
+| Summary interval | 30 seconds | `rtms/features/summarizer/index.js` (`SUMMARY_INTERVAL_MS`) |
+| Topic terms per bullet | 3 | `rtms/features/summarizer/index.js` (`MAX_TOPICS`) |
+| Key sentence length | About 90 characters | `rtms/features/summarizer/index.js` (`MAX_QUOTE_CHARS`) |
+| Audio send rate | 20 ms | `rtms/server.js` (`AUDIO_SEND_RATE_MS`) |
+| Event delivery timeout | 2 seconds | `rtms/lib/eventNotifier.js` |
+| Prompt lifetime in the panel | 10 seconds | `frontend/src/App.jsx` (`PROMPT_LIFETIME_MS`) |
+| Keyword extraction | `topN` 8, `minLength` 4, `minCount` 2, `emitIntervalMs` 2000 | `rtms/features/keyword-detector/keywords.json` |
+
 ### Run the Sample
 
 <details>
@@ -416,11 +463,13 @@ The [`manifest.json`](manifest.json) in this folder describes the Zoom General A
 | `rtms:read:phone_rtms_interrupted` | Receive the RTMS interrupted event. The sample subscribes but does not handle it yet. |
 | `user:read:user` | Look up the authenticated user's Zoom user ID at OAuth callback |
 
-**Event subscriptions:** Turn on Event Subscription under **Access**, choose **Webhook**, and set the notification URL to `https://YOUR-NGROK-URL/api/webhooks/zoom`. Subscribe to these Zoom Phone RTMS events:
+**Event subscriptions:** Turn on Event Subscription under **Access**, choose **Webhook**, and set the notification URL to `https://YOUR-NGROK-URL/api/webhooks/zoom`.
 
-- RTMS started in Zoom Phone (`phone.call_rtms_started`)
-- RTMS stopped in Zoom Phone (`phone.call_rtms_stopped`)
-- RTMS interrupted in Zoom Phone. Select it from the event list in the Marketplace. The backend does not forward it to the RTMS service yet.
+| Event | When it fires |
+|-------|---------------|
+| `phone.call_rtms_started` | RTMS begins for a Zoom Phone call. The payload carries `call_id`, `rtms_stream_id`, and `server_urls`. |
+| `phone.call_rtms_stopped` | RTMS ends for the call. The backend forwards it so the RTMS service can write the WAV file. |
+| RTMS interrupted | Select it from the event list in the Marketplace. The backend does not forward it to the RTMS service yet. |
 
 **Surface and SDK:** Under **Surface**, set the Home URL to `https://YOUR-NGROK-URL/api/home`. Allow `YOUR-NGROK-URL` and `appssdk.zoom.us` in the domain list. Select **Phone** as the product, enable the Zoom Apps SDK, and add `getPhoneContext` and `getRunningContext`.
 
@@ -428,19 +477,32 @@ The [`manifest.json`](manifest.json) in this folder describes the Zoom General A
 
 ## Acceptance Criteria
 
+Use this checklist to verify the implementation:
+
 - [ ] Starting a phone call with RTMS enabled sends `phone.call_rtms_started`, and the RTMS service logs a successful signaling handshake
 - [ ] A webhook with a bad `x-zm-signature` returns 401 and is not forwarded
+- [ ] A webhook with a timestamp more than 5 minutes old is rejected
 - [ ] The panel shows call ID and answer start time when opened inside a phone call
 - [ ] Transcript lines appear in the panel as each segment arrives, labeled with the speaker name
 - [ ] Saying "refund" twice within the cooldown window fires one billing prompt, and the prompt disappears after 10 seconds
 - [ ] The summary gains one bullet about every 30 seconds while speech continues
 - [ ] Ending the call creates `rtms/data/transcripts/<timestamp>_<callId>.txt` and a WAV file in `rtms/data/audio/<timestamp>_<callId>/`
 - [ ] Restarting the RTMS service during a call, then recovering on the next start, produces a WAV from the leftover raw files
+- [ ] The panel bundle contains no client secret or session secret
 
 <details>
 <summary><strong>Production Considerations</strong></summary>
 
-**Secrets:** Do not keep `.env` in production. The file is for local development. Use a secrets manager.
+The sample runs on a laptop with ngrok. Production needs these changes:
+
+| Area | Development (sample) | Production |
+|------|----------------------|------------|
+| **Credentials** | `.env` file | Secrets manager |
+| **Token storage** | Redis, plain JSON | Encryption at rest and key rotation |
+| **RTMS sessions** | In-memory `Map` in one process | Route every event for a stream to the same process |
+| **SSE clients** | In-memory `Set` in one backend | Redis pub/sub for multi-instance delivery |
+| **HTTPS** | ngrok | Load balancer with TLS termination |
+| **Cookies** | `secure: false` for ngrok | `secure: true` behind HTTPS |
 
 **Zoom API proxy:** `/api/zoom/*` uses the most recently authenticated user's tokens. It checks that a user is active, but it does not check who is calling. Any client that can reach the backend can call Zoom APIs as that user. Add authentication to the proxy before you deploy.
 
@@ -450,7 +512,7 @@ The [`manifest.json`](manifest.json) in this folder describes the Zoom General A
 
 **Logging:** `handleZoomUrlValidation` logs `plainToken` and `encryptedToken`. Remove that log line in production. The webhook handler also logs full payloads, which include call IDs and participant names.
 
-**Content Security Policy:** The production branch in `backend/middleware/security.js` still allows `'unsafe-inline'` for scripts and styles. Remove it and use your deployment origin only. The cookie is set with `secure: false` for ngrok. Set it to `true` behind HTTPS in production.
+**Content Security Policy:** The production branch in `backend/middleware/security.js` still allows `'unsafe-inline'` for scripts and styles. Remove it and use your deployment origin only.
 
 **Recording and consent:** The sample saves transcripts and audio to disk. Check recording consent requirements for every jurisdiction where your agents take calls. The sample includes a `recording-consent` keyword rule, but a rule does not establish consent.
 
@@ -461,6 +523,12 @@ The [`manifest.json`](manifest.json) in this folder describes the Zoom General A
 **Redis:** Secure the Redis instance and keep it off the public internet. Tokens are stored there in plain JSON.
 
 </details>
+
+## Related Resources
+
+- [RTMS documentation](https://developers.zoom.us/docs/rtms/): Real-Time Media Streams API reference
+- [Zoom Apps documentation](https://developers.zoom.us/docs/zoom-apps/): Building Surface apps and the Zoom Apps SDK
+- [Zoom Developer Forum](https://devforum.zoom.us/): Community support
 
 ## Related Blueprints
 
