@@ -1,20 +1,20 @@
 ---
-title: "Real-time call assistant in Zoom Phone"
-slug: "real-time-phone-call-assistant"
+title: "Realtime call assistant in Zoom Phone"
+slug: "realtime-phone-call-assistant"
 description: >-
   Build a Zoom Phone app with a live call transcript, a rolling call summary,
   and keyword-triggered agent prompts. Stream the call with RTMS and render it in
   a Zoom Surface App while the call is still in progress.
 products: ["rtms", "phone", "zoom-apps"]
 verticals: ["agents"]
-solution_types: ["real-time-analysis", "transcription-summarization"]
+solution_types: ["realtime-analysis", "transcription-summarization"]
 author: "Elisa Levet"
 status: "draft"
 updated: 2026-11-16
 github_repo: "https://github.com/zoom/phone-rtms-auto"
-tags: ["zoom phone", "real-time", "agent assist"]
+tags: ["zoom phone", "rtms", "agent assist"]
 seo_title: "Live call transcripts and keyword prompts in Zoom Phone"
-seo_keywords: ["zoom phone live transcript", "zoom phone rtms app", "zoom phone agent assist", "real-time call summary zoom phone"]
+seo_keywords: ["zoom phone live transcript", "zoom phone rtms app", "zoom phone agent assist", "realtime call summary zoom phone"]
 license_required: true
 license_note: "Requires a Zoom Phone license and RTMS entitlement"
 stack: "Node · Express · React · Redis · Docker"
@@ -403,7 +403,7 @@ File: `frontend/src/App.jsx`
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this folder describes the Zoom General App. Use it as a reference for the settings in the Zoom Marketplace, or validate it with `npm run validate-zoom-manifest -- real-time-phone-call-assistant`.
+The [`manifest.json`](manifest.json) in this folder describes the Zoom General App. Use it as a reference for the settings in the Zoom Marketplace, or validate it with `npm run validate-zoom-manifest -- realtime-phone-call-assistant`.
 
 **Scopes:**
 
