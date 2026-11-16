@@ -1,20 +1,21 @@
 ---
 title: "Add human approval to an AI workplace agent"
-slug: "human-in-the-loop"        # MUST match this directory's name
+slug: "human-in-the-loop"
 description: >-
   A Zoom Workplace agent that turns meeting context into suggested follow-up actions, while keeping a human in control before anything gets executed.
-products: ["rtms","zoom-apps","team-chat"]
+products: ["rtms", "zoom-apps", "team-chat", "mcp"]
 partners: ["anthropic", "openai"]
 license_required: true
 license_note: "Requires Zoom Developer Pack credits for RTMS."
-stack: "Node · Express · Next.js · Oracle"
+stack: "Node · Express · Next.js"
 solution_types: ["real-time-analysis", "agent-automation"]
 verticals: ["agents"]
 author: "Donte Small"
-status: "published"                    # draft | review | published
+status: "published"
 hero_image: "images/hero.png"
-updated: 2026-09-04                # YYYY-MM-DD, bump on every edit
+updated: 2026-11-15
 github_repo: "https://github.com/zoom/human-in-the-loop-workplace-agent-sample"
+tags: ["human-in-the-loop", "approvals", "agents", "mcp", "zoom-docs", "rtms"]
 seo_title: "Add human approval to an AI workplace agent"
 seo_keywords: ["zoom real-time transcription", "rtms transcript stream", "zoom mcp server"]
 demo_url: "https://youtu.be/OwmHBUCVh9c"
@@ -30,8 +31,8 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 * A [Zoom Developer Account](https://developers.zoom.us) and a **General OAuth App** created in the [Zoom App Marketplace](https://marketplace.zoom.us/).
 * A backend that can receive webhooks, join the RTMS media stream, store meeting context, and call an LLM.
 * A [Zoom App](https://developers.zoom.us/docs/zoom-apps/) that displays the dashboard and provides in-meeting controls for starting and stopping RTMS.
-* An [OpenAI API key](https://platform.openai.com/api-keys) for task extraction, meeting summaries, and Zoom Doc creation through the Responses API and [Zoom MCP](https://mcp.zoom.us).
-* An [Anthropic API key](https://console.anthropic.com/) for the Zoom Chat Research Assistant bot.
+* An [OpenAI API key](https://platform.openai.com/api-keys) for task extraction, meeting summaries, and Zoom Doc creation. Extraction and summaries use Chat Completions with Structured Outputs; Doc creation uses the Responses API with [Zoom MCP](https://mcp.zoom.us) as a remote tool.
+* An [Anthropic API key](https://console.anthropic.com/) for the sample's chat research assistant, a chat bot feature this guide does not walk through.
 * [ngrok](https://ngrok.com). A free static domain is recommended so your Marketplace URLs do not change each time ngrok restarts.
 
 ## Features
@@ -46,14 +47,27 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 
 ## Architecture
 
+The app has two parts: an Express backend and a Next.js dashboard that runs as a Zoom App. Zoom tells the backend when RTMS starts, and the backend joins the stream and receives the transcript. Live segments go to the dashboard over server-sent events. When RTMS stops, the backend sends the finished transcript to OpenAI and stores the results as pending suggestions. Nothing is created in Zoom until the user approves it in the dashboard. After approval, the backend creates a Zoom Doc through Zoom MCP, and the dashboard shares the link to chat with the Zoom Apps SDK.
 
 <div align="center">
-  <img src="images/ai-powered-workplace.png" alt="AI-powered Workplace" width="640" />
-
+  <img src="images/ai-powered-workplace.png" alt="Observe, recommend, approve, and execute stages of the workplace agent" width="640" />
 </div>
 
+```mermaid
+graph LR
+    Z[Zoom Meeting] -->|1. meeting.rtms_started| B[Express backend]
+    Z -->|2. transcript over RTMS| B
+    B -->|3. live segments over SSE| F[Next.js Zoom App]
+    B -->|4. finished transcript| O[OpenAI]
+    O -->|5. structured suggestions| B
+    F -->|6. approve, preview, create| B
+    B -->|7. Responses API with Zoom MCP as a tool| O
+    O -->|8. create_new_file_with_markdown| M[Zoom MCP]
+    F -->|9. sendMessageToChat| C[Zoom Chat]
+```
 
-## Implementation Guide 
+
+## Implementation Guide
 
 This blueprint shows how live Zoom Workplace context can become a human-in-the-loop completion workflow.
 
@@ -71,7 +85,7 @@ AI never mutates application state or calls a Zoom execution surface on its own.
 
 ---
 
-## Observe meeting context with RTMS
+### Observe meeting context with RTMS
 
 The workflow starts when Zoom fires the `meeting.rtms_started` webhook.
 
@@ -85,7 +99,7 @@ The webhook provides the information needed to join the media stream:
 
 The transcript itself arrives later over the RTMS media connection.
 
-### `backend/routes/webhook-routes.js`
+**File:** `backend/routes/webhook-routes.js`
 
 ```js
 case 'meeting.rtms_started':
@@ -112,7 +126,7 @@ The webhook ACKs `200` immediately and dispatches the handler separately so slow
 
 `startRtmsSession` opens a `@zoom/rtms` client. Once the client joins, the application explicitly enables transcript delivery.
 
-### `backend/utils/rtms/rtms-service.js`
+**File:** `backend/utils/rtms/rtms-service.js`
 
 ```js
 // The native binding requires the boolean: enableTranscript(true).
@@ -122,7 +136,7 @@ client.enableTranscript(true);
 
 Transcript frames arrive through `onTranscriptData`. This callback is where the raw RTMS buffer becomes an application-level transcript segment.
 
-### `backend/utils/rtms/rtms-service.js`
+**File:** `backend/utils/rtms/rtms-service.js`
 
 ```js
 // onTranscriptData(buffer, size, timestamp, metadata)
@@ -141,13 +155,13 @@ client.onTranscriptData((buffer, _size, timestamp, metadata) => {
 
 The SDK timestamp also acts as the segment deduplication key.
 
-### Preserve meeting identity across the workflow
+#### Preserve meeting identity across the workflow
 
 Every downstream stage uses the Zoom meeting UUID.
 
 When RTMS joins, `registerMeetingContext()` upserts a meeting record into the shared `TaskStore`. Each transcript segment is mirrored into that store so AI analysis, the dashboard, and the recommendation layer can read the same meeting context without depending directly on the live RTMS connection.
 
-### `backend/utils/rtms/transcript-handler.js`
+**File:** `backend/utils/rtms/transcript-handler.js`
 
 ```js
 function mirrorToTaskStore(meetingUuid, segment) {
@@ -169,7 +183,7 @@ This keeps the in-progress meeting view updated while RTMS continues collecting 
 
 ---
 
-## Let Zoom lifecycle events control processing
+### Let Zoom lifecycle events control processing
 
 RTMS events also determine when processing begins and ends.
 
@@ -179,7 +193,7 @@ When RTMS stops, the SDK's `onLeave` path calls `cleanupSession`, which starts p
 
 The application does not run the full analysis continuously during the meeting. It waits until the transcript is complete and then processes the meeting once.
 
-### `backend/utils/rtms/post-meeting-ai.js`
+**File:** `backend/utils/rtms/post-meeting-ai.js`
 
 ```js
 if (analyzedMeetings.has(meetingUuid)) {
@@ -214,7 +228,7 @@ There is no separate timer or manual "run analysis" step.
 
 ---
 
-## Analyze context and generate recommendations
+### Analyze context and generate recommendations
 
 The recommendation pipeline has two layers.
 
@@ -222,13 +236,13 @@ AI interprets language and produces structured signals.
 
 Application logic decides whether those signals justify recommending an action.
 
-### Turn the transcript into structured suggestions
+#### Turn the transcript into structured suggestions
 
 The completed transcript is sent to an analyzer using OpenAI Structured Outputs with JSON Schema and `strict: true`.
 
 The model must return a predictable task structure rather than free-form text that the application would need to interpret again.
 
-### `backend/utils/ai/ai-task-analyzer.js`
+**File:** `backend/utils/ai/ai-task-analyzer.js`
 
 ```js
 const response = await openai.chat.completions.create({
@@ -259,7 +273,7 @@ The system prompt tells the model:
 ```
 The analyzer returns structured data to its caller. It does not create Zoom Tasks or persist external changes.
 
-### `backend/utils/rtms/post-meeting-ai.js`
+**File:** `backend/utils/rtms/post-meeting-ai.js`
 
 ```js
 const saved = extraction.tasks.map(t =>
@@ -275,11 +289,11 @@ status: 'pending'
 
 That status is important. AI extraction creates something the user can review before execution is possible.
 
-### Decide when to surface an action
+#### Decide when to surface an action
 
 A rule-based recommender looks at the meeting's accumulated signals and decides whether the UI should recommend a follow-up action.
 
-### `backend/utils/ai/follow-up-recommender.js`
+**File:** `backend/utils/ai/follow-up-recommender.js`
 
 ```js
 const approvedTasks =
@@ -314,7 +328,7 @@ The reasons array travels with the recommendation so the user can see what cause
 
 ---
 
-## Put execution behind an approval boundary
+### Put execution behind an approval boundary
 
 Previewing an action and executing an action use separate API operations.
 
@@ -332,7 +346,7 @@ POST /api/meetings/:id/ai-actions/create-doc
 
 The execution endpoint validates that approved Markdown was provided before continuing.
 
-### `backend/routes/api/ai-actions.js`
+**File:** `backend/routes/api/ai-actions.js`
 
 ```js
 const { markdown, title } = req.body ?? {};
@@ -362,13 +376,13 @@ A pending suggestion becomes an executable task only after the approval endpoint
 
 ---
 
-## Execute approved work with Zoom Workplace MCP
+### Execute approved work with Zoom Workplace MCP
 
 After the user approves the Markdown, the backend creates a Zoom Doc through Zoom Workplace MCP.
 
 The sample uses the OpenAI Responses API as the MCP client rather than implementing the Zoom MCP protocol directly.
 
-### `backend/utils/zoom/zoom-mcp-docs.js`
+**File:** `backend/utils/zoom/zoom-mcp-docs.js`
 
 ```js
 response = await openai.responses.create({
@@ -415,7 +429,7 @@ After execution, the backend parses the returned `file_id` and `file_link`, asso
 
 ---
 
-## Keep the workflow inside Zoom with the Apps SDK
+### Keep the workflow inside Zoom with the Apps SDK
 
 The dashboard runs as a Zoom App inside the Zoom client.
 
@@ -425,7 +439,7 @@ The implementation connects three Zoom surfaces:
 2. The Apps SDK handles in-client context and authorization.
 3. The Apps SDK sends the completed result back into Zoom Chat.
 
-### Launch the app from a Zoom Chat card
+#### Launch the app from a Zoom Chat card
 
 The Zoom Chat bot builds an interactive card containing an `Open Dashboard` button.
 
@@ -437,7 +451,7 @@ action: 'dialog'
 
 with a `dialog.link`, which opens the Next.js application in a Zoom webview.
 
-### `backend/utils/cards/menu-cards.js`
+**File:** `backend/utils/cards/menu-cards.js`
 
 ```js
 {
@@ -458,7 +472,7 @@ with a `dialog.link`, which opens the Next.js application in a Zoom webview.
 
 The helper accepts only HTTPS URLs because `dialog.link` must be an HTTPS URL to open in Zoom’s in-client browser. If it cannot produce one, it returns `null` and the card builder leaves the button out instead of sending an invalid card. 
 
-### `backend/utils/zoom/zoom-app-urls.js`
+**File:** `backend/utils/zoom/zoom-app-urls.js`
 
 ```js
 for (const raw of candidates) {
@@ -474,7 +488,7 @@ return null;
 
 Once the webview loads, `useSurface()` checks the context reported by the Apps SDK and maps it to the appropriate UI.
 
-### `frontend/lib/use-surface.tsx`
+**File:** `frontend/lib/use-surface.tsx`
 
 ```js
 function deriveKind(
@@ -496,13 +510,13 @@ The Zoom Chat bot and Apps SDK have separate jobs here.
 
 * The Apps SDK runs inside that webview and handles client context, authorization, and sharing.
 
-### Handle authorization inside the Zoom client
+#### Handle authorization inside the Zoom client
 
 Creating a Zoom Doc requires a user OAuth token with `docs:write:import`.
 
 If `create-doc` returns `401 authRequired` while the Apps SDK is available, the client starts the in-client OAuth flow and retries the same creation request once.
 
-### `frontend/components/AIActions.tsx`
+**File:** `frontend/components/AIActions.tsx`
 
 ```js
 let result = await api.createFollowUpDoc(
@@ -543,7 +557,7 @@ The backend generates a verifier and state, stores them in the session, and give
 
 Zoom's in-client flow uses the `plain` PKCE method.
 
-### `backend/routes/oauth-routes.js`
+**File:** `backend/routes/oauth-routes.js`
 
 ```js
 const verifier =
@@ -586,7 +600,7 @@ If the Apps SDK is unavailable, the browser surface can still fall back to `/aut
 
 The SDK capabilities are declared when the application initializes.
 
-### `frontend/lib/use-zoom-app-sdk.ts`
+**File:** `frontend/lib/use-zoom-app-sdk.ts`
 
 ```js
 const CAPABILITIES = [
@@ -604,11 +618,11 @@ const CAPABILITIES = [
 ];
 ```
 
-### Send the completed work back to Zoom Chat
+#### Send the completed work back to Zoom Chat
 
-After the Doc is created, the client can post its link into the user's current Zoom Chat context using the App SDK  `sendMessageToChat` method. 
+After the Doc is created, the client can post its link into the user's current Zoom Chat context using the Apps SDK `sendMessageToChat` method.
 
-### `frontend/components/AIActions.tsx`
+**File:** `frontend/components/AIActions.tsx`
 
 ```js
 const sdkResult = await sdk.sendMessageToChat(message);
@@ -628,7 +642,7 @@ try {
 
 The backend endpoint records that the share occurred. It does not post the Zoom Chat message.
 
-### `backend/routes/api/ai-actions.js`
+**File:** `backend/routes/api/ai-actions.js`
 
 ```js
 // Frontend calls this after the user shares the doc to chat via the Apps SDK.
@@ -644,7 +658,7 @@ The frontend is running inside the Zoom client and can send a message into the u
 
 ---
 
-## End-to-end implementation pattern
+### End-to-end implementation pattern
 
 ```text
                     OBSERVE
@@ -736,11 +750,60 @@ Observe → Recommend → Approve → Execute
 
 The model can interpret context and prepare work, but application code still controls when an action becomes executable and which Zoom capability is allowed to perform it.
 
+### Run the Sample
 
+The [sample repo](https://github.com/zoom/human-in-the-loop-workplace-agent-sample) runs the Express backend on port 4000 and the Next.js app on port 3000.
 
+```bash
+git clone https://github.com/zoom/human-in-the-loop-workplace-agent-sample.git
+cd human-in-the-loop-workplace-agent-sample
+npm install
+npm --prefix frontend install
+cp .env.example .env
+```
+
+1. Start ngrok pointing at the Next.js app, not Express:
+
+   ```bash
+   ngrok http 3000
+   ```
+
+2. In `.env`, set `FRONTEND_PUBLIC_URL` to the ngrok URL and `ZOOM_REDIRECT_URI` to `https://YOUR-NGROK-URL/auth/callback`, then add your Zoom app credentials and API keys.
+
+3. In the Zoom App Marketplace, set all three URLs to the same ngrok host: Home URL `https://YOUR-NGROK-URL/`, webhook endpoint `https://YOUR-NGROK-URL/webhooks`, and OAuth redirect URL `https://YOUR-NGROK-URL/auth/callback`.
+
+4. Start both services:
+
+   ```bash
+   npm run dev:all
+   ```
+
+Open the ngrok URL in a browser to see the dashboard. In a Zoom meeting, open the app from the Apps panel to use the start and stop RTMS controls.
 
 ## App Manifest
 
- See [0-app-manifest](https://github.com/zoom/human-in-the-loop-workplace-agent-sample/tree/main/0-app-manifest) it contains app-manifest.json (scopes, chatbot subscription, events, webview, and redirect URIs already configured) plus a short guide to importing it in the Zoom App Marketplace. Replace example.ngrok.app with your tunnel URL, upload, and your app is configured.
+The sample ships its manifest in [`0-app-manifest`](https://github.com/zoom/human-in-the-loop-workplace-agent-sample/tree/main/0-app-manifest), with a short guide to importing it in the Zoom App Marketplace. It configures the scopes, the chatbot subscription, the event subscriptions, the Zoom App home URL, and the redirect URIs. Replace `example.ngrok.app` with your tunnel URL before you upload it.
 
+### Scopes
 
+The manifest requests more scopes than this guide uses. These are the ones the workflow depends on:
+
+| Scope | Purpose |
+|-------|---------|
+| `zoomapp:inmeeting` | Run the dashboard inside meetings |
+| `meeting:read:meeting_transcript` | Receive the live transcript through RTMS |
+| `docs:write:import` | Create the follow-up Zoom Doc through Zoom MCP |
+| `imchat:userapp` | Share the Doc link to chat with `sendMessageToChat` |
+
+RTMS needs [Zoom Developer Pack](https://zoom.us/pricing/developer) credits on your account; free trial credits are available.
+
+### Event Subscriptions
+
+| Event | Trigger |
+|-------|---------|
+| `meeting.rtms_started` | RTMS starts; the backend joins the stream |
+| `meeting.rtms_stopped` | RTMS stops; the backend runs the post-meeting analysis |
+
+### Zoom Apps SDK APIs
+
+The dashboard declares `startRTMS`, `stopRTMS`, `pauseRTMS`, `resumeRTMS`, `getRTMSStatus`, `onRTMSStatusChange`, `getRunningContext`, `getMeetingContext`, `sendMessageToChat`, `authorize`, and `onAuthorized`. Enable them for the app in the Marketplace.
