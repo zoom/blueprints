@@ -9,22 +9,19 @@ solution_types: ["real-time-analysis", "compliance-auditing"]
 author: "Ticorrian Heard"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-09-23
+updated: 2026-11-15
 github_repo: "https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation"
 demo_url: "https://youtu.be/jDxPPI-rvwc"
 tags: ["real-time", "raw-data", "video", "security"]
 seo_title: "Moderate content in real-time video sessions"
 seo_keywords: ["zoom object detection ai", "image analysis zoom video sdk", "raw data video sdk"]
 license_required: false
-stack: "Node · Express · JavaScript · TensorFlow.js"
+stack: "Node · Express · TypeScript · TensorFlow.js"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation" }
 ---
 
-The Zoom Video SDK uses its Video Processor feature to launch the Web
-Worker and pass raw video frames to the model, client-side.
-This Web Worker runs an object detection model and Webgl is used to apply effects
-on the identified filter list objects to the image (classification, blurring, masking, etc).
+The Zoom Video SDK's video processor feature runs your code in a Web Worker and passes it each raw video frame, on the client. In this blueprint the worker runs an object detection model on the frame, then uses WebGL to blur any detected object that is on a filter list before the video leaves the device.
 
 <YouTube id="jDxPPI-rvwc"/>
 
@@ -36,14 +33,14 @@ decrease application trust, increase harmful behavior, and introduce liability f
 application owners. 
 
 **Scenario 2:**
-Companies require anonymous 3rd-party Auditors to join their Zoom Sessions. This is especially 
+Companies require anonymous third-party auditors to join their Zoom sessions. This is especially 
 valuable in privacy-sensitive environments where outside auditors need visibility into the session 
 without identifying or exposing participants, meeting locations, or sensitive objects in the frame. 
  
 **What you'll need:**
-- Zoom Video SDK credentials [Get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)
-- A backend to receive webhooks, persist transcripts, and call an LLM (Node/Express in this guide; any stack works)
-- An LLM trained for Object Detection (OpenRouter, OpenAI, Anthropic, or self-hosted)
+- A Zoom Video SDK account (free trial credits are available) and its [credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)
+- A backend that signs the session JWT (Node/Express in this guide; any stack works)
+- An object detection model that runs in the browser (COCO-SSD on TensorFlow.js in this guide)
 
 ## Features
 - Real-time object detection in a multi-threaded environment
@@ -53,8 +50,7 @@ without identifying or exposing participants, meeting locations, or sensitive ob
 <Image src="images/contentmod-shot1.png" alt="The same Video SDK session with the detected logo blurred" />
 
 ## Architecture
-The client device requests for a JWT Token to a secure backend Server. The client receives the JWT Token and passed it to the Zoom Video SDK to start the session. On successful join into the session, `mediaStream.createProcessor()` is used to create the 
-Web Worker running our Video Processor. Once the client video is started, the SDK sends the preprocessor raw video frames to the web worker. The web worker runs a pre-trained object detection model with TensorFlow.js on the image to detect any objects listed on the filter list. Any detected objects are then covered by a gaussian blur using the WebGL library to run shaders on the device GPU. The processed image is then sent to the Zoom MMR which relays to each participant in the session. 
+The client requests a JWT from a backend server and passes it to the Zoom Video SDK to join the session. After joining, the client starts its video, then calls `mediaStream.createProcessor()` and `addProcessor()` to create the Web Worker that runs the video processor. From then on the SDK sends each raw video frame to the worker. The worker runs a pre-trained object detection model with TensorFlow.js on the frame and checks the results against the filter list. Detected objects on the list are covered with a Gaussian blur, using WebGL shaders that run on the device GPU. The processed frame goes back to the SDK, which sends it to Zoom, and Zoom relays it to each participant in the session.
 
 ```mermaid
 sequenceDiagram
@@ -64,34 +60,34 @@ sequenceDiagram
     participant SDK as Zoom Video SDK
     participant Worker as Web Worker (Video Processor)
     participant GPU as Device GPU (WebGL)
-    participant MMR as Zoom MMR (Cloud)
+    participant MMR as Zoom cloud
     actor Peers as Session Participants
 
-    User->>Backend: 1. Request JWT Token
-    Backend-->>User: 2. Return signed JWT Token
-    User->>SDK: 3. Join session with JWT (client.join)
-    SDK-->>User: 4. Session joined successfully
-    User->>SDK: 5. createProcessor() & addProcessor()
-    SDK->>Worker: 6. Instantiate Web Worker
-    User->>SDK: 7. Start video (startVideo)
+    User->>Backend: Request JWT
+    Backend-->>User: Return signed JWT
+    User->>SDK: Join session with JWT (client.join)
+    SDK-->>User: Session joined
+    User->>SDK: Start video (startVideo)
+    User->>SDK: createProcessor() and addProcessor()
+    SDK->>Worker: Create Web Worker
     loop Video Stream Processing
-        SDK->>Worker: 8. Send raw preprocessor video frames
-        Worker->>Worker: 9. Run TensorFlow object detection (filter list)
-        Worker->>GPU: 10. Execute WebGL shaders (Gaussian blur)
-        GPU-->>Worker: 11. Return blurred frame
-        Worker->>SDK: 12. Return processed frame
-        SDK->>MMR: 13. Send processed video stream
-        MMR->>Peers: 14. Relay video to participants
+        SDK->>Worker: Send raw video frame
+        Worker->>Worker: Run TensorFlow.js object detection (filter list)
+        Worker->>GPU: Run WebGL shaders (Gaussian blur)
+        GPU-->>Worker: Return blurred frame
+        Worker->>SDK: Return processed frame
+        SDK->>MMR: Send processed video stream
+        MMR->>Peers: Relay video to participants
     end
 ```
 
 ## Implementation Guide
 
-Reference this [Content Moderation Walkthrough](https://developers.zoom.us/blog/content-moderator-with-videosdk-web-processor/) to access the GitHub repository and set up the app.
+The code below is from the [sample repo](https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation). The [Content Moderation Walkthrough](https://developers.zoom.us/blog/content-moderator-with-videosdk-web-processor/) on the Zoom developer blog covers the same app step by step.
 
 ### Frontend - Video SDK Configuration
-Implement the Video SDK with at least video capabilities for the host and session participants. You will need to request a JWT Token from your backend service prior to calling the `client.join()` function. After successful join, use the `createProcessor()` function to create a video processor and `addProcessor` to start the processor.
-```js
+Implement the Video SDK with at least video capabilities for the host and session participants. Request a JWT from your backend before calling `client.join()`. After joining and starting video, call `createProcessor()` to create the video processor and `addProcessor()` to start it.
+```ts
 const client = ZoomVideo.createClient();
 await client.init("en-US", "Global", { patchJsMedia: true });
 
@@ -133,7 +129,15 @@ const startCall = async () => {
 **For production deployments, ensure you are passing a secure https url that you own to the url field in `createProcessor()`**
 
 ### Model Integration via Web Worker
-The model used in the demo app is a TensorFlow.js port of the COCO-SSD model. This model detects objects defined in the COCO dataset, which is a large-scale object detection, segmentation, and captioning dataset. Any Object Detection model can be used within the web worker but it is recommended to use a high-FPS vision model (YOLOv8/v10/v11 nano/small, MobileNet-SSD, etc) for lower latency performance. In the Web Worker, WebGL is used to offload image processing to the GPU. 
+The sample's processor is [`public/od-quad.js`](https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation/blob/main/public/od-quad.js). It loads a pre-trained TensorFlow.js port of the COCO-SSD model when the processor starts; nothing is trained. COCO-SSD detects the object classes in the COCO dataset. Any object detection model can run in the Web Worker, but a fast vision model (YOLOv8/v10/v11 nano or small, MobileNet-SSD, and similar) keeps latency low. WebGL moves the image processing to the GPU.
+
+The filter list is an array of COCO class names at the top of the file. The processor blurs up to 10 detected regions per frame whose class is on the list:
+
+```js
+const moderationLabels = ['cell phone', 'bottle', 'cup'];
+```
+
+Change the list to the classes you want to hide. To detect something COCO-SSD does not know, such as a logo, swap in a model trained for it.
 
 
 ### Server-side implementation strategy
@@ -149,16 +153,16 @@ sequenceDiagram
     participant Model as Object Detection Model (GPU)
     participant GPU as Client GPU (WebGL)
 
-    Main->>Worker: 1. Send raw video frame (ImageBitmap / ArrayBuffer)
-    Worker->>WS: 2. Stream binary frame (JPEG / WebP / Raw bytes)
-    WS->>Server: 3. Receive binary frame
-    Server->>Model: 4. Inference (Detect sensitive objects)
-    Model-->>Server: 5. Return detected targets
-    Server->>WS: 6. Send bounding boxes / mask coordinates (JSON)
-    WS->>Worker: 7. Receive coordinate payload [x, y, w, h]
-    Worker->>GPU: 8. Execute WebGL shaders (image effects)
-    GPU-->>Worker: 9. Return processed frame
-    Worker->>Main: 10. Pass processed frame back to Video SDK pipeline
+    Main->>Worker: Send raw video frame (ImageBitmap / ArrayBuffer)
+    Worker->>WS: Stream binary frame (JPEG / WebP / Raw bytes)
+    WS->>Server: Receive binary frame
+    Server->>Model: Inference (Detect sensitive objects)
+    Model-->>Server: Return detected targets
+    Server->>WS: Send bounding boxes / mask coordinates (JSON)
+    WS->>Worker: Receive coordinate payload [x, y, w, h]
+    Worker->>GPU: Execute WebGL shaders (image effects)
+    GPU-->>Worker: Return processed frame
+    Worker->>Main: Pass processed frame back to Video SDK pipeline
 ```
 
 ### JWT Generation
@@ -173,8 +177,8 @@ Use the [Video SDK key and secret](https://developers.zoom.us/docs/video-sdk/get
 | `iat`       | Current server time with a small clock-skew allowance            |
 | `exp`       | No more than two hours after issue in this architecture          |
 
-This JWT is generated with functions similar to the below:
-```js
+The sample signs the JWT in [`src/server.ts`](https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation/blob/main/src/server.ts) with a function like this:
+```ts
 function generateSignature(
 	sessionName: string,
 	role: number,
@@ -199,17 +203,26 @@ function generateSignature(
 ```
 **Do not expose your credentials to the client. When using the Video SDK in production, use a backend service to sign tokens. Do not store credentials in plain text. The sample app uses a `.env` file for simplicity.**
 
-### Model Training
-The sample app trains a simple model on server startup using TensorFlow.js, based on this [object detection example](https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd).
+### Run the Sample
+
+```bash
+git clone https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation.git
+cd videosdk-web-videoprocessor-contentmoderation
+npm install
+cp .env.example .env
+```
+
+Set `SDK_KEY` and `SDK_SECRET` in `.env` to your Video SDK key and secret, then start the app:
+
+```bash
+npm run dev
+```
+
+The server listens on `http://localhost:3000` (set `PORT` to change it) and serves both the page and the token endpoint, `POST /zoomtoken`. Set `ENDPOINT_URL=/zoomtoken` in `.env` to have the page fetch its token from that endpoint. Without it, the page prompts for a JWT; generate one with `node generateToken.ts TestSession`, where `TestSession` is the session name set in `src/main.ts`.
+
+Join the session, hold a cup, bottle, or phone up to the camera, and the object is blurred in the video other participants receive.
 
 
-## Related Resources
-- [Content Moderation using Video SDK Processors](https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation)
-- [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/) - SDK documentation
-- [Zoom Video SDK Agent Skills](https://github.com/zoom/skills/tree/main/skills/video-sdk)
-- [Zoom Developer Forum](https://devforum.zoom.us/)
-- [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
-  
 ## App Manifest
 
 Video SDK apps are not configured through a Marketplace app manifest, so this blueprint has no `manifest.json`. The app authenticates with your Video SDK key and secret instead.
@@ -222,3 +235,9 @@ Video SDK apps are not configured through a Marketplace app manifest, so this bl
 - Properly implement the [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/).
 - Release and tear down the web worker.
 
+## Related Resources
+- [Content Moderation using Video SDK Processors](https://github.com/zoom/videosdk-web-videoprocessor-contentmoderation)
+- [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/) - SDK documentation
+- [Zoom Video SDK Agent Skills](https://github.com/zoom/skills/tree/main/skills/video-sdk)
+- [Zoom Developer Forum](https://devforum.zoom.us/)
+- [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
