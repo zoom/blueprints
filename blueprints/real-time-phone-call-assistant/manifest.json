@@ -1,0 +1,96 @@
+{
+  "display_information": {
+    "display_name": "Phone RTMS Call Assistant",
+    "description": "Live call transcript, summary, and keyword prompts in Zoom Phone",
+    "long_description": "A Zoom Surface App that shows live call context, a speaker-labeled transcript, a summary every 30 seconds, and keyword-triggered agent prompts inside the Zoom Phone client. Transcripts and audio stream over RTMS."
+  },
+  "oauth_information": {
+    "usage": "USER_OPERATION",
+    "development_redirect_uri": "https://YOUR-NGROK-URL/api/auth/callback",
+    "production_redirect_uri": "https://YOUR-PRODUCTION-URL/api/auth/callback",
+    "oauth_allow_list": [
+      "https://YOUR-NGROK-URL"
+    ],
+    "scopes": [
+      {
+        "scope": "phone:read:voice_call_audio",
+        "optional": false
+      },
+      {
+        "scope": "phone:read:voice_call_transcript",
+        "optional": false
+      },
+      {
+        "scope": "rtms:read:phone_rtms_started",
+        "optional": false
+      },
+      {
+        "scope": "rtms:read:phone_rtms_stopped",
+        "optional": false
+      },
+      {
+        "scope": "rtms:read:phone_rtms_interrupted",
+        "optional": false
+      },
+      {
+        "scope": "user:read:user",
+        "optional": false
+      }
+    ],
+    "scope_description": "Phone call audio and transcript access over RTMS, and the authenticated user's profile to key OAuth tokens."
+  },
+  "features": {
+    "development_home_uri": "https://YOUR-NGROK-URL/api/home",
+    "production_home_uri": "https://YOUR-PRODUCTION-URL/api/home",
+    "domain_allow_list": [
+      {
+        "domain": "YOUR-NGROK-URL",
+        "explanation": "Development server"
+      },
+      {
+        "domain": "appssdk.zoom.us",
+        "explanation": "Required for Zoom Apps SDK"
+      }
+    ],
+    "in_client_feature": {
+      "zoom_app_api": {
+        "enable": true,
+        "zoom_app_apis": [
+          "getPhoneContext",
+          "getRunningContext"
+        ]
+      },
+      "guest_mode": {
+        "enable": false
+      },
+      "in_client_oauth": {
+        "enable": true
+      }
+    },
+    "zoom_client_support": {
+      "mobile": {
+        "enable": false
+      },
+      "zoom_room": {
+        "enable": false
+      },
+      "pwa_client": {
+        "enable": false
+      }
+    },
+    "event_subscription": {
+      "enable": true,
+      "events": [
+        {
+          "subscription_name": "Zoom Phone RTMS Events",
+          "event_types": [
+            "phone.call_rtms_started",
+            "phone.call_rtms_stopped"
+          ],
+          "development_webhook_url": "https://YOUR-NGROK-URL/api/webhooks/zoom",
+          "production_webhook_url": "https://YOUR-PRODUCTION-URL/api/webhooks/zoom"
+        }
+      ]
+    }
+  }
+}

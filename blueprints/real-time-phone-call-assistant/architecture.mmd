@@ -1,0 +1,10 @@
+%% Keep this file in sync with the mermaid fence in index.md.
+%% It exists so diagrams can be reused/rendered outside the doc.
+graph LR
+    Z[Zoom Phone] -->|webhook: phone.call_rtms_started / stopped| B[Backend :3001]
+    B -->|forward RTMS event| R[RTMS service :3002]
+    R <-->|signaling, audio, transcript WebSockets| Z
+    R -->|POST /internal/rtms-events| B
+    B -->|SSE /api/events| P[Zoom Apps panel]
+    B <-->|tokens, active user| RD[(Redis)]
+    R -->|transcript and WAV files| F[(rtms/data)]
