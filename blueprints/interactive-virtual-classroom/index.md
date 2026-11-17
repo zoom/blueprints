@@ -9,30 +9,32 @@ verticals: ["apps"]
 author: "Boon Jun Tan"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-09-04
-github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom" 
+updated: 2026-11-16
+github_repo: "https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom"
 demo_url: "https://youtu.be/lwNA4Yj-G5Q"
+tags: ["ios", "uikit", "screen-sharing", "annotation", "education"]
 seo_title: "Build a virtual classroom with screen sharing on iOS"
 seo_keywords: ["screen sharing", "annotation", "virtual classroom"]
 license_required: false
 stack: "iOS · Swift · UIKit"
 ---
 
-An interactive virtual classroom app built using Zoom's Video SDK with live screen sharing and annotation tools, giving teachers and students a shared visual workspace and collaborate through real-time annotations without leaving your platform.
+An interactive virtual classroom app built with the Zoom Video SDK for iOS. Live screen sharing and annotation tools give teachers and students a shared visual workspace, so they can collaborate through real-time annotations without leaving your platform.
 
 Remote learning often falls apart at exactly this moment: the teacher is explaining something on screen, but students have no way to point, highlight, or annotate what they're seeing. Switching to a separate whiteboard tool breaks the flow and severs the real-time connection between explanation and markup.
 
 **What you'll need:**
 
-- Zoom developer account with Video SDK license via [get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)
-- At least 2 iPhones with iOS 15+ for test deployment
+- A Zoom Video SDK account and its SDK key and secret ([get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/))
+- Xcode and an Apple developer account to build and run on devices
+- At least two iPhones or iPads running iOS 15.6 or later (video does not work in the iOS Simulator)
 
 ## Features
 
 - **Screen sharing**: Broadcast the teacher's screen or any in-app content view to all participants in real time
 - **Live annotation**: Renders a synchronized annotation canvas overlaid on the shared screen, visible to all participants
-- **Rich annotation Tools**: Supports pen, highlighter, shapes, and more, along with color differentiation so contributions are easy to tell apart
-- **In-session panel**: Surface everything in a tab bar visible to all participants
+- **Annotation tools**: Pen, highlighter, arrow, and eraser, with four colors so contributions are easy to tell apart, plus undo, redo, and clear all
+- **In-session controls**: Camera, microphone, sharing, participants, and leave in one tab bar
 
 <div align="center">
   <img src="images/virtual-classroom-join-session.jpg" alt="Join screen with a Student or Teacher role toggle, name and class code fields, and a Start classroom button" width="320" />
@@ -48,28 +50,44 @@ Remote learning often falls apart at exactly this moment: the teacher is explain
 
 ## Architecture
 
+Each device runs the same iOS app. The app joins a Video SDK session with a JWT, and the Zoom Video SDK carries video, audio, the shared screen, and annotations between the devices. In production your backend signs the JWT, so the SDK secret never ships in the app.
+
+```mermaid
+graph LR
+    T[Teacher's iOS app]
+    S[Student's iOS app]
+    B[Your backend - signs the session JWT]
+    Z@{ shape: rounded, label: "Zoom Video SDK" }
+
+    T -- Request JWT --> B
+    S -- Request JWT --> B
+    T -- Join session, video, audio, share, annotation --> Z
+    S -- Join session, video, audio, annotation --> Z
+```
+
 ### Components
 
 | Component | Responsibility |
 |-----------|----------------|
-| **Zoom Video SDK** | Handles all the video, audio, screen share, annotation and participants |
-| **Frontend** | Manage and display of participants' video, screen share and annotation, manage audio and participants list. |
+| **Zoom Video SDK** | Handles video, audio, screen sharing, annotation, and participant state |
+| **iOS app (UIKit)** | Displays participants' video, the shared screen, and annotations; manages audio controls and the participant list |
+| **JWT signer** | Signs the session JWT with the SDK key and secret. A backend service in production; a local script in the sample |
 
 ## Implementation Guide
 
-This guide shows how to build a UIKit-based virtual classroom using the Zoom Video SDK for iOS. It collects a participant’s (teacher/student) display name and class code, joins a Video SDK session, renders all their videos and audio, shares either the app screen or a bundled sample maths handout, and exposes Zoom’s live annotation tools in a classroom-oriented interface.
+This guide shows how to build a UIKit-based virtual classroom using the Zoom Video SDK for iOS. The app collects a participant’s (teacher or student) display name and class code, joins a Video SDK session, renders everyone's video and audio, shares either the app screen or a bundled sample maths handout, and exposes Zoom’s live annotation tools in a classroom-oriented interface.
 
 | File | Responsibility |
 |------|----------------|
-| StartViewController.swift | Collects the learner name and class code, initializes the SDK, and opens the session screen. |
-| SessionViewController.swift | Owns Video SDK session lifecycle, video/audio/share controls, and SDK delegate callbacks. |
-| SessionViewControllerExtension.swift | Builds the classroom UI, participant sheet, PDF sharing, and annotation controls. |
-| Scripts/JWTGenerator.swift | A JWT generator to be used to join/start a VSDK session |
-| Linear_Equations_Annotation_Lab.pdf, Quadratic_Functions_Challenge.pdf, Systems_of_Equations_Investigation.pdf | Sample PDF file used for screen sharing and annotation purpose. |
+| `StartViewController.swift` | Collects the participant's name and class code, initializes the SDK, and opens the session screen. |
+| `SessionViewController.swift` | Owns the Video SDK session lifecycle, video/audio/share controls, and SDK delegate callbacks. |
+| `SessionViewControllerExtension.swift` | Builds the classroom UI, participant sheet, PDF sharing, and annotation controls. |
+| `Scripts/JWTGenerator.swift` | A command-line JWT generator for starting or joining a Video SDK session during development. |
+| `Linear_Equations_Annotation_Lab.pdf`, `Quadratic_Functions_Challenge.pdf`, `Systems_of_Equations_Investigation.pdf` | Sample PDF files for screen sharing and annotation. |
 
 ### Part 1: Start the application in StartViewController
 
-StartViewController is the initial classroom entry screen. It owns the two user inputs that define a lesson (session) join.
+`StartViewController` is the initial classroom entry screen. It owns the two user inputs that define a lesson (session) join.
 
 ```swift
 private let nameField = UITextField()
@@ -78,7 +96,7 @@ private let classCodeField = UITextField()
 
 The name becomes the Video SDK display name. The class code becomes the Video SDK session name. 
 
-The controller initializes the VSDK under setupSDK() in viewDidLoad():
+The controller initializes the Video SDK by calling `setupSDK()` in `viewDidLoad()`:
 
 ```swift
 override func viewDidLoad() {
@@ -90,7 +108,7 @@ override func viewDidLoad() {
 }
 ```
 
-setupSDK() configures the Zoom domain and initializes the VSDK instance:
+`setupSDK()` configures the Zoom domain and initializes the Video SDK instance:
 
 ```swift
 private func setupSDK() {
@@ -107,22 +125,22 @@ private func setupSDK() {
 
 ### Part 2: Collect classroom details, validate and hand off to SessionViewController
 
-The StartViewController has three important information required to setup the VSDK's session context which will be using to generate the JWT required to join/start a session:
-- Student (role=0 : participant) or Teacher (role=1 : host, once host exist then the others will become manager) selection
+The session JWT is generated from three pieces of information:
+- Role: Student (`role_type` 0, participant) or Teacher (`role_type` 1, host; once a host exists, others who join with role 1 become managers)
 - Username (display name)
-- Class code (tpc)
+- Class code (the `tpc` claim)
 
-The roleControl changes the message and button label shown in the UI:
+The `roleControl` changes the message and button label shown in the UI:
 
 ```swift
 private let roleControl = UISegmentedControl(items: ["Student", "Teacher"])
 ```
 
-Zoom VSDK determines actual host and participant privileges from the JWT used to join the session, not from the selected segment. The VSDK later exposes those privileges through ZoomVideoSDKUser.isHost().
+The Video SDK determines actual host and participant privileges from the JWT used to join the session, not from the selected segment. The SDK later exposes those privileges through `ZoomVideoSDKUser.isHost()`.
 
-With the 3 important information, you should sign your JWT with a backend service in a production use-case. For faster JWT generation, you can navigate checkout the Scripts/JWTGenerator.swift and its README for more details on how to consume it Once you get the generated JWT, you can simple copy and paste it below. Ensure that the class code matches the session name used to generate the JWT Token.
+In production, sign the JWT with a backend service. For development, `Scripts/JWTGenerator.swift` generates one from the command line (see [Run the Sample](#last-step-run-the-sample)). The class code entered in the app must match the session name used to generate the JWT.
 
-We will proceed with handing off the information to SessionViewController which will consume these information to create the SessionViewController in order to start/join a session.
+`StartViewController` then hands the name and class code to a new `SessionViewController`, which uses them to start or join the session.
 
 ```swift
 @IBAction private func enterButtonTapped(_: UIButton) {
@@ -160,18 +178,18 @@ We will proceed with handing off the information to SessionViewController which 
 
 ### Part 3: Join the classroom
 
-SessionViewController.swift receives the values from the entry screen.
+`SessionViewController.swift` receives the values from the entry screen.
 
-When the controller appears, presentJWTAlert() is called from viewDidAppear(_:). For demo purpose, user can choose to copy and paste the generated JWT token in the alert popup and this will be under the userInputJWT variable. Alternatively, the jwtToken variable is used by default to construct the ZoomVideoSDKSessionContext and you can choose to use this variable for quick demo purpose only. You should sign your JWT with a backend service in a production use-case and use the same variable. 
+When the controller appears, `presentJWTAlert()` is called from `viewDidAppear(_:)`. For the demo, you can paste a generated JWT into the alert, which stores it in `userInputJWT`. Alternatively, set the `jwtToken` constant in code; `joinSession()` uses it whenever it is not empty. In production, fetch the JWT from your backend service instead.
 
 ```swift
-let jwtToken = ""
+let jwtToken = ""        // In the sample this is the Xcode placeholder <#JWT#>; replace it before building
 var sessionname = ""
 var username = ""
 var userInputJWT = ""
 ```
 
-joinSession() then creates ZoomVideoSDKSessionContext:
+`joinSession()` then creates a `ZoomVideoSDKSessionContext`:
 
 ```swift
 func joinSession() {
@@ -186,11 +204,11 @@ func joinSession() {
 }
 ```
 
-The JWT must contain a tpc claim that exactly matches sessionname. If a student/teacher enters Algebra101, the JWT must be generated with Algebra101 as its session name.
+The JWT must contain a `tpc` claim that exactly matches `sessionname`. If a student or teacher enters `ALGEBRA101`, the JWT must be generated with `ALGEBRA101` as its session name. The class code field capitalizes letters as you type.
 
-Scripts/JWTGenerator.swift creates a development JWT with the required claims:
+`Scripts/JWTGenerator.swift` creates a development JWT with the required claims. The token is valid for two hours:
 
-```
+```swift
 let payload: [String: Any] = [
     "app_key": sdkKey,
     "tpc": sessionName,
@@ -203,11 +221,11 @@ let payload: [String: Any] = [
 
 For production, generate and sign JWTs on a backend service. Do not embed SDK secrets in the iOS app or commit long-lived JWTs.
 
-Output: Zoom invokes onSessionJoin() after the participant has joined successfully.
+Output: The SDK invokes `onSessionJoin()` after the participant has joined successfully.
 
 ### Part 4: Build the classroom after joining
 
-SessionViewController registers as the Zoom Video SDK delegate in viewDidLoad():
+`SessionViewController` registers as the Zoom Video SDK delegate in `viewDidLoad()`:
 
 ```swift
 override func viewDidLoad() {
@@ -217,7 +235,7 @@ override func viewDidLoad() {
 }
 ```
 
-The UI setup is implemented in MyVideoSDKApp/SessionViewControllerExtension.swift:
+The UI setup is implemented in `MyVideoSDKApp/SessionViewControllerExtension.swift`:
 
 ```swift
 func setupUI() {
@@ -229,17 +247,17 @@ func setupUI() {
 }
 ```
 
-The setupUI() composes the session screen from these persistent views:
-- sessionHeader: Classroom identity and live-state header.
-- scrollView and videoStackView: Camera grid.
-- sharerView: Remote participant’s shared content.
-- sharedPDFView: Teacher-owned PDF presentation surface.
-- localViewDuringShare: Floating local picture-in-picture tile.
-- tabBar: Camera, microphone, sharing, participants, and leave controls.
-- annotationPanel: Annotation tools shown only when drawing is active.
-- participantsPanel: Bottom sheet containing participantsTableView.
+`setupUI()` composes the session screen from these persistent views:
+- `sessionHeader`: Classroom identity and live-state header.
+- `scrollView` and `videoStackView`: Camera grid.
+- `sharerView`: Remote participant’s shared content.
+- `sharedPDFView`: The sharer's PDF presentation surface.
+- `localViewDuringShare`: Floating local picture-in-picture tile.
+- `tabBar`: Camera, microphone, sharing, participants, and leave controls.
+- `annotationPanel`: Annotation tools shown only when drawing is active.
+- `participantsPanel`: Bottom sheet containing `participantsTableView`.
 
-The visual hierarchy used in this app is as such:
+The app uses this view hierarchy:
 
 ```
 SessionViewController.view
@@ -268,9 +286,18 @@ func onSessionJoin() {
 
 The local camera canvas is attached to `localView`. A second square preview is attached to `localViewDuringShare`, which remains visible while a user is sharing content.
 
+In the same callback, the host unlocks sharing and limits the session to one share at a time. Until a host has joined, the share button reads "Share Locked".
+
+```swift
+if let localUserIsHost = ZoomVideoSDK.shareInstance()?.getSession()?.getMySelf()?.isHost(), localUserIsHost {
+    ZoomVideoSDK.shareInstance()?.getShareHelper()?.enableMultiShare(false)
+    ZoomVideoSDK.shareInstance()?.getShareHelper()?.lockShare(false)
+}
+```
+
 ### Part 5: Render remote participants and maintain the participants list
 
-When another user (teacher/student) joins, onUserJoin(_:users:) creates a tile and subscribes the SDK canvas:
+When another user (teacher or student) joins, `onUserJoin(_:users:)` creates a tile and subscribes the SDK canvas:
 
 ```swift
 remoteUserVideoCanvas.subscribe(
@@ -286,7 +313,7 @@ The controller tracks each tile in:
 var remoteUserViews: [Int: (view: UIView, placeholder: UIView)] = [:]
 ```
 
-This gives the app a reliable way to unsubscribe and remove UI when onUserLeave(_:users:) fires.
+This gives the app a reliable way to unsubscribe and remove UI when `onUserLeave(_:users:)` fires.
 
 The People tab is backed by:
 
@@ -294,7 +321,7 @@ The People tab is backed by:
 var participants: [ZoomVideoSDKUser] = []
 ```
 
-refreshParticipants() rebuilds the roster from the session’s current users:
+`refreshParticipants()` rebuilds the roster from the session’s current users:
 
 ```swift
 participants = ([myself] + (session.getRemoteUsers() ?? [])).sorted {
@@ -304,7 +331,7 @@ participants = ([myself] + (session.getRemoteUsers() ?? [])).sorted {
 
 Hosts and managers rank first and are labelled Teacher. Other users are labelled Student.
 
-Call refreshParticipants() whenever user state changes. The sample already does this for joins, leaves, video changes, audio changes, name changes, host changes, and manager changes.
+Call `refreshParticipants()` whenever user state changes. The sample already does this for joins, leaves, video changes, audio changes, name changes, host changes, and manager changes.
 
 <div align="center">
   <img src="images/virtual-classroom-participants.jpg" alt="Class participants panel listing a teacher and a student with their video and audio status" width="320" />
@@ -312,7 +339,7 @@ Call refreshParticipants() whenever user state changes. The sample already does 
 
 ### Part 6: Control video, audio, sharing, and participants
 
-The bottom tab bar uses ControlOption:
+The bottom tab bar uses `ControlOption`:
 
 ```swift
 enum ControlOption: Int {
@@ -320,7 +347,7 @@ enum ControlOption: Int {
 }
 ```
 
-tabBar(_:didSelect:) routes each item to its matching action:
+`tabBar(_:didSelect:)` routes each item to its matching action:
 
 ```swift
 switch item.tag {
@@ -339,11 +366,11 @@ default:
 }
 ```
 
-handleVideoToggle(_:) uses ZoomVideoSDKVideoHelper to start or stop the camera. handleAudioToggle(_:) uses ZoomVideoSDKAudioHelper to start, mute, or unmute audio. 
+`handleVideoToggle(_:)` uses `ZoomVideoSDKVideoHelper` to start or stop the camera. `handleAudioToggle(_:)` uses `ZoomVideoSDKAudioHelper` to start, mute, or unmute audio.
 
 ### Part 7: Share the app or a bundled lesson
 
-Sharing is represented by ShareSelection:
+Sharing is represented by `ShareSelection`:
 
 ```swift
 enum ShareSelection {
@@ -354,8 +381,8 @@ enum ShareSelection {
 
 `handleShareToggle(_:)` first checks for a conflicting active share and validates that in-app screen sharing is available. It then offers two choices:
 
-- InAppScreenShare
-- Choose Math Lab PDF
+- **InAppScreenShare**: shares the app screen
+- **Choose Math Lab PDF**: shares one of the bundled handouts
 
 `handleShareSelection(with:)` starts the appropriate share mode:
 
@@ -370,7 +397,7 @@ case .ShareWithView:
 }
 ```
 
-The PDF route uses presentLessonPicker() to select one of the bundled resources:
+The PDF route uses `presentLessonPicker()` to select one of the bundled resources:
 
 ```swift
 let lessons = [
@@ -380,7 +407,7 @@ let lessons = [
 ]
 ```
 
-openBundledPDF() resolves selectedLessonPDF from the main bundle, creates a PDFDocument, and assigns it to sharedPDFView.
+`openBundledPDF()` resolves `selectedLessonPDF` from the main bundle, creates a `PDFDocument`, and assigns it to `sharedPDFView`.
 
 ```swift
 sharedPDFView.autoScales = true
@@ -388,7 +415,7 @@ sharedPDFView.document = pdfDoc
 sharedPDFView.isHidden = false
 ```
 
-onUserShareStatusChanged(_:user:shareAction:) updates the UI as sharing starts or stops. Local shares reveal the floating pencil button. Remote shares subscribe the incoming share canvas to sharerView.
+`onUserShareStatusChanged(_:user:shareAction:)` updates the UI as sharing starts or stops. Local shares reveal the floating pencil button. Remote shares subscribe the incoming share canvas to `sharerView`.
 
 <div align="center">
   <img src="images/virtual-classroom-share-pdf.jpg" alt="Shared PDF worksheet in a live session with the teacher's video thumbnail and session controls" width="320" />
@@ -396,11 +423,11 @@ onUserShareStatusChanged(_:user:shareAction:) updates the UI as sharing starts o
 
 ### Part 8: Start, stop, and control annotation
 
-The floating pencil button calls toggleDraw() in MyVideoSDKApp/SessionViewControllerExtension.swift.
+The floating pencil button calls `toggleDraw()` in `MyVideoSDKApp/SessionViewControllerExtension.swift`.
 
-The method validates that annotation is supported and that a local or remote share is active. It then creates a ZoomVideoSDKAnnotationHelper.
+The method validates that annotation is supported and that a local or remote share is active. It then creates a `ZoomVideoSDKAnnotationHelper`.
 
-For a local share, pass nil:
+For a local share, pass `nil`:
 
 ```swift
 annotationHelper = shareHelper.createAnnotationHelper(nil)
@@ -421,14 +448,14 @@ guard annotationHelper.startAnnotation() == .Errors_Success else {
 }
 ```
 
-For InAppScreenShare, the application supplies the visible annotation parent view with setAnnotationView(_:).
+For `InAppScreenShare`, the application supplies the visible annotation parent view with `setAnnotationView(_:)`.
 
 ```swift
 let annotationView = isLocalShare ? view : sharerView
 shareHelper.setAnnotationView(annotationView)
 ```
 
-The controller then reveals annotationPanel, which contains:
+The controller then reveals `annotationPanel`, which contains:
 - Pen
 - Highlighter
 - Arrow
@@ -438,7 +465,7 @@ The controller then reveals annotationPanel, which contains:
 - Redo
 - Clear all
 
-These controls map directly to ZoomVideoSDKAnnotationHelper methods:
+These controls map directly to `ZoomVideoSDKAnnotationHelper` methods. The four tools set the tool types `.pen`, `.highLighter`, `.autoArrow`, and `.ERASER`:
 
 ```swift
 helper.setToolType(.pen)
@@ -452,13 +479,13 @@ helper.clear(.all)
   <img src="images/virtual-classroom-annotation.jpg" alt="Handwritten annotations on the shared worksheet with the Pen, Mark, Arrow, and Erase toolbar open" width="320" />
 </div>
 
-### Part 9: Protect drawing from zoom annotation and PDFView gesture conflicts
+### Part 9: Protect drawing from zoom and PDFView gesture conflicts
 
 Annotation and PDF navigation should not be active at the same time. The sample disables PDFKit scrolling, pan, pinch, double-tap, and conflicting share-view zoom gestures while drawing is active.
 
-setPDFNavigationEnabled(_:) locks and restores PDFKit navigation inside sharedPDFView.
+`setPDFNavigationEnabled(_:)` locks and restores PDFKit navigation inside `sharedPDFView`.
 
-setShareZoomGesturesEnabled(_:) disables pre-existing and late-added pinch or double-tap recognizers on scrollView, sharerView, and sharedPDFView
+`setShareZoomGesturesEnabled(_:)` disables pre-existing and late-added pinch or double-tap recognizers on `scrollView`, `sharerView`, and `sharedPDFView`.
 
 When annotation starts:
 
@@ -470,7 +497,7 @@ if case .ShareWithView = chosenShareType {
 }
 ```
 
-When annotation stops or sharing ends, resetAnnotationUI(shareHelper:) restores the normal gesture state:
+When annotation stops or sharing ends, `resetAnnotationUI(shareHelper:)` restores the normal gesture state:
 
 ```swift
 setPDFNavigationEnabled(true)
@@ -483,9 +510,47 @@ The active helper must be stopped before it is destroyed. Destroying a running h
 
 ### Last step: Run the Sample
 
-1. Add your Zoom Video SDK credentials and generate a JWT whose tpc (session name) matches the class code.
-2. Use your Apple's developer account, then build and run on an iPhone iOS 15+
-3. In the first view - StartViewController, enter a user name and the exact same class code (tpc).
+1. Clone the sample and open the project in Xcode. Xcode fetches the Zoom Video SDK through Swift Package Manager.
+
+   ```bash
+   git clone https://github.com/zoom/videosdk-ios-uikit-interactive-virtual-classroom
+   cd videosdk-ios-uikit-interactive-virtual-classroom
+   open MyVideoSDKApp.xcodeproj
+   ```
+
+2. In the target's **Signing & Capabilities** settings, select your Apple developer team and set a bundle identifier of your own.
+3. In `MyVideoSDKApp/SessionViewController.swift`, replace the `<#JWT#>` placeholder. Use `""` to paste a JWT into the app's alert each time you join, or use a JWT string to skip the alert input. The project does not build until the placeholder is replaced.
+4. Generate a JWT for each device with your Video SDK key and secret. Use the same session name for both, role `1` for the teacher and role `0` for the student:
+
+   ```bash
+   swift Scripts/JWTGenerator.swift ALGEBRA101 1 YOUR_SDK_KEY YOUR_SDK_SECRET   # teacher
+   swift Scripts/JWTGenerator.swift ALGEBRA101 0 YOUR_SDK_KEY YOUR_SDK_SECRET   # student
+   ```
+
+   The script prints the JWT on one line. It is valid for two hours.
+5. Build and run on two devices running iOS 15.6 or later.
+6. On each device, enter a name and the class code, which must match the session name in the JWT (`ALGEBRA101` here), then paste that device's JWT into the alert and choose **Join**. Join as the teacher first, so that sharing is unlocked.
+7. On the teacher's device, choose **Start Share**, pick a Math Lab PDF, then tap the pencil button to annotate.
+
+## App Manifest
+
+Video SDK apps are not configured through a Marketplace app manifest, so this blueprint has no `manifest.json`. The app authenticates with your Video SDK key and secret instead.
+
+## Acceptance Criteria
+
+**Session**
+- The SDK secret is not in the app; a backend service signs the JWT in production.
+- The JWT's `tpc` claim matches the class code, and its `role_type` decides who is the teacher.
+- Leaving the session unsubscribes every video canvas and returns to the entry screen.
+
+**Sharing**
+- Only one participant shares at a time, and a second share attempt shows a message.
+- A remote share appears in `sharerView`; the local preview tile stays visible during any share.
+
+**Annotation**
+- Annotation starts only while a share is active.
+- PDF scrolling and zoom gestures are off while drawing and restored when annotation stops or the share ends.
+- The annotation helper is stopped before it is destroyed.
 
 ## Related Resources
 
