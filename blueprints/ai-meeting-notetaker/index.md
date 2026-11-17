@@ -62,7 +62,7 @@ Follow along as we walk through the architecture.
 
 ## Architecture
 
-RTMS delivers transcript segments over WebSocket with sub-second latency. Your backend receives each phrase as it's spoken, typically within 300-500ms. That's fast enough for live summaries and action item extraction while participants can still act on them.
+RTMS delivers transcript segments over WebSocket in near real time. Your backend receives each phrase as it's spoken. That's fast enough for live summaries and action item extraction while participants can still act on them.
 
 ### Components
 
