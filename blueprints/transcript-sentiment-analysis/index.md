@@ -45,7 +45,7 @@ transcription.
 - A sentiment model. The samples train a small TensorFlow.js classifier; you can plug in your own.
 
 ## Features
-- Live Sentiment Detection with sub-second latency
+- Live sentiment detection in near real time
 - Project structure that lets you plug in your own model
 
 <Image src="images/sentimentpic.png" alt="Video with the live caption 'Thank you for the roses.' and the label 'Detected Sentiment: gratitude' above it" />
