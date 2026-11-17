@@ -43,7 +43,7 @@ Contact Center admins can monitor active engagements by streaming live audio and
 ## Features
 
 - **Remote RTMS control**: Supervisor-initiated Start/Stop controls from the browser PWA for active engagements
-- **Real-time audio playback**: Live audio streamed to browser via Server-Sent Events with sub-200ms latency
+- **Real-time audio playback**: Live audio streamed to browser via Server-Sent Events in near real time
 - **Real-time transcript**: Live scrolling transcript display updated every 2 seconds
 - **Event tracking**: Real-time counters for transfer, conference, and BMW (Barge/Monitor/Whisper) events
 - **Hold tracking**: Live hold time display with total hold count and cumulative hold duration
@@ -502,11 +502,11 @@ Supervisors need to experience the engagement as it happens. This means hearing 
 
 #### Server-Sent Events audio streaming
 
-Audio playback requires the lowest latency of all live data streams. Server-Sent Events (SSE) provide a one-way persistent connection from backend to browser, perfect for streaming audio chunks as they arrive from the RTMS server. The Web Audio API handles playback scheduling, ensuring smooth audio without gaps even when chunks arrive with slight timing variations. This approach achieves sub-200ms latency.
+Audio playback requires the lowest latency of all live data streams. Server-Sent Events (SSE) provide a one-way persistent connection from backend to browser, perfect for streaming audio chunks as they arrive from the RTMS server. The Web Audio API handles playback scheduling, ensuring smooth audio without gaps even when chunks arrive with slight timing variations.
 
 **Input:** Base64-encoded L16 audio chunks via SSE, Web Audio API context
 
-**Output:** Real-time audio playback in browser with sub-200ms latency
+**Output:** Near real-time audio playback in the browser
 
 **Invariants:**
 

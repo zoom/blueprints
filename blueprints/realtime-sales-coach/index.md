@@ -39,7 +39,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 
 ## Features
 
-- Live transcript stream with sub-second latency
+- Live transcript stream in near real time
 - Deal qualification tracker (BANT, MEDDIC, or custom criteria) with detected signals and suggested questions
 - Competitor mention detection with sentiment and configurable watch list
 - Commitment and next-step capture as they're spoken
@@ -82,7 +82,7 @@ graph LR
     B <--> L[LLM]
 ```
 
-When transcription starts, Zoom sends a webhook to the backend. The backend verifies it, forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. Segments flow to the backend, which broadcasts them to the panel and persists them. End-to-end latency is under a second.
+When transcription starts, Zoom sends a webhook to the backend. The backend verifies it, forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. Segments flow to the backend, which broadcasts them to the panel and persists them in near real time.
 
 **Our stack vs. your options:** We use Node/Express, but Python/FastAPI, Go, or Ruby work the same way. The requirements are a webhook endpoint Zoom can reach, a WebSocket client for RTMS, an LLM, and a way to push updates to the frontend.
 
