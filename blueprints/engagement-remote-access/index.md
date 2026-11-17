@@ -8,7 +8,7 @@ verticals: ["enterprise"]
 author: "Rehema Armorer"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-09-08
+updated: 2026-11-16
 
 github_repo: "https://github.com/zoom/zcc-rtms-pwa-sample-js"
 demo_url: "https://youtu.be/AwosG5X2dCs"
@@ -26,16 +26,13 @@ Contact Center admins can monitor active engagements by streaming live audio and
 
 <YouTube id="AwosG5X2dCs"/>
 
-<div align="center">
-  <img src="images/dashboard-preview.png" alt="Engagement dashboard" width="640" />
-</div>
-
+<Image src="images/dashboard-preview.png" alt="Engagement dashboard with Start RTMS and Stop RTMS buttons, transfer, conference and BMW counters, hold time, and a call transcript panel" />
 
 **What you'll need:**
 
 - Zoom Contact Center license with admin privileges
 - RTMS access via Zoom Contact Center (requires a Contact Center license and [Zoom Developer Pack](https://zoom.us/pricing/developer) credits; free trial credits are available)
-- A backend to receive webhooks
+- A backend that Zoom can reach to deliver webhooks
 - An RTMS media processor to handle WebSocket connections and audio encoding (Node.js)
 - A frontend dashboard for supervisors to control capture (React PWA)
 - ffmpeg for audio file conversion
@@ -63,7 +60,7 @@ The application operates as three independent Node.js processes that communicate
 
 | Component | Responsibility | Stack |
 |-----------|----------------|-------|
-| **RTMS Server** | Connect to Zoom WebSocket servers, receive audio frames and transcripts, save raw PCM to disk, convert to WAV files, forward live data to backend | Node.js (ES modules) + `ws` + `ffmpeg` + `express` |
+| **RTMS Server** | Connect to Zoom WebSocket servers, receive audio frames and transcripts, save raw PCM to disk, convert to WAV files, forward live data to backend | Node.js (ES modules) + `ws` + `ffmpeg` + `express` + `axios` |
 | **Backend API** | Handle OAuth 2.0 flow, receive Zoom webhooks, control RTMS start/stop, relay audio via SSE, track engagement events, serve frontend | Node.js (CommonJS) + Express + `axios` |
 | **Frontend PWA** | Display live dashboard with RTMS controls, play audio via Web Audio API, show real-time transcript, render engagement metrics | React + Zoom Apps SDK + EventSource + Web Audio API |
 
@@ -72,24 +69,24 @@ The application operates as three independent Node.js processes that communicate
 1. Zoom fires `contact_center.engagement_started` webhook to the backend, which enables the Start/Stop buttons in the PWA
 2. Supervisor clicks "Start RTMS" in the frontend, which calls the backend API
 3. Backend invokes Zoom's RTMS control endpoint
-4. Zoom responds with `contact_center.voice_rtms_started` webhook containing signaling server URL, engagement ID, and stream ID
+4. Zoom sends the `contact_center.voice_rtms_started` webhook containing the signaling server URL (`server_urls`), engagement ID, and stream ID
 5. Backend forwards this to the RTMS server
 6. RTMS server generates an HMAC-SHA256 signature using client credentials and establishes a WebSocket connection to Zoom's signaling server
-7. After handshake, Zoom provides a media server URL where the RTMS server opens a second WebSocket
-8. RTMS server negotiates audio format (16kHz mono L16) and transcript preferences
+7. After the handshake, Zoom provides a media server URL where the RTMS server opens a second WebSocket
+8. RTMS server requests its audio format (16kHz mono L16) and transcript preferences in the media handshake
 9. RTMS server receives real-time audio frames and transcript messages
 
 **Audio processing:**
 
 - Audio is saved to per-channel raw PCM files
 - Audio is forwarded as base64 to the backend for SSE broadcast to browsers
-- Audio is converted to WAV on engagement end
+- Audio is converted to WAV when RTMS stops
 
 **Transcript processing:**
 
-- Transcripts are appended to rolling buffers and files
-- Transcripts are forwarded to the backend for polling
-- Frontend displays transcript in real time
+- Transcripts are appended to a file per engagement and to a rolling buffer
+- Transcripts are forwarded to the backend, which the frontend polls
+- Frontend displays the transcript as it arrives
 
 ```mermaid
 graph LR
@@ -112,13 +109,13 @@ This guide walks through building the three core services and their integration 
 The monorepo contains three independent Node.js applications with a shared `.env` file:
 
 ```
-rtms-zcc-pwa/
+zcc-rtms-pwa-sample-js/
 ├── backend/              # Express API server (port 3001)
 │   ├── server.js        # Main server with OAuth, webhooks, SSE
 │   ├── controllers/
 │   │   └── zoomController.js  # RTMS control logic
 │   ├── helpers/
-│   │   ├── zoom-api.js       # Authenticated Zoom API client
+│   │   ├── zoom-api.js       # Authenticated Zoom API client with token refresh
 │   │   └── token-store.js    # In-memory OAuth token storage
 │   └── middleware/
 │       └── security.js       # Security headers
@@ -130,17 +127,22 @@ rtms-zcc-pwa/
 │       ├── App.js              # Router
 │       ├── pages/
 │       │   └── DashboardPage.js   # Main control panel
-│       └── hooks/
-│           ├── useEngagement.js   # Active engagement polling
-│           ├── useRtms.js         # RTMS control + live audio
-│           ├── useTranscript.js   # Transcript polling
-│           └── useHoldData.js     # Hold tracking
+│       ├── hooks/
+│       │   ├── useEngagement.js   # Active engagement polling
+│       │   ├── useRtms.js         # RTMS control + live audio
+│       │   ├── useTranscript.js   # Transcript polling
+│       │   ├── useHoldData.js     # Hold tracking
+│       │   ├── useEventCounts.js  # Transfer, conference, and BMW counters
+│       │   ├── useWebhookEvents.js  # Status message polling
+│       │   └── useAuthRedirect.js   # OAuth result message
+│       └── utils/
+│           └── format.js          # Hold time formatting
 └── .env                 # Shared environment configuration
 ```
 
 ### 1. Backend: OAuth and Webhook Processing
 
-The backend handles two critical authentication flows: the OAuth 2.0 authorization code exchange that grants API access, and webhook signature validation that ensures events actually come from Zoom. Both use HMAC-SHA256 cryptography and must handle timing attacks and replay attacks.
+The backend handles two trust boundaries: the OAuth 2.0 authorization code exchange that grants API access, and webhook verification that ensures events actually come from Zoom.
 
 #### OAuth token exchange
 
@@ -150,10 +152,11 @@ The backend handles two critical authentication flows: the OAuth 2.0 authorizati
 
 **Invariants:**
 
-- Exchange code within 5 minutes of redirect (codes expire)
-- Store both access token and refresh token for automatic renewal
+- Exchange the code as soon as the redirect arrives (codes are short-lived)
+- Store the access token, refresh token, and expiry time for automatic renewal
 - Use Basic Auth header with client credentials for token exchange
-- Redirect to frontend URL after successful exchange
+- Redirect to frontend URL after the exchange, with the result in the query string
+- Do not log tokens or the authorization code
 
 
 **Implementation:**
@@ -162,53 +165,68 @@ The backend handles two critical authentication flows: the OAuth 2.0 authorizati
 // backend/server.js (OAuth callback)
 app.get('/api/auth/callback', async (req, res) => {
   const { code } = req.query;
-  
+
   if (!code) {
     return res.status(400).send('Missing authorization code');
   }
 
-  try {
-    const tokenResponse = await axios.post('https://zoom.us/oauth/token', 
-      new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: process.env.ZOOM_REDIRECT_URL
-      }), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        auth: {
-          username: process.env.ZOOM_APP_CLIENT_ID,
-          password: process.env.ZOOM_APP_CLIENT_SECRET
-        }
-      });
+  const redirectUrl = new URL(process.env.FRONTEND_URL || 'http://localhost:3000');
 
-    await setTokens(tokenResponse.data.access_token, tokenResponse.data.refresh_token);
-    
+  try {
+    const params = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: process.env.ZOOM_REDIRECT_URL
+    });
+
+    const authHeader = Buffer.from(
+      `${process.env.ZOOM_APP_CLIENT_ID}:${process.env.ZOOM_APP_CLIENT_SECRET}`
+    ).toString('base64');
+
+    const response = await axios.post('https://zoom.us/oauth/token', params.toString(), {
+      headers: {
+        'Authorization': `Basic ${authHeader}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    const { access_token, refresh_token, expires_in } = response.data;
+
+    await setTokens({
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      expiresAt: Date.now() + ((expires_in || 3600) * 1000)
+    });
+
     // Redirect to frontend
-    res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+    redirectUrl.searchParams.set('auth', 'success');
+    res.redirect(redirectUrl.toString());
   } catch (error) {
-    console.error('OAuth error:', error.response?.data || error.message);
-    res.status(500).send('Authentication failed');
+    console.error('OAuth callback error:', error.response?.status, error.message);
+    redirectUrl.searchParams.set('auth', 'error');
+    res.redirect(redirectUrl.toString());
   }
 });
 ```
 
-#### Webhook signature validation
+#### Endpoint URL validation
 
-**Input:** Webhook payload with `plainToken` field, secret token from Zoom Marketplace
+When you save the event subscription, and periodically afterward, Zoom sends an `endpoint.url_validation` event to confirm that you control the endpoint.
 
-**Output:** Encrypted token using HMAC-SHA256, returned in response to validate webhook endpoint
+**Input:** Webhook payload with `plainToken` field, secret token from the Zoom Marketplace app
+
+**Output:** The `plainToken` and its HMAC-SHA256 hash, returned in the response
 
 **Invariants:**
 
-- Use same secret token configured in Zoom Marketplace webhook settings
+- Use the same secret token shown in your app's event subscription settings
 - Generate HMAC-SHA256 hash of the plainToken
 - Return both plainToken and encryptedToken in response
-- This validates your endpoint can receive webhooks from Zoom
 
 **Implementation:**
 
 ```javascript
-// backend/server.js (webhook validation)
+// backend/server.js (endpoint URL validation)
 app.post('/api/webhooks/zoom', (req, res) => {
   const { event, payload } = req.body;
 
@@ -230,7 +248,57 @@ app.post('/api/webhooks/zoom', (req, res) => {
   }
 
   // Process other webhook events here
-  res.status(200).send('OK');
+  res.status(200).json({ received: true });
+});
+```
+
+#### Webhook signature verification
+
+Every other event carries an `x-zm-signature` header. Verify it before acting on the event, as described in [Verify webhook events](https://developers.zoom.us/docs/api/webhooks/#verify-webhook-events).
+
+**Input:** Raw request body, `x-zm-request-timestamp` and `x-zm-signature` headers, secret token
+
+**Output:** The event is processed only if the signature matches
+
+**Invariants:**
+
+- Hash the raw request body, not a re-serialized copy
+- Build the message as `v0:{timestamp}:{raw body}` and compare `v0={hash}` with the header
+- Compare with a constant-time function, after checking that the lengths match
+- Reject requests whose timestamp is more than a few minutes old
+
+**Implementation:**
+
+```javascript
+// Keep the raw body so the signature can be checked against it
+app.use(express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf; }
+}));
+
+function isFromZoom(req) {
+  const timestamp = req.headers['x-zm-request-timestamp'];
+  const signature = req.headers['x-zm-signature'];
+  if (typeof timestamp !== 'string' || typeof signature !== 'string' || !req.rawBody) return false;
+
+  // Reject old requests to limit replay
+  const ageSeconds = Math.abs(Date.now() / 1000 - Number(timestamp));
+  if (!Number.isFinite(ageSeconds) || ageSeconds > 300) return false;
+
+  const expected = 'v0=' + crypto
+    .createHmac('sha256', process.env.ZOOM_SECRET_TOKEN)
+    .update(`v0:${timestamp}:${req.rawBody}`)
+    .digest('hex');
+
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signature);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+app.post('/api/webhooks/zoom', (req, res) => {
+  if (!isFromZoom(req)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+  // endpoint.url_validation and event handling follow
 });
 ```
 
@@ -240,7 +308,7 @@ RTMS uses a two-stage WebSocket handshake: first authenticate with a signaling s
 
 #### Signaling WebSocket authentication
 
-**Input:** `contact_center.voice_rtms_started` webhook payload with `engagement_id`, `rtms_stream_id`, `signaling_server_url`, client ID, and client secret
+**Input:** `contact_center.voice_rtms_started` webhook payload with `engagement_id`, `rtms_stream_id`, and `server_urls` (the signaling server URL), plus the client ID and client secret
 
 **Output:** Authenticated WebSocket connection to signaling server, media server URL received in handshake response
 
@@ -248,8 +316,9 @@ RTMS uses a two-stage WebSocket handshake: first authenticate with a signaling s
 
 - Generate HMAC-SHA256 signature using `${CLIENT_ID},${engagement_id},${rtms_stream_id}` as message
 - Send handshake message immediately on WebSocket open (msg_type: 1)
-- Wait for msg_type: 2 response before connecting to media server
-- Store WebSocket reference for cleanup on engagement end
+- Wait for the msg_type: 2 response with `status_code` 0 before connecting to the media server
+- Reply to keep-alive requests (msg_type: 12) with msg_type: 13 on both WebSockets
+- Store WebSocket reference for cleanup when RTMS stops
 
 **Implementation:**
 
@@ -284,9 +353,18 @@ function connectToSignalingWebSocket(engagementId, rtmsStreamId, serverUrl, enga
     const message = JSON.parse(data.toString());
     
     if (message.msg_type === 2) {
-      // Signaling ACK with media server URL
-      const mediaServerUrl = message.media_server_url;
-      connectToMediaWebSocket(engagementId, mediaServerUrl, engagementData);
+      // Signaling handshake response with the media server URL
+      if (message.status_code === 0) {
+        const mediaUrl = message.media_server?.server_urls?.audio || message.media_server?.server_urls?.all;
+        if (mediaUrl) {
+          connectToMediaWebSocket(mediaUrl, engagementId, rtmsStreamId, ws, engagementData);
+        }
+      } else {
+        console.error(`[${engagementId}] Signaling handshake failed:`, message.reason);
+      }
+    } else if (message.msg_type === 12) {
+      // Keep-alive request
+      ws.send(JSON.stringify({ msg_type: 13, timestamp: message.timestamp }));
     }
   });
 }
@@ -294,7 +372,7 @@ function connectToSignalingWebSocket(engagementId, rtmsStreamId, serverUrl, enga
 
 #### Manual RTMS start and stop control
 
-RTMS capture is admin-initiated, not automatic, and triggered when the Start/Stop buttons are clicked by the user.
+RTMS capture is supervisor-initiated, not automatic. It starts and stops when the supervisor clicks the Start RTMS and Stop RTMS buttons.
 
 **Input:** Engagement ID, action ("start" or "stop"), OAuth access token
 
@@ -304,7 +382,7 @@ RTMS capture is admin-initiated, not automatic, and triggered when the Start/Sto
 
 - Only call RTMS control when engagement is active (frontend checks `isActive` state)
 - Include `client_id` in settings object (Zoom uses this to route RTMS data)
-- Handle 401 responses by refreshing OAuth token and retrying
+- Refresh the OAuth token before it expires, and on a 401 response refresh and retry once
 - Wait for webhook confirmation before attempting WebSocket connection
 - Close existing WebSocket connections before starting new RTMS session for same engagement
 
@@ -312,9 +390,9 @@ RTMS capture is admin-initiated, not automatic, and triggered when the Start/Sto
 
 1. Supervisor clicks "Start RTMS" or "Stop RTMS" button in frontend PWA
 2. Frontend sends POST to backend `/api/zoom/rtms/control` with the engagement ID and appropriate action
-3. Backend calls Zoom API `PUT /v2/contact_center/{engagementId}/rtms_app/status` with authenticated request
-4. Zoom responds with 200 OK if successful
-5. Zoom fires the appropriate ZCC RTMS webhook to backend within 1-2 seconds
+3. Backend calls the Zoom API [`PUT /v2/contact_center/{engagementId}/rtms_app/status`](https://developers.zoom.us/docs/api/contact-center/) with the OAuth access token
+4. Zoom responds with a success status
+5. Zoom sends the matching RTMS webhook (`contact_center.voice_rtms_started` or `contact_center.voice_rtms_stopped`) to the backend
 
 **Implementation:**
 
@@ -324,13 +402,14 @@ Frontend implementation:
 // frontend/src/hooks/useRtms.js
 export function useRtms(engagementId) {
   const [isRtmsRunning, setIsRtmsRunning] = useState(false);
+  const [audioConnected, setAudioConnected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleStart = async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const res = await fetch('/api/zoom/rtms/control', {
         method: 'POST',
@@ -338,12 +417,12 @@ export function useRtms(engagementId) {
         credentials: 'include',
         body: JSON.stringify({ engagementId, action: 'start' }),
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         setIsRtmsRunning(true);
-        // Audio stream setup happens here
+        // Audio stream setup happens here (see section 4)
       } else {
         setError(data.error || 'Failed to start RTMS');
       }
@@ -354,7 +433,10 @@ export function useRtms(engagementId) {
     }
   };
 
-  return { isRtmsRunning, loading, error, handleStart, handleStop };
+  // handleStop sends { engagementId, action: 'stop' } to the same endpoint,
+  // then closes the EventSource and the AudioContext
+
+  return { isRtmsRunning, audioConnected, loading, error, handleStart, handleStop };
 }
 ```
 
@@ -373,15 +455,22 @@ async function handleRtmsControl(req, res) {
     return res.status(400).json({ error: 'Action must be "start" or "stop"' });
   }
 
+  const tokens = await getTokens();
+  if (!tokens.accessToken) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
   try {
+    // zoomApiRequest adds the access token and refreshes it when needed
     const data = await zoomApiRequest({
       method: 'PUT',
-      url: `https://zoom.us/v2/contact_center/${engagementId}/rtms_app/status`,
+      url: `https://api.zoom.us/v2/contact_center/${encodeURIComponent(engagementId)}/rtms_app/status`,
+      headers: { 'Content-Type': 'application/json' },
       data: {
         action,
         settings: { client_id: process.env.ZOOM_APP_CLIENT_ID }
       }
-    });
+    }, tokens);
 
     res.json({ success: true, action, engagementId, data });
   } catch (error) {
@@ -402,12 +491,12 @@ async function handleRtmsControl(req, res) {
 
 **Invariants:**
 
-- Send media handshake immediately on WebSocket open
-- Process msg_type 14 (RTMS audio) and msg_type 15 (consumer audio) separately by channel_id
-- Forward only primary channel audio to backend for live playback (avoid multiple streams)
-- Append all audio to per-channel raw PCM files
-- Append all transcripts to rolling buffer
-- Base64-decode audio data before saving to raw PCM files
+- Send the media handshake (msg_type: 3) immediately on WebSocket open, with the same signature as the signaling handshake
+- After a successful media handshake response (msg_type: 4), send the client ready acknowledgment (msg_type: 7) on the signaling WebSocket
+- Audio arrives as msg_type 14 and transcripts as msg_type 17; each participant's audio has its own `channel_id`
+- Base64-decode audio data before appending it to that channel's raw PCM file
+- Forward only one channel's audio to the backend for live playback (avoid overlapping streams)
+- Append every transcript to the engagement's transcript file and forward its text to the backend
 
 **Implementation:**
 
@@ -415,86 +504,109 @@ async function handleRtmsControl(req, res) {
 // rtms/server.js (media WebSocket handler)
 ws.on('message', (data) => {
   const message = JSON.parse(data.toString());
-  
-  if (message.msg_type === 14 || message.msg_type === 15) {
-    // Audio frame (14 = agent, 15 = consumer)
-    const audioData = Buffer.from(message.data, 'base64');
-    const channelId = message.channel_id;
-    
-    // Save to raw PCM file
-    saveRawAudio(engagementId, channelId, audioData, engagementData);
-    
-    // Forward to backend for live playback (first channel only)
-    if (!engagementData.primaryChannel) {
-      engagementData.primaryChannel = channelId;
+
+  if (message.msg_type === 14) {
+    // Audio frame
+    const audioBuffer = Buffer.from(message.content.data, 'base64');
+    const channelId = message.content.channel_id;
+
+    if (!engagementData.channelPaths.has(channelId)) {
+      const rawPath = getChannelRawPath(engagementData.sessionDir, channelId);
+      const wavPath = getChannelWavPath(engagementData.sessionDir, channelId);
+      engagementData.channelPaths.set(channelId, { rawPath, wavPath });
     }
-    
-    if (channelId === engagementData.primaryChannel) {
-      sendAudioChunk(message.data);  // Forward base64 to backend
+
+    // Save to this channel's raw PCM file
+    saveRawAudio(audioBuffer, engagementData.channelPaths.get(channelId).rawPath);
+
+    // Forward to backend for live playback (first channel only)
+    if (engagementData.streamChannelId === null) {
+      engagementData.streamChannelId = channelId;
+    }
+
+    if (channelId === engagementData.streamChannelId) {
+      sendAudioChunk(message.content.data);  // Forward base64 to backend
     }
   } else if (message.msg_type === 17) {
     // Transcript
-    const text = message.text;
-    saveTranscript(engagementId, message);
+    const text = message.content.data;
+    saveTranscript(engagementId, text);
     sendTranscriptLine(engagementId, text);
+  } else if (message.msg_type === 12) {
+    // Keep-alive request
+    ws.send(JSON.stringify({ msg_type: 13, timestamp: message.timestamp }));
   }
 });
 ```
 
 ### 3. Audio File Generation
 
-Audio arrives as raw PCM data that must be saved incrementally during streaming, then converted to WAV format after the engagement ends. ffmpeg handles format conversion and stereo interleaving when multiple channels are captured.
+Audio arrives as raw PCM data that is saved incrementally during streaming, then converted to WAV format after RTMS stops. ffmpeg converts each channel, and the two channels are interleaved into one stereo file.
 
 #### Raw PCM to WAV conversion
 
 **Input:** Raw PCM files per channel, engagement session directory, channel IDs
 
-**Output:** Per-channel WAV files, interleaved stereo `mixed.wav` file combining all channels
+**Output:** Per-channel WAV files, interleaved stereo `mixed.wav` file combining the first two channels
 
 **Invariants:**
 
 - Create unique session directory per engagement using timestamp
 - Append audio data to raw PCM files during streaming (don't buffer in memory)
-- Convert raw PCM to WAV only after engagement ends (prevents file corruption)
-- For stereo interleaving, use `join:inputs=2:channel_layout=stereo` filter
-- If only one channel exists, copy to mixed.wav without interleaving
+- Convert raw PCM to WAV only after RTMS stops and the write streams are closed (prevents file corruption)
+- Pass file paths to ffmpeg as arguments, not inside a shell command string
+- For `mixed.wav`, interleave the first two channels sample by sample (left, right) and write a WAV header
+- If only one channel exists, write it to `mixed.wav` as mono
 - Delete raw PCM files after successful WAV conversion (optional)
 
 **Implementation:**
 
 ```javascript
 // rtms/audioHelper.js
-export function saveRawAudio(engagementId, channelId, audioData, engagementData) {
-  if (!engagementData.sessionDir) {
-    engagementData.sessionDir = join(audioDir, makeSessionTimestamp());
-    mkdirSync(engagementData.sessionDir, { recursive: true });
-  }
-  
-  const rawPath = getChannelRawPath(engagementData.sessionDir, channelId);
-  appendFileSync(rawPath, audioData);
+import fs from 'fs';
+import path from 'path';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+
+const execFileAsync = promisify(execFile);
+
+// Open write streams keyed by file path
+const writeStreams = new Map();
+
+export function getChannelRawPath(sessionDir, channelId) {
+  return path.join(sessionDir, `channel_${channelId}.raw`);
 }
 
-export function convertRawToWav(sessionDir, channelId) {
-  const rawPath = getChannelRawPath(sessionDir, channelId);
-  const wavPath = getChannelWavPath(sessionDir, channelId);
-  
+export function saveRawAudio(chunk, rawPath) {
+  fs.mkdirSync(path.dirname(rawPath), { recursive: true });
+
+  let stream = writeStreams.get(rawPath);
+  if (!stream) {
+    stream = fs.createWriteStream(rawPath, { flags: 'a' });
+    writeStreams.set(rawPath, stream);
+  }
+  stream.write(chunk);
+}
+
+export async function convertRawToWav(rawPath, wavPath) {
   // ffmpeg: raw 16kHz 16-bit mono L16 → WAV
-  execSync(`ffmpeg -f s16le -ar 16000 -ac 1 -i "${rawPath}" "${wavPath}"`);
+  await execFileAsync('ffmpeg', ['-y', '-f', 's16le', '-ar', '16000', '-ac', '1', '-i', rawPath, wavPath]);
 }
 
-export function finalizeInterleavedWav(sessionDir, channelIds) {
-  const mixedPath = join(sessionDir, 'mixed.wav');
-  
-  if (channelIds.length === 1) {
-    // Mono → copy as-is
-    execSync(`ffmpeg -i "${getChannelWavPath(sessionDir, channelIds[0])}" "${mixedPath}"`);
-  } else {
-    // Stereo interleave (L = channel 0, R = channel 1)
-    const inputs = channelIds.map(id => `-i "${getChannelWavPath(sessionDir, id)}"`).join(' ');
-    execSync(`ffmpeg ${inputs} -filter_complex "[0:a][1:a]join=inputs=2:channel_layout=stereo[a]" -map "[a]" "${mixedPath}"`);
+// Interleave two mono 16-bit PCM buffers into stereo L-R-L-R...
+export function interleaveStereo(left, right) {
+  const nSamples = Math.max(Math.floor(left.length / 2), Math.floor(right.length / 2));
+  const result = Buffer.alloc(nSamples * 4, 0);
+  for (let i = 0; i < nSamples; i++) {
+    const off = i * 4;
+    if (i * 2 + 1 < left.length) left.copy(result, off, i * 2, i * 2 + 2);
+    if (i * 2 + 1 < right.length) right.copy(result, off + 2, i * 2, i * 2 + 2);
   }
+  return result;
 }
 ```
+
+`finalizeInterleavedWav` in the same file reads the per-channel raw files, calls `interleaveStereo`, and writes `mixed.wav` with a 44-byte WAV header.
 
 ### 4. Frontend: Live Media Rendering
 
@@ -502,7 +614,7 @@ Supervisors need to experience the engagement as it happens. This means hearing 
 
 #### Server-Sent Events audio streaming
 
-Audio playback requires the lowest latency of all live data streams. Server-Sent Events (SSE) provide a one-way persistent connection from backend to browser, perfect for streaming audio chunks as they arrive from the RTMS server. The Web Audio API handles playback scheduling, ensuring smooth audio without gaps even when chunks arrive with slight timing variations.
+Audio playback is the most time-sensitive of the live data streams. Server-Sent Events (SSE) provide a one-way persistent connection from backend to browser, which suits streaming audio chunks as they arrive from the RTMS server. The Web Audio API handles playback scheduling, so audio plays without gaps even when chunks arrive with slight timing variations.
 
 **Input:** Base64-encoded L16 audio chunks via SSE, Web Audio API context
 
@@ -510,71 +622,70 @@ Audio playback requires the lowest latency of all live data streams. Server-Sent
 
 **Invariants:**
 
-- Initialize AudioContext only when RTMS starts (avoids autoplay policy issues)
+- Initialize AudioContext only when RTMS starts, from the button click (avoids autoplay policy issues)
 - Decode base64 to Uint8Array, then to Int16Array (L16 format)
 - Normalize Int16 samples to Float32 range [-1, 1] by dividing by 32768
 - Create new AudioBuffer for each chunk with correct sample rate (16000 Hz)
-- Schedule audio playback immediately via `source.start()` (Web Audio handles buffering)
-- Close EventSource connection when RTMS stops (prevents memory leaks)
+- Schedule each chunk to start when the previous one ends, keeping a small lead over the current time
+- Close the EventSource connection and the AudioContext when RTMS stops (prevents memory leaks)
 - Handle EventSource `onerror` to detect disconnections and update UI
 
 **Implementation:**
 
 ```javascript
-// frontend/src/hooks/useRtms.js (audio streaming)
-const startAudioStream = () => {
-  // Initialize Web Audio API
-  audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-  
-  // Open Server-Sent Events connection
-  const eventSource = new EventSource(`/api/rtms/audio/stream`);
-  eventSourceRef.current = eventSource;
+// frontend/src/hooks/useRtms.js (audio streaming, inside handleStart)
+const ctx = new AudioContext({ sampleRate: 16000 });
+audioCtxRef.current = ctx;
+nextPlayTimeRef.current = ctx.currentTime + 0.2;
 
-  eventSource.onmessage = (event) => {
-    const { data } = JSON.parse(event.data);
-    
-    // Decode base64 → Int16Array → Float32Array
-    const binaryString = atob(data);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    
-    const int16Array = new Int16Array(bytes.buffer);
-    const float32Array = new Float32Array(int16Array.length);
-    for (let i = 0; i < int16Array.length; i++) {
-      float32Array[i] = int16Array[i] / 32768.0;  // Normalize to [-1, 1]
-    }
-    
-    // Create audio buffer and play
-    const audioBuffer = audioContextRef.current.createBuffer(1, float32Array.length, 16000);
-    audioBuffer.getChannelData(0).set(float32Array);
-    
-    const source = audioContextRef.current.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContextRef.current.destination);
-    source.start();
-  };
+// Open Server-Sent Events connection
+const es = new EventSource('/api/rtms/audio/stream');
+audioSourceRef.current = es;
+es.onopen = () => setAudioConnected(true);
+es.onerror = () => setAudioConnected(false);
 
-  eventSource.onerror = () => setAudioConnected(false);
+es.onmessage = (event) => {
+  const { data: b64 } = JSON.parse(event.data);
+
+  // Decode base64 → Int16Array → Float32Array
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  const int16 = new Int16Array(bytes.buffer);
+  const float32 = new Float32Array(int16.length);
+  for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768;  // Normalize to [-1, 1]
+
+  // Create audio buffer
+  const buf = ctx.createBuffer(1, float32.length, 16000);
+  buf.getChannelData(0).set(float32);
+
+  const source = ctx.createBufferSource();
+  source.buffer = buf;
+  source.connect(ctx.destination);
+
+  // Schedule this chunk right after the previous one
+  const now = ctx.currentTime;
+  if (nextPlayTimeRef.current < now + 0.05) nextPlayTimeRef.current = now + 0.05;
+  source.start(nextPlayTimeRef.current);
+  nextPlayTimeRef.current += buf.duration;
 };
 ```
 
 #### Live transcript display with auto-scroll
 
-Transcript data arrives from Zoom in segments every 2-3 seconds, gets forwarded from the RTMS server to the backend, and needs to appear in the browser with minimal delay. Transcripts use simple HTTP polling every 2 seconds. The auto-scroll behavior keeps the most recent text visible.
+Transcript data arrives from Zoom in segments, gets forwarded from the RTMS server to the backend, and needs to appear in the browser with minimal delay. Transcripts use simple HTTP polling every 2 seconds. The auto-scroll behavior keeps the most recent text visible.
 
-**Input:** Transcript endpoint that returns array of transcript objects
+**Input:** Transcript endpoint that returns an array of `{ text, timestamp }` objects
 
 **Output:** Real-time transcript display with auto-scroll behavior
 
 **Invariants:**
 
 - Poll backend every 2 seconds (balances responsiveness with API load)
-- Auto-scroll to bottom only when new transcript lines arrive
+- Auto-scroll the transcript box to the bottom when the transcript updates
 - Store transcript lines in state array
-- Clear transcript lines when engagement ends
+- The backend clears the transcript lines when a new engagement starts
 - Use `useRef` for scroll container to access DOM node
 
 **Implementation:**
@@ -589,8 +700,7 @@ export function useTranscript() {
     const fetchTranscript = async () => {
       try {
         const res = await fetch('/api/engagement/transcript');
-        const data = await res.json();
-        setTranscript(data.lines);
+        setTranscript(await res.json());
       } catch (err) {
         console.error('Error fetching transcript:', err);
       }
@@ -614,7 +724,7 @@ export function useTranscript() {
 
 #### Live hold tracking and event counters
 
-Engagement metrics like hold duration, transfer count, and BMW events provide monitoring context. Hold tracking is the most time-sensitive: when an agent places a customer on hold, the supervisor needs to see a live ticking timer. This is achieved through backend state (total hold time) and client-side calculations (elapsed time since last poll). The timer updates every 100ms in the browser for smooth visual feedback, while actual hold data polls every 1-2 seconds.
+Engagement metrics like hold duration, transfer count, and BMW events provide monitoring context. Hold tracking is the most time-sensitive: when an agent places a customer on hold, the supervisor needs to see a live ticking timer. The backend keeps the hold state from the `contact_center.engagement_user_hold` and `contact_center.engagement_user_unhold` webhooks (hold count, total hold time, and when the current hold started). The browser polls that state every 2 seconds and, while a hold is in progress, recalculates the displayed time every second.
 
 **Input:** Contact Center webhook events, HTTP polling endpoints for frontend retrieval
 
@@ -622,9 +732,8 @@ Engagement metrics like hold duration, transfer count, and BMW events provide mo
 
 **Invariants:**
 
-- Poll hold endpoint every 1 second when on hold (shows live ticking timer)
-- Poll hold endpoint every 2 seconds when not on hold (reduces API load)
-- Calculate current hold duration client-side by adding elapsed time to total hold time
+- Poll the hold endpoint every 2 seconds
+- While on hold, calculate the displayed duration client-side every second: total hold time plus the time since the current hold started
 - Display hold timer in MM:SS format for readability
 - Poll event counts every 2 seconds (transfers, conferences, BMW events)
 - Reset all counters when engagement ends
@@ -637,48 +746,42 @@ export function useHoldData() {
   const [holdCount, setHoldCount] = useState(0);
   const [totalHoldMs, setTotalHoldMs] = useState(0);
   const [isOnHold, setIsOnHold] = useState(false);
+  const [holdStartedAt, setHoldStartedAt] = useState(null);
   const [liveHoldMs, setLiveHoldMs] = useState(0);
-  const holdStartRef = useRef(null);
 
   useEffect(() => {
-    const fetchHoldData = async () => {
+    const fetchHold = async () => {
       try {
         const res = await fetch('/api/engagement/hold');
         const data = await res.json();
-        setHoldCount(data.holdCount);
-        setTotalHoldMs(data.totalHoldMs);
+        setHoldCount(data.count);
         setIsOnHold(data.isOnHold);
-        
-        if (data.isOnHold) {
-          holdStartRef.current = Date.now() - (data.totalHoldMs % 60000);
-        } else {
-          holdStartRef.current = null;
-          setLiveHoldMs(0);
-        }
+        setTotalHoldMs(data.totalHoldMs);
+        setHoldStartedAt(data.holdStartedAt);
       } catch (err) {
         console.error('Error fetching hold data:', err);
       }
     };
-    
-    fetchHoldData();
-    const interval = setInterval(fetchHoldData, isOnHold ? 1000 : 2000);
+
+    fetchHold();
+    const interval = setInterval(fetchHold, 2000);
     return () => clearInterval(interval);
-  }, [isOnHold]);
+  }, []);
 
-  // Live tick when on hold
+  // Tick every second while on hold
   useEffect(() => {
-    if (!isOnHold) return;
-    
-    const ticker = setInterval(() => {
-      if (holdStartRef.current) {
-        setLiveHoldMs(Date.now() - holdStartRef.current);
-      }
-    }, 100);
-    
-    return () => clearInterval(ticker);
-  }, [isOnHold]);
+    if (!isOnHold || !holdStartedAt) {
+      setLiveHoldMs(totalHoldMs);
+      return;
+    }
 
-  return { holdCount, totalHoldMs, isOnHold, liveHoldMs };
+    const update = () => setLiveHoldMs(totalHoldMs + (Date.now() - holdStartedAt));
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [isOnHold, holdStartedAt, totalHoldMs]);
+
+  return { holdCount, totalHoldMs, isOnHold, holdStartedAt, liveHoldMs };
 }
 ```
 
@@ -715,6 +818,7 @@ npm start
 npm run ngrok
 # Copy the HTTPS URL and update .env:
 #   PUBLIC_URL=https://YOUR_ID_HERE.ngrok-free.app
+#   FRONTEND_URL=https://YOUR_ID_HERE.ngrok-free.app
 #   ZOOM_REDIRECT_URL=https://YOUR_ID_HERE.ngrok-free.app/api/auth/callback
 # Restart: Ctrl+C, then npm start
 
@@ -728,29 +832,52 @@ npm run ngrok
 
 Required in `.env`:
 
-- `ZOOM_APP_CLIENT_ID` — from Zoom Marketplace app credentials
-- `ZOOM_APP_CLIENT_SECRET` — from Zoom Marketplace app credentials
-- `ZOOM_SECRET_TOKEN` — from Zoom Marketplace webhook settings
-- `PUBLIC_URL` — ngrok HTTPS URL (e.g. `https://YOUR_ID_HERE.ngrok-free.app`)
-- `ZOOM_REDIRECT_URL` — `${PUBLIC_URL}/api/auth/callback`
+- `ZOOM_APP_CLIENT_ID`: from Zoom Marketplace app credentials
+- `ZOOM_APP_CLIENT_SECRET`: from Zoom Marketplace app credentials
+- `ZOOM_SECRET_TOKEN`: the secret token from the app's event subscription settings
+- `PUBLIC_URL`: ngrok HTTPS URL (e.g. `https://YOUR_ID_HERE.ngrok-free.app`)
+- `FRONTEND_URL`: the same ngrok URL; the backend proxies the frontend and redirects here after OAuth
+- `ZOOM_REDIRECT_URL`: `${PUBLIC_URL}/api/auth/callback`
+- `BACKEND_URL`: URL the RTMS server uses to reach the backend (`http://localhost:3001` locally)
+- `RTMS_SERVER_URL`: URL the backend uses to reach the RTMS server (`http://localhost:8080` locally)
 
 ## App Manifest
 
 This application requires a Zoom Marketplace **General App** configured as **admin-managed** to receive Contact Center engagement lifecycle events. For quick set-up, use the manifest.json file. 
 
-**Webhook Configuration:**
+**Scopes:**
 
-- Notification URL: `https://YOUR_NGROK_URL_HERE.ngrok-free.app/api/webhooks/zoom`
-- Method: **Webhook** (not Event subscription HTTP endpoint)
-- Secret Token: Copy to `.env` as `ZOOM_SECRET_TOKEN` for signature validation
+| Scope | Why it's needed |
+|-------|-----------------|
+| `contact_center:read:zcc_voice_audio` | Receive live audio from Contact Center voice engagements through RTMS |
+| `contact_center:read:zcc_voice_transcript` | Receive live transcripts from Contact Center voice engagements through RTMS |
+| `contact_center:update:engagement_rtms_app_status` | Start and stop RTMS for an engagement through the REST API |
 
-**RTMS Configuration:**
+The first two are RTMS media scopes. Add them under **Scopes** > **+ Add Scopes**, as described in [Add Realtime Media Streams features to your app](https://developers.zoom.us/docs/rtms/contact-center/add-features/).
 
-- Enable RTMS under the **RTMS** tab in Zoom Marketplace
-- In Contact Center Admin (zoom.us/myhome → Admin → Contact Center Management → Integrations → Zoom Apps → RTMS):
-  - Disable auto-start (capture is supervisor-initiated via PWA)
-  - Assign app to appropriate queues
-  - Ensure app is **admin-managed** for engagement events to fire
+**Event Subscription:**
+
+Under **Access**, turn on **Event Subscription** and set:
+
+- Method: **Webhook**
+- Event notification endpoint URL: `https://YOUR_NGROK_URL_HERE.ngrok-free.app/api/webhooks/zoom`
+- Secret Token: copy to `.env` as `ZOOM_SECRET_TOKEN`
+
+| Event | Used for |
+|-------|----------|
+| `contact_center.engagement_started` | Enables the Start RTMS and Stop RTMS buttons |
+| `contact_center.engagement_ended` | Resets engagement state and counters |
+| `contact_center.engagement_user_hold` | Hold count and hold timer |
+| `contact_center.engagement_user_unhold` | Hold timer and total hold time |
+| `contact_center.voice_rtms_started` | Opens the RTMS WebSocket connections |
+| `contact_center.voice_rtms_stopped` | Closes the connections and converts audio to WAV |
+| `contact_center.engagement_transfer_initiated` | Transfer tracking |
+
+**Contact Center Configuration:**
+
+- In the Zoom Contact Center admin portal, assign the app to the queues whose engagements supervisors will monitor. See [Configuring Zoom Apps for Zoom Contact Center](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0075271).
+- Leave auto-start off for those queues (capture is supervisor-initiated via the PWA)
+- Ensure the app is **admin-managed** so the engagement events are delivered
 
 **OAuth Flow:**
 
@@ -761,3 +888,37 @@ The app uses authorization code flow with automatic token refresh:
 3. Backend exchanges code for access + refresh tokens at `POST https://zoom.us/oauth/token`
 4. Tokens stored in memory (cleared on backend restart)
 5. Tokens automatically refreshed when access token expires
+
+## Acceptance Criteria
+
+**Access control**
+- Only an authenticated supervisor can call `/api/zoom/rtms/control`, open `/api/rtms/audio/stream`, or read the transcript, hold, and event count endpoints.
+- The endpoints the RTMS server posts to (`/api/rtms/audio`, `/api/rtms/transcript`, `/api/rtms/status`) accept requests only from the RTMS server.
+- OAuth tokens, the client secret, and the webhook secret token stay on the backend and never appear in logs.
+
+**Webhooks**
+- `endpoint.url_validation` returns the `plainToken` and its HMAC-SHA256 hash.
+- Every other event is rejected unless its `x-zm-signature` matches.
+- The backend responds to each webhook right away and forwards RTMS events to the RTMS server asynchronously.
+
+**RTMS**
+- Starting RTMS for an active engagement results in `contact_center.voice_rtms_started`, a signaling connection, and a media connection.
+- Keep-alive requests are answered on both WebSockets.
+- Stopping RTMS, or the engagement ending, closes both WebSockets and finalizes the audio files.
+
+**Dashboard**
+- Live audio starts after the supervisor clicks Start RTMS and stops when they click Stop RTMS.
+- The transcript, hold timer, and counters update while the engagement is active and reset when it ends.
+
+**Data handling**
+- Audio and transcript content is not written to application logs.
+- Saved audio and transcript files have restricted access and a defined retention period.
+
+## Related Resources
+
+- [Sample repository](https://github.com/zoom/zcc-rtms-pwa-sample-js)
+- [Realtime Media Streams for Contact Center](https://developers.zoom.us/docs/rtms/contact-center/)
+- [Add Realtime Media Streams features to your app](https://developers.zoom.us/docs/rtms/contact-center/add-features/)
+- [Working with streams](https://developers.zoom.us/docs/rtms/contact-center/work-with-streams/)
+- [Failover and reconnection](https://developers.zoom.us/docs/rtms/contact-center/failover-reconnection/)
+- [Verify webhook events](https://developers.zoom.us/docs/api/webhooks/#verify-webhook-events)
