@@ -83,7 +83,7 @@ graph LR
     B --> D[(Database)]
 ```
 
-When RTMS starts in a meeting, Zoom sends a webhook with stream credentials. Your backend verifies it, joins the stream, and receives transcript segments as each phrase is spoken. Segments are broadcast to the in-meeting panel in under a second. Summaries and other notes are extracted on an interval, so they follow the conversation by seconds to minutes.
+When RTMS starts in a meeting, Zoom sends a webhook with stream credentials. Your backend verifies it, joins the stream, and receives transcript segments as each phrase is spoken. Segments are broadcast to the in-meeting panel in near real time. Summaries and other notes are extracted on an interval, so they follow the conversation by seconds to minutes.
 
 **Our stack vs. your options:** We use Node/Express, but Python/FastAPI, Go, or Ruby work the same way. The requirements are a webhook endpoint Zoom can reach, a WebSocket client for RTMS, an LLM, and a way to push updates to the frontend.
 
