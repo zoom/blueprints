@@ -10,14 +10,14 @@ solution_types: ["security-encryption"]
 author: "Ticorrian Heard"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-10-21
+updated: 2026-11-16
 github_repo: "https://github.com/zoom/videosdk-scheduling-and-invite"
 demo_url: "https://youtu.be/69n5W_BOX4U"
 tags: ["scheduling", "security"]
 seo_title: "Build a secure scheduling and invite system"
 seo_keywords: ["zoom video sdk scheduling", "video sdk invite link", "video sdk rest api"]
 license_required: false
-stack: "Node · Express · React · Neon"
+stack: "Node · Express · React · TypeScript · Postgres"
 deploy:
   - { label: "Render", url: "https://render.com/deploy?repo=https://github.com/zoom/videosdk-scheduling-and-invite" }
 ---
@@ -30,15 +30,18 @@ or the session password.
 <YouTube id="69n5W_BOX4U"/>
 
 **What you'll need:**
-- Zoom Video SDK credentials [Get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)
-- Video SDK REST API credentials (API key and secret) for creating and managing sessions
-- A Neon Postgres database (any Postgres works)
-- Node.js, Express, and React
+- A Zoom Video SDK account with two sets of credentials ([Get credentials](https://developers.zoom.us/docs/video-sdk/get-credentials/)):
+  - Video SDK credentials (SDK key and secret) for signing the JWT that joins a session
+  - Video SDK REST API credentials (API key and secret) for creating and managing sessions
+- Cloud recording added to your Video SDK account, if you use the auto-recording option
+- A Postgres database and its connection string (the sample uses Neon; any Postgres works)
+- Node.js 20 or later
 
 ## Features
 - Email and password accounts with hashed passwords and hashed session tokens
 - Scheduled sessions created through the Video SDK REST API
 - Opaque invite links for hosts and guests
+- Optional session password, waiting room (hold), and cloud recording per session
 
 <Image src="images/scheduler.png" alt="Schedule a Zoom Session form with session name, password, agenda, date, time, timezone, duration, and recording and hold options" />
 
@@ -86,12 +89,30 @@ CREATE TABLE users (
   user_email    TEXT NOT NULL,
   password_hash TEXT NOT NULL            -- salt:hash
 );
+CREATE UNIQUE INDEX users_email_key ON users (lower(user_email));
+
 CREATE TABLE auth_sessions (
   token_hash TEXT PRIMARY KEY,           -- hash of the cookie, never the cookie
   user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   expires_at TIMESTAMPTZ NOT NULL
 );
+
+CREATE TABLE meetings (
+  meeting_id       TEXT PRIMARY KEY,     -- session_id returned by the Video SDK REST API
+  invite_id        TEXT NOT NULL UNIQUE, -- random ID used in invite links
+  user_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  meeting_name     TEXT NOT NULL,        -- the Video SDK session name (tpc)
+  meeting_password TEXT NOT NULL DEFAULT '',
+  date_time        TIMESTAMPTZ NOT NULL,
+  timezone         TEXT NOT NULL DEFAULT 'UTC',
+  agenda           TEXT NOT NULL DEFAULT '',
+  duration         INTEGER NOT NULL DEFAULT 30,
+  auto_recording   BOOLEAN NOT NULL DEFAULT false,
+  hold             INTEGER NOT NULL DEFAULT 0
+);
 ```
+
+The table is named `meetings` in the sample; each row is one scheduled Video SDK session. The schedule details (date, time, timezone, agenda, duration) and the invite ID are kept here. The sample creates all three tables on startup.
 
 Keep `DATABASE_URL` on the server only, and always use parameterized queries (`$1`, `$2`) so user input is never concatenated into SQL.
 
@@ -103,6 +124,8 @@ Don't store passwords as plaintext. If the database leaks, every user is exposed
 - Store `salt:hash` in the row tied to the user's email.
 
 ```js
+const scryptAsync = promisify(scrypt);
+
 async function hashPassword(password) {
   const salt = randomBytes(16);
   const hash = await scryptAsync(password, salt, 64);
@@ -116,6 +139,7 @@ same salt, and compare. If they match, the password is correct. Use `timingSafeE
 ```js
 async function verifyPassword(password, stored) {
   const [saltHex, hashHex] = stored.split(':');
+  if (!saltHex || !hashHex) return false;
   const expected = Buffer.from(hashHex, 'hex');
   const actual = await scryptAsync(password, Buffer.from(saltHex, 'hex'), expected.length);
   return timingSafeEqual(actual, expected);
@@ -130,12 +154,15 @@ The login cookie gets the same treatment as a password: the server never keeps t
 3. The raw token goes to the browser as a cookie.
 
 ```js
+const hashToken = (token) => createHash('sha256').update(token).digest('hex');
+
 async function startSession(res, userId) {
   const token = randomBytes(32).toString('hex');
   await query('INSERT INTO auth_sessions (token_hash, user_id, expires_at) VALUES ($1,$2,$3)',
     [hashToken(token), userId, new Date(Date.now() + SESSION_MS)]);
   res.cookie('session_token', token, {
-    httpOnly: true, sameSite: 'lax', secure: true, maxAge: SESSION_MS, path: '/',
+    httpOnly: true, sameSite: 'lax', maxAge: SESSION_MS, path: '/',
+    secure: process.env.NODE_ENV === 'production',   // always true behind HTTPS
   });
 }
 ```
@@ -153,12 +180,12 @@ export async function requireAuth(req, _res, next) {
 }
 ```
 
-## API Usage
+### API Usage
 
-### Secure Server
-All Zoom calls (REST API and JWT Generation) happen on the backend. The frontend only receives the result.
+#### Secure Server
+All Zoom calls (REST API and JWT generation) happen on the backend. The frontend only receives the result.
 
-### Using Keystores in Production
+#### Using Keystores in Production
 Set credentials as variables in your host's secret store rather than files on disk. Examples:
 Vercel Environment Variables, AWS Secrets Manager or SSM, GCP Secret Manager, Azure Key Vault,
 or HashiCorp Vault. You get encryption at rest, access control, audit logs, and easy rotation.
@@ -168,7 +195,7 @@ For local development with a `.env` file:
 - Keep it out of Docker images. Add `.env` to `.dockerignore` and pass values at runtime.
 - Never commit it to git.
 
-### Bearer Token Generation
+#### Bearer Token Generation
 The Video SDK REST API accepts a JWT as a bearer token. Generate it on the server for each request (or cache it until **shortly before** it expires).
 
 - **Scope:** give your API credentials only the least privilege your requests need.
@@ -176,81 +203,87 @@ The Video SDK REST API accepts a JWT as a bearer token. Generate it on the serve
 - **Logs:** never log your credentials or generated JWTs.
 
 ```js
-const payload = { iss: process.env.ZOOM_API_KEY, iat, exp };   // HS256, signed with ZOOM_API_SECRET
+function generateAPIJWT() {
+  const iat = Math.round(Date.now() / 1000) - 30;
+  const exp = iat + 60 * 60 * 2;
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = { iss: process.env.ZOOM_API_KEY, iat, exp };
+  return KJUR.jws.JWS.sign('HS256', JSON.stringify(header), JSON.stringify(payload), process.env.ZOOM_API_SECRET);
+}
+
 const res = await fetch('https://api.zoom.us/v2/videosdk/sessions', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jwt}` },
+  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${generateAPIJWT()}` },
   body: JSON.stringify({ session_name, session_password, settings }),
 });
 ```
 
-### JWT Generation
-Use the [Video SDK key and secret](https://developers.zoom.us/docs/video-sdk/get-credentials/) only in the server runtime. The JWT the client uses to join a session requires the following claims:
+#### JWT Generation
+Use the [Video SDK key and secret](https://developers.zoom.us/docs/video-sdk/get-credentials/) only in the server runtime. The JWT the client uses to join a session uses the following claims (see [Authorize](https://developers.zoom.us/docs/video-sdk/auth/)):
 
-| Claim       | Required value                                                   |
+| Claim       | Value                                                            |
 | ----------- | ---------------------------------------------------------------- |
 | `app_key`   | Your Zoom Video SDK key                                          |
-| `tpc`       | The topic matching the specified 'tpc' in SDK join function      |
+| `tpc`       | The session name, matching the one passed to the SDK join function |
 | `role_type` | Server-derived `1` for host or `0` for participant               |
 | `version`   | `1`                                                              |
 | `iat`       | Current server time with a small clock-skew allowance            |
 | `exp`       | No more than two hours after issue in this architecture          |
+| `hold`      | Optional. `0` no waiting room, `1` participants wait until a host admits them, `2` supported but off until a host turns it on. Taken from the session's stored setting |
 
-This JWT is generated with functions similar to the below:
-```js
-function generateSignature(
-	sessionName: string,
-	role: number,
-	expiresInHours: number = 2,
-): string {
-	const iat = Math.round(new Date().getTime() / 1000) - 30;
-	const exp = iat + 60 * 60 * expiresInHours;
-	const oHeader = { alg: "HS256", typ: "JWT" };
-	const oPayload = {
-		app_key: sdkKey,
-		tpc: sessionName,
-		role_type: role,
-		version: 1,
-		iat: iat,
-		exp: exp,
-	};
-	const sHeader = JSON.stringify(oHeader);
-	const sPayload = JSON.stringify(oPayload);
-	const sdkJWT = KJUR.KJUR.jws.JWS.sign("HS256", sHeader, sPayload, sdkSecret!);
-	return sdkJWT;
+This JWT is generated with a function similar to the one below:
+```ts
+function generateSignature(sessionName: string, role: number, hold = 0, expiresInHours = 2): string {
+  const iat = Math.round(Date.now() / 1000) - 30;
+  const exp = iat + 60 * 60 * expiresInHours;
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = {
+    app_key: sdkKey,
+    tpc: sessionName,
+    role_type: role,
+    hold,
+    version: 1,
+    iat,
+    exp,
+  };
+  return KJUR.jws.JWS.sign('HS256', JSON.stringify(header), JSON.stringify(payload), sdkSecret);
 }
 ```
 **Do not expose your credentials to the client. When using the Video SDK in production, use a backend service to sign tokens. Do not store credentials in plain text.**
 
-## Scheduling Meetings
-A signed-in host fills out the scheduler (name, time, agenda, password, auto-recording). The server validates the input, creates the session with `POST /videosdk/sessions`, and saves the returned `session_id` in the database alongside the host's user id.
+### Scheduling Sessions
+A signed-in host fills out the scheduler (name, password, agenda, date, time, timezone, duration, waiting room, auto-recording). The server validates the input, creates the session with `POST /videosdk/sessions`, and saves the returned `session_id` in the database alongside the host's user id.
 
 ```js
 router.post('/create-session', requireAuth, async (req, res) => {
-  // ...validate name, hold, startTime, password (alphanumeric, max 10)
-  const created = await createVideoSession(sessionName, password, { auto_recording, hold });
+  // ...validate sessionName (printable characters, max 200), agenda, hold (0, 1 or 2),
+  //    startTime, and password (printable characters, max 10)
+  const created = await createVideoSession(sessionName, password, {
+    auto_recording: body.auto_recording ? 'cloud' : 'none',
+    hold,
+  });
   const record = { sessionId: created.session_id, inviteId: randomBytes(16).toString('base64url'), /* ... */ };
   await addSession(req.user.id, record);
   res.status(201).json(record);
 });
 ```
 
-### Fetching Meeting Info
-The meeting list combines your database records with session data from `GET /videosdk/sessions/{id}`.
+#### Fetching Session Info
+The session list combines your database records with session data from `GET /videosdk/sessions/{sessionId}?type=scheduled`. A session ID that contains `/` must be double URL-encoded in the path.
 
 <Image src="images/meetinglist.png" alt="Scheduled Sessions list showing two sessions, each with a Join button and a delete button" />
 
-- **Paginate** in the UI and API once a host has more than a handful of meetings, rather than fetching every session on each load.
+- **Paginate** in the UI and API once a host has more than a handful of sessions, rather than fetching every session on each load.
 - **Cache on the server.** Zoom rate-limits the REST API, so hold responses briefly (for example 30-60 seconds) and invalidate on create or delete. 
-- Scope every query by `req.user.id` so hosts only ever see their own meetings.
+- Scope every query by `req.user.id` so hosts only ever see their own sessions.
 
-### Link Creation
+#### Link Creation
 The invite link is what you hand to people, so treat it as untrusted input when it comes back.
 
 - **Domain ownership:** build links from your own domain (an `ENDPOINT_URL` setting) and serve it over HTTPS only.
 - **Opaque invite ID:** use a unique, random invite ID mapped to the `sessionName` in your database. Don't put `sessionName`, password, or role in the link.
 - **Query parameters:** keep them out of the link wherever possible. Anything in a URL ends up in browser history, logs, and referrers.
-- **Role and meeting access:** the link identifies *which* meeting. The server decides *what access* the caller gets.
+- **Role and session access:** the link identifies *which* session. The server decides *what access* the caller gets.
 - **Rate limit** token generation per IP and per invite ID to stop invite-ID guessing.
 - **Set `Cache-Control: no-store`** on any response that carries a token.
 
@@ -262,48 +295,71 @@ export const buildHostLink  = (base, inviteId) => `${buildGuestLink(base, invite
 const inviteId = randomBytes(16).toString('base64url');
 ```
 
-## Structuring Invitations
-Give each meeting two links built from the same invite ID: a guest link (`/s/:inviteId`) and a host link (`/s/:inviteId/host`). The invite message shows only the guest link and details. The host link stays in the host's own scheduler view.
+### Structuring Invitations
+Give each session two links built from the same invite ID: a guest link (`/s/:inviteId`) and a host link (`/s/:inviteId/host`). The invite message shows only the guest link and details. The host link stays in the host's own scheduler view.
 
 <Image src="images/invite.png" alt="Host link and invite text with the session name, date, time, timezone, password, and join link, each with a Copy button" />
 
 Send the password through a different channel than the link. Whoever has only the link still needs the password.
 
-## Securing Meetings
+### Securing Sessions
 
-### Secure Joining
+#### Secure Joining
 The browser opens a link, posts the invite ID and a requested role to the server, and the server decides.
 
 ```js
 router.post('/token', async (req, res) => {
-  const invite = await findInvite(req.body.inviteId);         // 404 if unknown
-  const token = generateSignature(invite.sessionName, role);
+  const inviteId = req.body?.inviteId;
+  if (typeof inviteId !== 'string' || inviteId.length === 0 || inviteId.length > 128) {
+    throw new HttpError(404, 'Invite not found');
+  }
+  const role = validateRole(req.body?.role);                  // must be exactly 0 or 1
+  const invite = await findInvite(inviteId);
+  if (!invite) throw new HttpError(404, 'Invite not found');  // unknown invite
+  const token = generateSignature(invite.sessionName, role, invite.hold);
 
   if (role === 1) {                                           // host
     const user = await userFromRequest(req);
     if (!user) throw new HttpError(401, 'Sign in to join as host');
-    if (user.user_email !== invite.ownerEmail) throw new HttpError(403, 'Not your meeting');
+    if (user.user_email.toLowerCase() !== invite.ownerEmail.toLowerCase()) {
+      throw new HttpError(403, 'This host link does not belong to your account');
+    }
     return res.json({ token, sessionName: invite.sessionName, password: invite.password });
   }
   res.json({ token, sessionName: invite.sessionName, passwordRequired: invite.password !== '' });
 });
 ```
 
-- **Hosts** can only start a meeting as a signed-in user who owns it. That's also the only way to retrieve the host link's token and password.
-- **Guests** get a `role_type: 0` token. If the meeting has a password, they're prompted for it at join. The password is never included in the invite link or the guest response.
+- **Hosts** can only start a session as a signed-in user who owns it. That's also the only way to retrieve the host token and the password from the server.
+- **Guests** get a `role_type: 0` token. If the session has a password, they're prompted for it at join, and Zoom checks it. The password is never included in the invite link or the guest response.
 
-### Secure Fetching of Meeting Data
-- Put `requireAuth` on every route that lists, reads, or deletes meetings.
-- Filter by the signed-in user's id, and return `404` (not `403`) for meetings they don't own, so IDs can't be probed.
+#### Secure Fetching of Session Data
+- Put `requireAuth` on every route that lists, reads, or deletes sessions.
+- Filter by the signed-in user's id, and return `404` (not `403`) for sessions they don't own, so IDs can't be probed.
 - Return only what the UI needs. Never send `password_hash`, token hashes, or API credentials.
 - Treat a Zoom `404` as "this session no longer exists" and clean up the matching row.
 
-## Related Resources
-- [Video SDK REST API](https://developers.zoom.us/docs/api/video-sdk/)
-- [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/)
-- [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
-- [Zoom Video SDK Agent Skills](https://github.com/zoom/skills/tree/main/skills/video-sdk)
-- [Zoom Developer Forum](https://devforum.zoom.us/)
+### Run the Sample
+
+```bash
+git clone https://github.com/zoom/videosdk-scheduling-and-invite
+cd videosdk-scheduling-and-invite
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Set these values in `.env` before starting:
+
+| Variable | Description |
+|---|---|
+| `ZOOM_VSDK_KEY` / `ZOOM_VSDK_SECRET` | Video SDK credentials used to sign the join JWT |
+| `ZOOM_API_KEY` / `ZOOM_API_SECRET` | Video SDK REST API credentials used to create, read, and delete sessions |
+| `ENDPOINT_URL` | Public base URL of your app, used to build invite links (`http://localhost:3000` locally; HTTPS in production) |
+| `DATABASE_URL` | Postgres connection string |
+| `PORT` | Optional; defaults to `3000` |
+
+Open `http://localhost:3000`, create an account, and schedule a session on the **Schedule and Invite** tab. Copy the invite text for guests and keep the host link for yourself. On the **Scheduled Sessions** tab, choose **Join** to start a session as the host. In a second browser, open the guest link and enter the password if prompted.
 
 ## App Manifest
 
@@ -322,8 +378,17 @@ Video SDK apps are not configured through a Marketplace app manifest, so this bl
 - Invite links use a random invite ID with no session name, password, or role.
 - Host tokens require a signed-in owner; guest tokens never include the password.
 - Token responses send `Cache-Control: no-store` and token routes are rate limited.
-- Zoom responses are cached and meeting lists are paginated.
+- Zoom responses are cached and session lists are paginated.
 
 **Client-side**
-- Guests are prompted for the password at join when the meeting requires one.
+- Guests are prompted for the password at join when the session requires one.
 - No Zoom credentials appear in the client bundle (no `VITE_` secrets).
+
+## Related Resources
+- [Sample repository](https://github.com/zoom/videosdk-scheduling-and-invite)
+- [Video SDK REST API](https://developers.zoom.us/docs/api/video-sdk/)
+- [Video SDK authorization](https://developers.zoom.us/docs/video-sdk/auth/)
+- [Zoom Video SDK for Web](https://developers.zoom.us/docs/video-sdk/web/)
+- [Video SDK Session Lifecycle](https://developers.zoom.us/docs/video-sdk/web/sessions/)
+- [Zoom Video SDK Agent Skills](https://github.com/zoom/skills/tree/main/skills/video-sdk)
+- [Zoom Developer Forum](https://devforum.zoom.us/)
