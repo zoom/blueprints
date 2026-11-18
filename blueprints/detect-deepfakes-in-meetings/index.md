@@ -64,7 +64,7 @@ By default, the reference implementation cuts video into two-second clips at fiv
 The reference implementation is a demo. It serves the HLS preview and the audio and video inference clips from its public web directory, and it accepts participant selection and start and stop commands over Socket.IO without authenticating the caller. Put both behind your own authentication before any real meeting media passes through it.
 
 ```mermaid
-flowchart LR
+flowchart TB
     B[In-meeting Zoom App] -->|startRTMS and stopRTMS| A[Zoom Meeting]
     A -->|Selected video and multi-stream audio| C[RTMS media service]
     B <-->|Selection, status, and results| C
