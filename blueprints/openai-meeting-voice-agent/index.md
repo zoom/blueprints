@@ -65,7 +65,7 @@ The linked [Node.js reference implementation](https://github.com/zoom/rtms-sampl
 The reference implementation does not send audio into the meeting. It is a one-way agent: it listens to the meeting and responds with text and MCP tool calls.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|Mixed audio via RTMS| B[Node.js audio bridge]
     B -->|Resample 48 kHz to 24 kHz PCM| C[OpenAI Realtime session]
     C -->|Approved MCP tool call| D[Zoom hosted MCP server]

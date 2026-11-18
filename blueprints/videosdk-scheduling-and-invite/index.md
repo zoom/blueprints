@@ -52,7 +52,7 @@ backend, which checks the user's login, reads and writes Neon, calls the Zoom RE
 signs the JWT the frontend needs to join.
 
 ```mermaid
-graph LR
+flowchart TB
     A[React Frontend]
     B[Backend - Node/Express]
     C[(Neon Postgres)]

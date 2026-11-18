@@ -72,7 +72,7 @@ Keep provider credentials on the server. Never expose them in a browser or commi
 The linked [RTMS reference implementations](https://github.com/zoom/rtms-samples) use Node.js, Express, and RTMSManager. Both call the provider for each incoming transcript event and write the answer to the server console. The OpenAI path sends one segment without history. The Anthropic path keeps a separate history for each RTMS stream, trims it to 20 messages or 40,000 characters by default, and clears it when the stream stops. Both apply a timeout, a retry limit, and local limits on request rate, requests per stream, and estimated spend per stream. Neither path delivers answers to a CRM, dashboard, automation, or frontend.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|Live transcript via RTMS| B[Node.js RTMS service]
     B -->|Transcript event| C[Provider context: one segment or per-stream history]
     C -->|Provider request| D{Configured LLM}

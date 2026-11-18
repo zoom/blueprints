@@ -73,6 +73,15 @@ How the solution works technically. Opens with 1-2 paragraphs explaining data fl
 
 **Depth:** Components table (what each piece does, our stack vs. alternatives), sequence or flow diagram, brief explanation of why this architecture.
 
+**Diagram layout:** The site renders diagrams in a content column about 790px wide and scales anything wider down to fit, which shrinks the labels until they are unreadable. Keep every diagram within that width at its natural size.
+
+- Use `flowchart TB` (top to bottom) by default. A top-to-bottom chart grows taller as you add steps; a left-to-right chart grows wider.
+- Use `flowchart LR` only for three columns or fewer with short labels, and only after checking the width in the preview.
+- Keep edge labels to about four words. Long labels widen the chart in either direction.
+- A wide fan-out (one node with five or more children) is too wide top to bottom. Group the children in a `subgraph` or split the diagram.
+- Sequence diagrams widen with every participant and with long messages. Keep to five participants or fewer and shorten message text.
+- Check the result in the [preview tool](#previewing-your-blueprint). If the label text looks smaller than the body text around it, the diagram is too wide.
+
 ### 3. Implementation Guide
 
 How the app is built, not how to clone it. Teaches developers (or coding agents) to rebuild this class of app without external docs.
@@ -602,7 +611,7 @@ These rules prevent hydration errors on the dev-docs site:
 2. **Use `<div>` not `<p>` for image containers**: `<p>` tags can't contain block elements
 3. **No `&nbsp;` between elements**: MDX converts these to nested `<p>` tags
 4. **No JSX components**: Stick to GitHub-flavored markdown
-5. **Mermaid diagrams**: Use fenced code blocks with `mermaid` language tag
+5. **Mermaid diagrams**: Use fenced code blocks with `mermaid` language tag. Default to `flowchart TB`; see [Diagram layout](#2-architecture) for width limits
 
 **Valid:**
 ```markdown
@@ -718,7 +727,7 @@ You are writing a Zoom Blueprint, not a tutorial. Blueprints are declarative, op
 
 STRUCTURE (required, in order):
 1. Outcome-focused intro (no heading): What it does (1 sentence) → Why it matters (1 sentence) → What you'll need (bullets, MUST include Zoom license prereq) → Features (bullets) → Zoom product callout → Transition sentence
-2. ## Architecture: Components table + Mermaid diagram + data flow explanation
+2. ## Architecture: Components table + Mermaid diagram (`flowchart TB`, edge labels of about four words, must fit a 790px column) + data flow explanation
 3. ## Implementation Guide: Input/Output/Invariants contracts for business logic; concrete code only for security-critical patterns (HMAC, JWT); link to repo for full implementation
 4. ## App Manifest: Scopes table, event subscriptions, configuration steps
 

@@ -74,10 +74,11 @@ github_repo: ""                    # sample code lives in its own repo, linked h
 ## Architecture
 
 <!-- Open with 1–2 paragraphs explaining the data flow, then the diagram.
-     Label every component and connection. -->
+     Label every component and connection. Keep `flowchart TB` and edge labels
+     of about four words so the diagram fits the 790px content column. -->
 
 ```mermaid
-graph LR
+flowchart TB
     A[Zoom Meeting] -->|RTMS stream| B[Your Server]
     B -->|Audio / transcript| C[Processing Service]
     C -->|Structured output| D[Destination System]

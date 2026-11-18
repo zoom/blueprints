@@ -76,7 +76,7 @@ Screening runs in two stages. A deterministic pass matches every segment against
 | **Audit store** | Append-only, hash-chained record of every alert, disclosure, and coverage gap | Postgres table with a retention policy |
 
 ```mermaid
-graph LR
+flowchart TB
     Z[Zoom Meeting] -->|1. webhook| B[Backend with @zoom/rtms]
     Z -->|2. media WS| B
     B -->|3. segments| E[Rule Engine]

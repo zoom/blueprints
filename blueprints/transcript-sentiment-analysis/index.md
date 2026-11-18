@@ -63,7 +63,7 @@ is connected and participants begin to speak, **RTMS** delivers the live transcr
 passes each transcript to the sentiment model and gets the result back.
 
 ```mermaid
-graph LR
+flowchart TB
     A[Zoom Video SDK Client - In Session]
     B[Backend - Node/Express]
     C@{shape: subproc, label: "Sentiment Model"}
@@ -84,7 +84,7 @@ are sent as strings to a web worker, which runs the sentiment model locally. The
 transcripts and returns the result to either the main thread or the backend.
 
 ```mermaid
-graph LR
+flowchart TB
     A[Zoom Video SDK Client - In Session]
     B[Backend - Node/Express]
     C@{shape: subproc, label: "Web Worker Sentiment Model"}

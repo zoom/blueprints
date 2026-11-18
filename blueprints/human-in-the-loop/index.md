@@ -54,7 +54,7 @@ The app has two parts: an Express backend and a Next.js dashboard that runs as a
 </div>
 
 ```mermaid
-graph LR
+flowchart TB
     Z[Zoom Meeting] -->|1. meeting.rtms_started| B[Express backend]
     Z -->|2. transcript over RTMS| B
     B -->|3. live segments over SSE| F[Next.js Zoom App]

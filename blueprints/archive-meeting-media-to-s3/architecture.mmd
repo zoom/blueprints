@@ -1,4 +1,4 @@
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|RTMS audio and video| B[Node.js media receiver]
     B -->|Temporary stream files| C[FFmpeg processor]
     C -->|Playable media artifacts| D[S3 uploader]
