@@ -89,7 +89,7 @@ The application operates as three independent Node.js processes that communicate
 - Frontend displays the transcript as it arrives
 
 ```mermaid
-graph LR
+flowchart TB
     A[Zoom Contact Center] -->|Webhooks| B[Backend API<br/>Express :3001]
     A -->|WebSocket| C[RTMS Server<br/>Node.js :8080]
     

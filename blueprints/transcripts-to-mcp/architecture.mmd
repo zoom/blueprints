@@ -1,5 +1,5 @@
 %% Keep this file in sync with the mermaid fence in index.md.
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
     Z[Zoom lifecycle webhook] -->|Authenticated start and stop events| B
     B -->|Five-second transcript batch| C[Private LLM router]

@@ -87,7 +87,7 @@ A bot that joins meetings outside your own account uses an On Behalf Of (OBF) to
 Your bot runs as a headless participant. It joins through the Meeting SDK and captures media through SDK callbacks. A scheduler decides which meetings to join, and one bot process stays connected for the length of each meeting.
 
 ```mermaid
-graph LR
+flowchart TB
     subgraph "Your Infrastructure"
         C[Calendar sync and scheduler]
         B[Bot process, one per meeting]
@@ -111,7 +111,7 @@ graph LR
 Zoom sends a webhook when a stream starts. Your server opens a signaling connection, then a media connection for each type of media, and data flows without a participant joining. The Surface App runs inside the Zoom client for the app user and talks to your backend.
 
 ```mermaid
-graph LR
+flowchart TB
     subgraph "Zoom"
         Z[Zoom Meeting]
         A[Surface App in the side panel]

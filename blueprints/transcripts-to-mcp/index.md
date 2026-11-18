@@ -86,7 +86,7 @@ The [reference implementation](https://github.com/zoom/rtms-samples/tree/main/rt
 | Audit logging | Record request IDs, outcomes, durations, and safe error codes | Structured JSON logs in both services |
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|Live transcript via RTMS| B[RTMS client]
     Z[Zoom lifecycle webhook] -->|Authenticated start and stop events| B
     B -->|Five-second transcript batch| C[Private LLM router]

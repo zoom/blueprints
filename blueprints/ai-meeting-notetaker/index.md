@@ -73,7 +73,7 @@ RTMS delivers transcript segments over WebSocket in near real time. Your backend
 | **Frontend** | Display transcript, summaries, action items in real time | React Surface App via Zoom Apps SDK |
 
 ```mermaid
-graph LR
+flowchart TB
     Z[Zoom Meeting] -->|1. webhook| B[Your Backend]
     B -->|2. join| R[RTMS Stream]
     R -->|3. segments| B

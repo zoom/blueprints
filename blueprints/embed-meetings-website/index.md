@@ -68,7 +68,7 @@ One rule shapes everything else. The Meeting SDK Secret never reaches the browse
 | **Booking source** | Decide which meeting this visitor may join, and as which role | In-memory map in the sample; your database |
 
 ```mermaid
-graph LR
+flowchart TB
     V[Visitor] -->|1. open appointment page| P[Your Page]
     P -->|2. request signature| B[Backend]
     B -->|3. authorize booking| D[(Bookings)]

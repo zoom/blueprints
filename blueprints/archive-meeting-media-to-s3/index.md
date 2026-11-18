@@ -63,7 +63,7 @@ The linked [Node.js reference implementation](https://github.com/zoom/rtms-sampl
 The queue retries failed jobs with exponential backoff, returns interrupted jobs to pending after a restart, and periodically scans for media left behind by a crash. Every upload requests server-side encryption explicitly, and local media is deleted after a successful upload by default. The queue is a directory on one instance's disk, so persist the recordings directory, and replace the queue with your own job system if you run more than one worker.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|RTMS audio and video| B[Node.js media receiver]
     B -->|Temporary stream files| C[FFmpeg processor]
     C -->|Playable media artifacts| D[S3 uploader]

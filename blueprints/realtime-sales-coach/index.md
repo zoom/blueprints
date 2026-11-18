@@ -72,7 +72,7 @@ RTMS streams transcripts directly from Zoom's infrastructure. The transcript app
 | **Frontend** | Display transcript, qualification tracker, competitor mentions | React Surface App via Zoom Apps SDK |
 
 ```mermaid
-graph LR
+flowchart TB
     Z[Zoom Meeting] -->|1. webhook| B[Backend]
     B -->|2. forward| R[RTMS]
     Z -->|3. media WS| R

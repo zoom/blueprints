@@ -59,7 +59,7 @@ Zoom tells your webhook when RTMS starts and stops. A transcript service connect
 The linked [Node.js reference implementation](https://github.com/zoom/rtms-samples/tree/main/transcript/save_transcript_js) uses Express and RTMSManager. A `TranscriptStore` keeps separate timing, counters, and files for each `rtms_stream_id`, so concurrent meetings do not share state. It appends every event to an `events.jsonl` log and to VTT, SRT, and TXT files, ignores duplicate events, rebuilds the files from the log after a restart, and deletes inactive stream folders after a retention period (30 days by default). Everything is on local disk. Treat it as a starting point, not as a multi-tenant transcript store.
 
 ```mermaid
-flowchart LR
+flowchart TB
     A[Zoom Meeting] -->|RTMS transcript stream| B[Node.js transcript receiver]
     B -->|Transcript events and timestamps| C[Transcript formatter]
     C -->|WebVTT| D[VTT file]
