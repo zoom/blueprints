@@ -137,7 +137,7 @@ Sales coaching usually happens after the call, once a manager reviews the record
 
 ## Features
 
-- Live transcript stream with sub-second latency
+- Live transcript stream in near real time
 - Deal qualification tracker (BANT, MEDDIC, or custom criteria)
 - Competitor mention detection with sentiment
 - Commitment and next-step capture
@@ -219,12 +219,32 @@ Long sentences lose everyone. Break them up.
 
 ### Include concrete numbers
 
-Latency, timing, limits. These build credibility:
+Timing, intervals, limits. These build credibility, and an agent cannot act on "a short while":
 
-- "typically within 300-500ms"
-- "sub-second latency"
 - "buffers for 2-3 seconds"
 - "30-second extraction interval"
+- "five-minute replay window"
+
+Do not publish latency figures ("sub-second", "300-500ms") unless the number comes from the Zoom docs. Say "near real time".
+
+### Zoom brand voice
+
+Zoom's voice has four traits: **confident**, **clever**, **human**, and **empowering**. Technical content uses a light voice. Put the voice in the title, description, and intro; keep the rest of the page clear and neutral.
+
+| Trait | In a blueprint |
+|-------|----------------|
+| Confident | State what the system does. No hedging ("could help") and no overpromising. |
+| Human | Write how people talk. Define a term the first time it appears. |
+| Empowering | Lead with what the reader ends up with, then the product. |
+| Clever | Use restraint. No puns, jokes, or exclamation marks. |
+
+Three things to watch:
+
+- **AI supports people; it does not replace them.** Do not call a product a "digital teammate" or "virtual coworker". "Agent" is fine.
+- **Cut filler words** (just, simply, really, very) and prefer active verbs with a named actor.
+- **Titles follow the search term customers use.** Choose the title for search intent and keep `seo_keywords` in step with it.
+
+The full checks are in the [review rubric](.claude/skills/reviewing-blueprints/rubric.md), section V.
 
 ### Avoid AI-sounding patterns
 
@@ -674,7 +694,14 @@ When reviewing a Blueprint PR, verify all items:
 - [ ] **Architecture is direct**: No marketing headers like "The No-Bot Advantage"
 - [ ] **Implementation teaches how it's built**: Not just clone-and-run
 - [ ] **No AI patterns**: No em dashes, no dramatic kickers, no binary contrast headers
-- [ ] **Concrete numbers included**: Latency, timing, limits where relevant
+- [ ] **Concrete numbers included**: Timing, intervals, limits where relevant; no unsourced latency figures
+- [ ] **Zoom voice in the title and intro**: Confident, human, empowering; neutral technical copy elsewhere
+
+### Review stages
+- [ ] **Review run**: The five-stage [blueprint review](.claude/skills/reviewing-blueprints/SKILL.md) has a scorecard in the PR
+- [ ] **Page agrees with itself**: One name per component, identifier, and field; every feature has a contract
+- [ ] **Page agrees with the sample and the docs**: Checked at a recorded sample commit
+- [ ] **Cold read done**: A fresh agent listed what it would have to guess; no blocking guesses remain
 
 ### Technical requirements
 - [ ] **Zoom products linked**: RTMS, Zoom Apps, etc. link to official docs
@@ -740,7 +767,9 @@ TONE RULES:
 - No binary contrasts ("Real-Time, Not Post-Call")
 - No dramatic kickers ("The intelligence layer is yours to build.")
 - No marketing headers ("The No-Bot Advantage")
-- Include concrete numbers (latency, timing, limits)
+- Include concrete numbers (timing, intervals, limits); say "near real time" instead of a latency figure
+- One name per component, identifier, and field; every listed feature has a contract
+- Zoom voice (confident, human, empowering) in the title and intro; neutral technical copy elsewhere
 - Short sentences. Break up lists.
 
 TECHNICAL RULES:
