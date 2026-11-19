@@ -9,6 +9,7 @@
   "scripts": {
     "validate": "node scripts/validate.js",
     "validate-zoom-manifest": "node scripts/validate-zoom-manifest.js",
+    "validate-diagrams": "node scripts/validate-diagrams.js",
     "test": "node --test \"scripts/**/*.test.js\""
   },
   "dependencies": {
