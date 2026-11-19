@@ -12,6 +12,11 @@ See [STYLE_GUIDE.md](../STYLE_GUIDE.md) for detailed guidance.
 - [ ] `updated` date bumped
 - [ ] No credentials, API keys, or customer data in the diff
 
+**Review (see [reviewing-blueprints](../.claude/skills/reviewing-blueprints/SKILL.md)):**
+- [ ] `npm run review-lint -- <slug>` hints read and resolved
+- [ ] Review scorecard pasted below, or each stage marked "not run" with a reason
+- [ ] Page checked against the sample repo at commit: `<hash>`
+
 **Content quality:**
 - [ ] Intro is outcome-focused (what you'll build and why it matters)
 - [ ] Architecture leads with differentiation (why this approach matters)

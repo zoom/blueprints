@@ -155,10 +155,33 @@ The panel shows frontmatter errors/warnings and MDX syntax issues the site build
 
 Workflow:
 1. Author sets `status: draft` while writing
-2. PR opened, peer review per team schedule
-3. On approval, author sets `status: review`
-4. Editorial pass (tone, grammar, consistency)
-5. Merge to main with `status: published`
+2. Author runs the blueprint review (below) and fixes what it finds
+3. PR opened with the review scorecard, peer review per team schedule
+4. On approval, author sets `status: review`
+5. Editorial pass (tone, grammar, consistency)
+6. Merge to main with `status: published`
+
+### The blueprint review
+
+Every blueprint goes through the same five-stage review before it is published. The process is written as a skill that a person or a coding agent can follow: [.claude/skills/reviewing-blueprints/SKILL.md](.claude/skills/reviewing-blueprints/SKILL.md).
+
+| Stage | Question it answers |
+|-------|---------------------|
+| 1. Lint | Does the page pass the scripts? `npm run validate`, `npm run review-lint`, `npm run validate-diagrams` |
+| 2. Contract consistency | Does the page agree with itself? One name per component, identifier, and field |
+| 3. Implementation check | Does every claim match the sample's source and the Zoom docs? |
+| 4. Cold read | What would a coding agent have to guess if it had only this page? |
+| 5. Voice and AI patterns | Do the title and intro sound like Zoom, and is the rest clear and neutral? |
+
+The review produces a scorecard. Paste it into the PR. The reviewer reports findings and does not rewrite the page; product claims and titles are listed for the page owner to decide.
+
+With Claude Code, ask it to review the blueprint and it will load the skill. With another agent, point it at the `SKILL.md` file above. To run only the script stage:
+
+```bash
+npm run review-lint -- <your-slug>
+```
+
+`review-lint` prints hints (places to look), not errors.
 
 ---
 
