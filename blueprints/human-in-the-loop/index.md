@@ -49,10 +49,6 @@ Build a workplace agent that uses Zoom meeting and chat context to recommend fol
 
 The app has two parts: an Express backend and a Next.js dashboard that runs as a Zoom App. Zoom tells the backend when RTMS starts, and the backend joins the stream and receives the transcript. Live segments go to the dashboard over server-sent events. When RTMS stops, the backend sends the finished transcript to OpenAI and stores the results as pending suggestions. Nothing is created in Zoom until the user approves it in the dashboard. After approval, the backend creates a Zoom Doc through Zoom MCP, and the dashboard shares the link to chat with the Zoom Apps SDK.
 
-<div align="center">
-  <img src="images/ai-powered-workplace.png" alt="Observe, recommend, approve, and execute stages of the workplace agent" width="640" />
-</div>
-
 ```mermaid
 flowchart TB
     Z[Zoom Meeting] -->|1. meeting.rtms_started<br/>2. transcript over RTMS| B[Express backend]
