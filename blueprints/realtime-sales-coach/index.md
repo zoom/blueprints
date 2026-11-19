@@ -11,7 +11,7 @@ solution_types: ["real-time-analysis", "transcription-summarization"]
 author: "Jen Brissman"
 status: "published"
 hero_image: "images/hero.png"
-updated: 2026-11-14
+updated: 2026-11-18
 github_repo: "https://github.com/zoom/arlo"
 demo_url: "https://youtu.be/Y7P9ssfMizU"
 tags: ["sales", "coaching", "real-time"]
@@ -67,14 +67,14 @@ RTMS streams transcripts directly from Zoom's infrastructure. The transcript app
 
 | Component | Responsibility | Our stack (yours may differ) |
 |-----------|----------------|------------------------------|
-| **Transcript access** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
+| **RTMS service** | Receive RTMS webhooks, join streams, normalize segments | Node service using `@zoom/rtms` SDK |
 | **Backend** | Persist transcripts, orchestrate LLM calls, broadcast to clients | Express + OpenRouter |
 | **Frontend** | Display transcript, qualification tracker, competitor mentions | React Surface App via Zoom Apps SDK |
 
 ```mermaid
 flowchart TB
     Z[Zoom Meeting] -->|1. webhook| B[Backend]
-    B -->|2. forward| R[RTMS]
+    B -->|2. forward| R[RTMS service]
     Z -->|3. media WS| R
     R -->|4. segments| B
     B -->|5. WS broadcast| P[Seller's Panel]
@@ -82,7 +82,7 @@ flowchart TB
     B <--> L[LLM]
 ```
 
-When transcription starts, Zoom sends a webhook to the backend. The backend verifies it, forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. Segments flow to the backend, which broadcasts them to the panel and persists them in near real time.
+When transcription starts, Zoom sends a webhook to the backend. The backend verifies it and forwards it to the RTMS service, which opens a WebSocket to Zoom and receives transcript segments phrase by phrase. The RTMS service sends each segment to the backend, which broadcasts it to the panel and persists it in near real time.
 
 **Our stack vs. your options:** We use Node/Express, but Python/FastAPI, Go, or Ruby work the same way. The requirements are a webhook endpoint Zoom can reach, a WebSocket client for RTMS, an LLM, and a way to push updates to the frontend.
 
@@ -171,24 +171,26 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 
 **Invariants:**
 
+- Use the webhook's `meeting_uuid` as `meetingId` in every later step: broadcast, persistence, and WebSocket subscriptions
 - Assign monotonic sequence number per session
 - Convert timestamp from microseconds to milliseconds
 - Broadcast to clients immediately (don't block on persistence)
 - Persist asynchronously with upsert on `(meetingId, seqNo)` for idempotency
-- Handle missing userId/userName gracefully with defaults
+- When `userId` is missing, set `speakerId` to `unknown`
+- When `userName` is missing, set `speakerLabel` to `Speaker {userId}`, or to `Speaker` when `userId` is also missing
 
 **Databases:** Works with MySQL, Postgres, MongoDB, or a time-series database.
 
 #### WebSocket delivery
 
-**Input:** Client connection with `meeting_id` and JWT token
+**Input:** Client connection to `/ws` with two query parameters: `meeting_id` (the `meetingId` value, which the panel reads with the Zoom Apps SDK's `getMeetingUUID()`) and `token` (a JWT)
 
 **Output:** Real-time transcript segments and extraction updates pushed to connected clients
 
 **Invariants:**
 
 - Require valid JWT on every connection
-- Client sends `{ type: 'subscribe', meetingId }` after connecting
+- Client sends `{ type: 'subscribe', payload: { meetingId } }` after connecting
 - Server broadcasts `{ type: 'transcript.segment', data }` and `{ type: 'sales_signals', data }`
 - Clean up subscriptions on disconnect
 - Panel appends segments in `seqNo` order
@@ -203,14 +205,14 @@ With transcripts flowing, extract sales signals: qualification criteria, competi
 
 **Input:** Recent transcript context (last 100 segments or last N minutes), current qualification state, competitor watch list
 
-**Output:** JSON with `qualification` (BANT status + signals), `competitors` (mentions + sentiment), `commitments` (task + owner + due)
+**Output:** JSON with `qualification` (BANT status + signals), `competitors` (mentions + sentiment), `commitments` (text + owner + due)
 
 **Invariants:**
 
 - Run on debounce interval (30 seconds), not on every segment
 - Track last processed sequence number to avoid redundant calls
 - Parse JSON response, strip markdown fences if present
-- Validate minimum transcript length before calling LLM
+- Skip the LLM call when the transcript context is shorter than a minimum length (Arlo's live summary route uses 50 characters)
 - Merge results incrementally (don't replace, dedupe by text)
 
 **Prompt structure** (customize for MEDDIC, SPICED, or your criteria):
@@ -239,6 +241,23 @@ Return JSON only:
 
 See [Arlo's AI routes](https://github.com/zoom/arlo/blob/main/backend/src/routes/ai.js) for how its summary and action-item extraction calls the LLM.
 
+#### Filler-word alerts
+
+**Input:** Transcript segments as they arrive in the panel, and a configurable list of filler words (Arlo's defaults include "um", "uh", "like", "you know", and "basically")
+
+**Output:** A detection `{ word, timestamp, text, seqNo }` for each match, a running count per word, and a short audio cue when alerts are on
+
+**Invariants:**
+
+- Run in the panel on each new segment; no LLM call
+- Process each segment once, keyed by `seqNo`
+- Match whole words, case-insensitive
+- Escape custom words before building a match pattern
+- Keep the last 50 detections
+- Let the user turn the audio cue off
+
+See [Arlo's `FillerWordAlert.js`](https://github.com/zoom/arlo/blob/main/frontend/src/features/sales/FillerWordAlert.js) for the reference implementation.
+
 #### Frontend state management
 
 **Input:** WebSocket stream of segments and extraction updates
@@ -266,7 +285,7 @@ Arlo is the reference implementation. Use it to see the patterns working, then f
 | [Deploy to Render](https://render.com/deploy?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, database |
 | [Deploy to Railway](https://railway.app/new?repo=https://github.com/zoom/arlo) | Backend, frontend, RTMS service, database |
 
-After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), add `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN`, and set the OAuth redirect URL to your backend.
+After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom.us/), add `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, and `ZOOM_WEBHOOK_TOKEN`, and set the OAuth redirect URL to `https://YOUR-BACKEND-URL/api/auth/callback`.
 
 #### Local setup
 
@@ -294,7 +313,7 @@ After deploying, create a Zoom App in the [Marketplace](https://marketplace.zoom
    - Surface: Home URL `https://YOUR-NGROK-URL`
    - Event Subscriptions: endpoint `https://YOUR-NGROK-URL/api/rtms/webhook`, events `meeting.rtms_started` and `meeting.rtms_stopped`
 
-4. Fill `.env` with `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, `ZOOM_WEBHOOK_TOKEN`, `PUBLIC_URL`. Generate secrets:
+4. Fill `.env` with `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET`, `ZOOM_WEBHOOK_TOKEN`, `PUBLIC_URL`. Run this command twice, and use one result for `SESSION_SECRET` and the other for `TOKEN_ENCRYPTION_KEY`:
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
@@ -369,7 +388,7 @@ Use this checklist to verify the implementation:
 - LLM extraction runs on interval, not on every segment
 - Extraction results parse as valid JSON and handle malformed responses
 - Panel renders existing signals on connect and updates on new extractions
-- No SDK credentials in client bundles or logs
+- No Zoom app credentials (client secret, webhook secret token) in client bundles or logs
 
 ---
 

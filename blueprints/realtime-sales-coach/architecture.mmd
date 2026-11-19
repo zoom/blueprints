@@ -1,7 +1,7 @@
 %% Keep this file in sync with the mermaid fence in index.md.
 flowchart TB
     Z[Zoom Meeting] -->|1. webhook| B[Backend]
-    B -->|2. forward| R[RTMS]
+    B -->|2. forward| R[RTMS service]
     Z -->|3. media WS| R
     R -->|4. segments| B
     B -->|5. WS broadcast| P[Seller's Panel]
