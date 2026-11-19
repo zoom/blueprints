@@ -66,18 +66,13 @@ When a user opens an appointment, the Next.js backend checks the authenticated u
 ![Appointment details with notes and recordings](images/appointment.png)
 
 ```mermaid
-graph LR
-    U[Doctor or Patient Browser] -->|Sign in, open appointment| A[Next.js on Vercel]
-    A -->|Users, appointments, notes| D[(Neon Postgres)]
-    A -->|Authorize, sign 2-hour JWT| U
-    U -->|Preview, join with room ID and JWT| Z[Zoom Video SDK Session]
-    Z -->|Video, audio, chat, captions| U
-    U -->|Authorized upload or download| A
-    A -->|Private patient documents| S[(Vercel Blob, S3, or R2)]
-    U -->|Start, stop recording| Z
-    A -->|Video SDK API JWT| R[Zoom Video SDK Recording API]
-    R -->|Recording metadata, download URL| A
+flowchart TB
+    U[Doctor or Patient Browser] <-->|Sign in and file transfer; authorization and 2-hour JWT back| A[Next.js on Vercel]
+    U <-->|Join with room ID and JWT; video, audio, chat, captions; recording control| Z[Zoom Video SDK Session]
     K[Vercel Environment Variables] -->|SDK, API, auth, storage secrets| A
+    A -->|Users, appointments, notes| D[(Neon Postgres)]
+    A -->|Private patient documents| S[(Vercel Blob, S3, or R2)]
+    A <-->|API JWT out; recording metadata and download URL back| R[Zoom Video SDK Recording API]
 ```
 
 ### Waiting room
