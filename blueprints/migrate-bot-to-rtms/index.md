@@ -287,16 +287,22 @@ A bot starts when your code joins. An RTMS stream starts in one of three ways, a
 | REST API | Your backend | `meeting:update:participant_rtms_app_status` scope; the participant is on the meeting's invite list and has already joined | A start button in your own product or another system |
 
 ```mermaid
+---
+config:
+  sequence:
+    width: 110
+    actorMargin: 20
+---
 sequenceDiagram
-    participant U as App user's Zoom client
+    participant U as App user's<br/>Zoom client
     participant Z as Zoom
     participant H as Host
     participant S as Your server
-    U->>Z: Start request (auto-start, startRTMS, or REST API)
+    U->>Z: Start request (auto-start,<br/>startRTMS, or REST API)
     alt App user owns the meeting, or the app is set to Always allow
         Z->>S: meeting.rtms_started
     else Host is asked
-        Z->>H: Request to share content with the app
+        Z->>H: Request to share<br/>content with the app
         H->>Z: Allow
         Z->>S: meeting.rtms_started
     end

@@ -53,32 +53,18 @@ without identifying or exposing participants, meeting locations, or sensitive ob
 The client requests a JWT from a backend server and passes it to the Zoom Video SDK to join the session. After joining, the client starts its video, then calls `mediaStream.createProcessor()` and `addProcessor()` to create the Web Worker that runs the video processor. From then on the SDK sends each raw video frame to the worker. The worker runs a pre-trained object detection model with TensorFlow.js on the frame and checks the results against the filter list. Detected objects on the list are covered with a Gaussian blur, using WebGL shaders that run on the device GPU. The processed frame goes back to the SDK, which sends it to Zoom, and Zoom relays it to each participant in the session.
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Client Device
-    participant Backend as Backend Server
-    participant SDK as Zoom Video SDK
-    participant Worker as Web Worker (Video Processor)
-    participant GPU as Device GPU (WebGL)
-    participant MMR as Zoom cloud
-    actor Peers as Session Participants
-
-    User->>Backend: Request JWT
-    Backend-->>User: Return signed JWT
-    User->>SDK: Join session with JWT (client.join)
-    SDK-->>User: Session joined
-    User->>SDK: Start video (startVideo)
-    User->>SDK: createProcessor() and addProcessor()
-    SDK->>Worker: Create Web Worker
-    loop Video Stream Processing
-        SDK->>Worker: Send raw video frame
-        Worker->>Worker: Run TensorFlow.js object detection (filter list)
-        Worker->>GPU: Run WebGL shaders (Gaussian blur)
-        GPU-->>Worker: Return blurred frame
-        Worker->>SDK: Return processed frame
-        SDK->>MMR: Send processed video stream
-        MMR->>Peers: Relay video to participants
+flowchart TB
+    User[Client Device] <-->|"1. Request JWT<br/>2. Return signed JWT"| Backend[Backend Server]
+    User <-->|"3. Join session with JWT (client.join)<br/>4. Session joined<br/>5. Start video (startVideo)<br/>6. createProcessor() and addProcessor()"| SDK[Zoom Video SDK]
+    SDK -->|7. Create Web Worker| Worker
+    subgraph Loop[Video stream processing: steps 8 to 14 repeat for every frame]
+        Worker["Web Worker (Video Processor)<br/>9. Run TensorFlow.js object detection (filter list)"]
+        GPU["Device GPU (WebGL)"]
+        Worker <-->|"10. Run WebGL shaders (Gaussian blur)<br/>11. Return blurred frame"| GPU
     end
+    SDK <-->|"8. Send raw video frame<br/>12. Return processed frame"| Worker
+    SDK -->|13. Send processed video stream| MMR[Zoom cloud]
+    MMR -->|14. Relay video to participants| Peers[Session Participants]
 ```
 
 ## Implementation Guide
@@ -144,25 +130,12 @@ Change the list to the classes you want to hide. To detect something COCO-SSD do
 For a server-side approach, one can also offload this processing to a backend server by using a WebSocket or WebRTC connection to send and receive image data. You can also keep the blurring logic on the web worker by having the server only send the bounding boxes / mask JSON coordinates of the detected objects in the processed image. This drastically frees up bandwidth and round-trip latency on the websocket connection. 
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Main as Main Thread / Zoom Video SDK
-    participant Worker as Web Worker (Video Processor)
-    participant WS as WebSocket / WebRTC Connection
-    participant Server as Backend Server (Node / Python / Rust)
-    participant Model as Object Detection Model (GPU)
-    participant GPU as Client GPU (WebGL)
-
-    Main->>Worker: Send raw video frame (ImageBitmap / ArrayBuffer)
-    Worker->>WS: Stream binary frame (JPEG / WebP / Raw bytes)
-    WS->>Server: Receive binary frame
-    Server->>Model: Inference (Detect sensitive objects)
-    Model-->>Server: Return detected targets
-    Server->>WS: Send bounding boxes / mask coordinates (JSON)
-    WS->>Worker: Receive coordinate payload [x, y, w, h]
-    Worker->>GPU: Execute WebGL shaders (image effects)
-    GPU-->>Worker: Return processed frame
-    Worker->>Main: Pass processed frame back to Video SDK pipeline
+flowchart TB
+    Main[Main Thread / Zoom Video SDK] <-->|"1. Send raw video frame (ImageBitmap / ArrayBuffer)<br/>10. Pass processed frame back to Video SDK pipeline"| Worker["Web Worker (Video Processor)"]
+    Worker <-->|"2. Stream binary frame (JPEG / WebP / Raw bytes)<br/>7. Receive coordinate payload [x, y, w, h]"| WS[WebSocket / WebRTC Connection]
+    WS <-->|"3. Receive binary frame<br/>6. Send bounding boxes / mask coordinates (JSON)"| Server["Backend Server (Node / Python / Rust)"]
+    Server <-->|"4. Inference (Detect sensitive objects)<br/>5. Return detected targets"| Model["Object Detection Model (GPU)"]
+    Worker <-->|"8. Execute WebGL shaders (image effects)<br/>9. Return processed frame"| GPU["Client GPU (WebGL)"]
 ```
 
 ### JWT Generation
