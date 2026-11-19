@@ -55,13 +55,10 @@ The app has two parts: an Express backend and a Next.js dashboard that runs as a
 
 ```mermaid
 flowchart TB
-    Z[Zoom Meeting] -->|1. meeting.rtms_started| B[Express backend]
-    Z -->|2. transcript over RTMS| B
+    Z[Zoom Meeting] -->|1. meeting.rtms_started<br/>2. transcript over RTMS| B[Express backend]
     B -->|3. live segments over SSE| F[Next.js Zoom App]
-    B -->|4. finished transcript| O[OpenAI]
-    O -->|5. structured suggestions| B
     F -->|6. approve, preview, create| B
-    B -->|7. Responses API with Zoom MCP as a tool| O
+    B <-->|4. finished transcript<br/>5. structured suggestions<br/>7. Responses API with Zoom MCP as a tool| O[OpenAI]
     O -->|8. create_new_file_with_markdown| M[Zoom MCP]
     F -->|9. sendMessageToChat| C[Zoom Chat]
 ```
