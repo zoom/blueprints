@@ -85,6 +85,21 @@ Validation checks:
 
 ---
 
+## 4a. Check diagram widths
+
+The site shows diagrams in a column about 790px wide and shrinks anything wider, which makes the labels unreadable. This check renders each Mermaid diagram the way the site does and fails if one is too wide:
+
+```bash
+npm install --no-save mermaid@12.3.0
+npm run validate-diagrams -- <your-slug>
+```
+
+It needs Chrome or Chromium on your machine. Set `CHROME_PATH` if it is not found. Leave out the slug to check every blueprint. Widths depend on the fonts installed, so treat a result within about 20px of the limit as a reason to look at the preview.
+
+If a diagram fails, see "Diagram layout" in [STYLE_GUIDE.md](./STYLE_GUIDE.md).
+
+---
+
 ## 4b. Validate your manifest against Zoom's API
 
 If your blueprint includes a `manifest.json`, validate it against Zoom's official API before opening a PR:

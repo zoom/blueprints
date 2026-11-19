@@ -82,6 +82,7 @@ How the solution works technically. Opens with 1-2 paragraphs explaining data fl
 - Sequence diagrams take about 200px per participant, so only three fit. For four participants, narrow the columns with a `config` block at the top of the diagram (`sequence.width: 110`, `sequence.actorMargin: 20`) and break long labels with `<br/>`. For five or more, use a top-to-bottom flowchart with numbered edge labels.
 - When two boxes exchange several messages, put them on one edge, one numbered step per line with `<br/>` between them, and use `<-->` if they flow both ways. Separate edges between the same two boxes each add width.
 - Check the result in the [preview tool](#previewing-your-blueprint). If the label text looks smaller than the body text around it, the diagram is too wide.
+- Measure it with `npm run validate-diagrams -- <your-slug>`, which fails any diagram wider than 790px. Setup is in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ### 3. Implementation Guide
 
