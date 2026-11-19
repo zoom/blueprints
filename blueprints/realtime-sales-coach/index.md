@@ -171,7 +171,7 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 
 **Invariants:**
 
-- Use the webhook's `meeting_uuid` as `meetingId` in every later step: broadcast, persistence, and WebSocket subscriptions
+- Use the webhook's `meeting_uuid` as `meetingId` for broadcast and persistence
 - Assign monotonic sequence number per session
 - Convert timestamp from microseconds to milliseconds
 - Broadcast to clients immediately (don't block on persistence)
@@ -183,13 +183,14 @@ See [Arlo's RTMS service](https://github.com/zoom/arlo/tree/main/rtms) for the r
 
 #### WebSocket delivery
 
-**Input:** Client connection to `/ws` with two query parameters: `meeting_id` (the `meetingId` value, which the panel reads with the Zoom Apps SDK's `getMeetingUUID()`) and `token` (a JWT)
+**Input:** Client connection to `/ws` with two query parameters: `meeting_id` (the meeting UUID the panel reads with the Zoom Apps SDK's `getMeetingUUID()`) and `token` (a JWT)
 
 **Output:** Real-time transcript segments and extraction updates pushed to connected clients
 
 **Invariants:**
 
 - Require valid JWT on every connection
+- Do not assume the panel's meeting UUID equals the webhook's `meeting_uuid`. When a stream starts, also register the open connections of the user who started it under the webhook's `meeting_uuid` (Arlo does this in `crossRegisterUser`)
 - Client sends `{ type: 'subscribe', payload: { meetingId } }` after connecting
 - Server broadcasts `{ type: 'transcript.segment', data }` and `{ type: 'sales_signals', data }`
 - Clean up subscriptions on disconnect
