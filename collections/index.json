@@ -1,10 +1,72 @@
 {
   "collections": [
     {
+      "slug": "agents",
+      "title": "Agents",
+      "description": "AI-powered agents that listen, analyze, and take action during Zoom meetings.",
+      "icon": "agent",
+      "featured": true,
+      "order": 1,
+      "blueprints": [
+        "ai-meeting-notetaker",
+        "human-in-the-loop",
+        "migrate-bot-to-rtms",
+        "openai-meeting-voice-agent",
+        "realtime-sales-coach",
+        "send-transcripts-to-llms",
+        "transcripts-to-mcp"
+      ]
+    },
+    {
+      "slug": "enterprise",
+      "title": "Enterprise",
+      "description": "Production-ready integrations for compliance, analytics, and data workflows.",
+      "icon": "enterprise",
+      "featured": true,
+      "order": 2,
+      "blueprints": [
+        "archive-meeting-media-to-s3",
+        "detect-deepfakes-in-meetings",
+        "engagement-remote-access",
+        "meeting-transcript-quickstart",
+        "realtime-compliance-advisor",
+        "transcript-sentiment-analysis"
+      ]
+    },
+    {
+      "slug": "embedded-video",
+      "title": "Embedded Video",
+      "description": "Embed Zoom meetings and video experiences directly in your applications.",
+      "icon": "video",
+      "featured": true,
+      "order": 3,
+      "blueprints": [
+        "embed-meetings-website",
+        "telehealth-video-visits",
+        "interactive-virtual-classroom",
+        "videosdk-scheduling-and-invite"
+      ]
+    },
+    {
+      "slug": "transcription-analytics",
+      "title": "Transcription & Analytics",
+      "description": "Capture, store, and analyze meeting transcripts and recordings.",
+      "icon": "analytics",
+      "featured": true,
+      "order": 4,
+      "blueprints": [
+        "meeting-transcript-quickstart",
+        "transcript-sentiment-analysis",
+        "archive-meeting-media-to-s3"
+      ]
+    },
+    {
       "slug": "ai-assistants",
       "title": "AI Assistants",
       "description": "AI-powered tools that help you capture, analyze, and act on meeting content.",
       "icon": "ai-assistant",
+      "featured": true,
+      "order": 5,
       "blueprints": [
         "ai-meeting-notetaker",
         "openai-meeting-voice-agent",
@@ -15,10 +77,37 @@
       ]
     },
     {
+      "slug": "compliance-security",
+      "title": "Compliance & Security",
+      "description": "Monitor meetings for compliance, detect fraud, and ensure security.",
+      "icon": "shield",
+      "featured": true,
+      "order": 6,
+      "blueprints": [
+        "realtime-compliance-advisor",
+        "detect-deepfakes-in-meetings"
+      ]
+    },
+    {
+      "slug": "apps",
+      "title": "Apps",
+      "description": "Embedded video experiences and Zoom Apps for custom applications.",
+      "icon": "apps",
+      "featured": false,
+      "blueprints": [
+        "content-moderation-and-detection",
+        "embed-meetings-website",
+        "interactive-virtual-classroom",
+        "telehealth-video-visits",
+        "videosdk-scheduling-and-invite"
+      ]
+    },
+    {
       "slug": "agent-workflows",
       "title": "Agent Workflows",
       "description": "Autonomous AI agents that take action on your behalf with human oversight.",
       "icon": "agent",
+      "featured": false,
       "blueprints": [
         "human-in-the-loop",
         "openai-meeting-voice-agent",
@@ -26,43 +115,11 @@
       ]
     },
     {
-      "slug": "transcription-analytics",
-      "title": "Transcription & Analytics",
-      "description": "Capture, store, and analyze meeting transcripts and recordings.",
-      "icon": "analytics",
-      "blueprints": [
-        "meeting-transcript-quickstart",
-        "transcript-sentiment-analysis",
-        "archive-meeting-media-to-s3"
-      ]
-    },
-    {
-      "slug": "compliance-security",
-      "title": "Compliance & Security",
-      "description": "Monitor meetings for compliance, detect fraud, and ensure security.",
-      "icon": "shield",
-      "blueprints": [
-        "realtime-compliance-advisor",
-        "detect-deepfakes-in-meetings"
-      ]
-    },
-    {
-      "slug": "embedded-video",
-      "title": "Embedded Video",
-      "description": "Embed Zoom meetings and video experiences directly in your applications.",
-      "icon": "video",
-      "blueprints": [
-        "embed-meetings-website",
-        "telehealth-video-visits",
-        "interactive-virtual-classroom",
-        "videosdk-scheduling-and-invite"
-      ]
-    },
-    {
       "slug": "phone-contact-center",
       "title": "Phone & Contact Center",
       "description": "Build integrations for Zoom Phone and Contact Center.",
       "icon": "contact-center",
+      "featured": false,
       "blueprints": [
         "engagement-remote-access"
       ]
