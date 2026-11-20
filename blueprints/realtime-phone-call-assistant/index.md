@@ -2,9 +2,8 @@
 title: "Realtime call assistant in Zoom Phone"
 slug: "realtime-phone-call-assistant"
 description: >-
-  Build a Zoom Phone app with a live call transcript, a rolling call summary,
-  and keyword-triggered agent prompts. Stream the call with RTMS and render it in
-  a Zoom Surface App while the call is still in progress.
+  Build a real-time phone agent assistant panel that lives inside of Zoom Phone. Stream audio and transcript with RTMS to display a live call transcript, a rolling call summary,
+  and keyword-triggered agent prompts.
 products: ["rtms", "phone", "zoom-apps"]
 verticals: ["agents"]
 solution_types: ["real-time-analysis", "transcription-summarization"]
@@ -20,19 +19,20 @@ license_note: "Requires a Zoom Phone license and RTMS entitlement"
 stack: "Node · Express · React · Redis · Docker"
 ---
 
-A Zoom Surface App runs inside the **Zoom Phone** client and shows live call context, a speaker-labeled transcript, a summary bullet every 30 seconds, and keyword chips with suggested agent prompts. Every panel updates while the call is in progress.
 
-Agents on phone calls listen, look things up, and take notes at the same time. This blueprint moves that context into the call window as the conversation happens. The agent does not wait for a post-call summary.
+A real-time agent assistant streams call transcripts and audio from RTMS and displays them in a Zoom Surface App that runs inside the Zoom Phone client. The panel shows live call context, a speaker-labeled transcript, a summary bullet every 30 seconds, and keyword chips with suggested agent prompts. Every panel updates while the call is in progress.
+
+Agents listen, look things up, and take notes at the same time, which makes it hard to act on information while the call is live. A real-time phone agent assistant surfaces key points as the conversation happens, so agents can stay focused on the caller instead of switching context.
 
 **What you'll need:**
 
-- A [Zoom Phone](https://www.zoom.com/en/products/phone/) license for the users who take calls
-- Transcript and audio access via [RTMS](https://developers.zoom.us/docs/rtms/) for Zoom Phone (requires a paid Zoom Workplace plan with RTMS entitlement; [request access](https://www.zoom.com/en/realtime-media-streams/#form))
-- A [Zoom General App](https://developers.zoom.us/docs/zoom-apps/) with Surface app support enabled. Users need Zoom client 5.9 or later.
+- A [Zoom Phone](https://www.zoom.com/en/products/phone/) license enabled in your account.
+- Transcript and audio access via [RTMS](https://developers.zoom.us/docs/rtms/phone) (requires [Zoom Developer pack](https://zoom.us/pricing/developer?_gl=1*130nhse*_gcl_au*NTQ5ODU1MjIwLjE3OTMxMjIyMzEuMTQyMTI3MjAzLjE3OTUxMTYyOTMuMTc5NTExNjI5My42Nzg4NzIzMDkuMTc5NTExNjI5My4xNzk1MTE2Mjkz*_ga*Nzk3Mjc3MTExLjE3NzQzNjE5NjA.*_ga_L8TBF28DDX*czE3OTUxODc5ODAkbzEzMyRnMSR0MTc5NTE4Nzk4MSRqNTkkbDAkaDA.) credits; free trial credits are available)
+- A [Zoom General App](https://developers.zoom.us/docs/zoom-apps/) with Surface feature enabled to display the agent assistant during the call. 
 - Node.js 18 or later, Docker and Docker Compose, and [ngrok](https://ngrok.com/docs/getting-started) for a public HTTPS URL during development
 - Redis for OAuth token storage (provided by Docker Compose) and FFmpeg for WAV output (included in the RTMS container image)
 
-**Features:**
+## Features
 
 - **Call context**: Call ID and answer start time from the Zoom Phone client
 - **Live transcript**: Streamed to the panel by speaker and saved to one text file per call
@@ -41,20 +41,6 @@ Agents on phone calls listen, look things up, and take notes at the same time. T
 - **Per-call audio**: A 16 kHz, 16-bit WAV written when the call ends
 - **Secure access**: OAuth 2.0 with automatic token refresh and per-user token storage in Redis
 
-If you'd rather start from what your Zoom Phone plan already includes, begin there. Build custom when you need keyword rules tuned to your call scripts, transcript and audio files stored on your own infrastructure, or a summary pipeline you control.
-
-The architecture below shows how the webhook, the RTMS service, and the panel connect.
-
-## Features
-
-The panel has four sections. Each one is fed by a different event type from the backend.
-
-| Section | Source | Update rule |
-|---------|--------|-------------|
-| Call Information | `getPhoneContext` from the Zoom Apps SDK | Set once when the panel opens inside a phone call |
-| Live Transcript | `transcript` events | Appends one line per final transcript segment |
-| Keyword Detection | `keywords` and `prompt` events | Chips replace on each update; prompts expire after 10 seconds |
-| Call Summary | `summary` events | Replaces the full bullet list every 30 seconds |
 
 <!-- SCREENSHOT PLACEHOLDER: the panel mid-call, showing all four sections. Save as images/panel-live-call.png and reference it here. -->
 
@@ -62,9 +48,7 @@ The panel has four sections. Each one is fed by a different event type from the 
 
 ## Architecture
 
-Zoom sends `phone.call_rtms_started` when RTMS begins for a call, and `phone.call_rtms_stopped` when it ends. The backend verifies each webhook signature. For the two RTMS events, it forwards the payload to the RTMS service and returns 200 to Zoom.
-
-The RTMS service opens a signaling WebSocket to the `server_urls` in the start payload. After the handshake, it opens separate audio and transcript WebSockets. Each transcript segment goes through four steps: keyword detection, summary windowing, a line in the transcript file, and an event posted to the backend. The backend relays each event to every connected panel over Server-Sent Events (SSE).
+Zoom streams transcript and audio segments to the RTMS service over WebSocket. For each transcript segment, the RTMS service runs four steps: keyword detection, summary windowing, a line in the transcript file, and an event posted to the backend. The backend relays each event to the panel over Server-Sent Events (SSE).
 
 The RTMS service keeps all per-call state in memory. Tokens and the active user ID live in Redis. The panel only receives events. It calls the backend for Zoom API requests and never talks to RTMS directly.
 
@@ -72,10 +56,9 @@ The RTMS service keeps all per-call state in memory. Tokens and the active user 
 
 | Component | Responsibility | Our stack |
 |-----------|----------------|-----------|
-| **RTMS service** (`rtms/`) | Opens signaling, audio, and transcript WebSockets to Zoom. Writes transcript and audio files. Runs keyword, summary, transcript, and audio features | Node.js, `ws`, Express, FFmpeg |
-| **Backend** (`backend/`) | Verifies webhooks, runs OAuth, relays events over SSE, proxies Zoom API calls | Express |
-| **Redis** | Per-user OAuth tokens and the active user ID | Redis 7 (Docker Compose) |
-| **Zoom Apps panel** (`frontend/`) | Renders the four panel sections inside the Zoom client | React, Vite, Zoom Apps SDK |
+| **Transcript and audio streaming**  | Connects to Zoom's RTMS signaling, audio, and transcript WebSockets, then writes transcript and audio files | Node.js, `ws`, Express, FFmpeg. Implements the RTMS protocol. |
+| **Backend**  | Verifies webhooks, runs OAuth, stores tokens and the active user ID in Redis, relays events over SSE, proxies Zoom API calls | Express, Redis |
+| **Frontend**  | Renders the four panel sections inside the Zoom client in real time | React Surface App, Zoom Apps SDK |
 
 ```mermaid
 graph LR
@@ -111,7 +94,7 @@ sequenceDiagram
 
 ### Why this architecture
 
-The RTMS service runs apart from the backend because it holds long-lived WebSocket connections and per-call state in memory. The backend handles public HTTP, webhook verification, and OAuth, and keeps only its SSE connections in memory. You can restart or replace the RTMS service without changing the webhook endpoint that Zoom calls. The trade-off is that every event for one stream must reach the same RTMS process. See [Production Considerations](#production-considerations).
+The RTMS service runs apart from the backend because it holds long-lived WebSocket connections and per-call state in memory. The backend handles public HTTP, webhook verification, and OAuth, and keeps only its SSE connections in memory. You can restart or replace the RTMS service without changing the webhook endpoint that Zoom calls. A restart ends calls in progress: the sample closes their sockets on shutdown and finishes their audio files, but live transcription and summaries for those calls stop. The trade-off is that every event for one stream must reach the same RTMS process. 
 
 ### Agent integration map
 
@@ -130,9 +113,11 @@ If you're adding this to an existing codebase, check what you already have befor
 
 Each subsection names the file that implements it. Paths are relative to the sample repo root. Business logic uses Input, Output, and Invariants. Security-critical code stays as concrete snippets.
 
+Code examples are from [phone-rtms-auto sample app](https://github.com/zoom/phone-rtms-auto).
+
 ### Webhook intake and forwarding
 
-File: `backend/server.js` (`/api/webhooks/zoom`), `backend/middleware/security.js` (`validateZoomWebhook`, `handleZoomUrlValidation`)
+Files: `backend/server.js` (`/api/webhooks/zoom`), `backend/middleware/security.js` (`validateZoomWebhook`, `handleZoomUrlValidation`)
 
 **Input:** `POST /api/webhooks/zoom` with headers `x-zm-request-timestamp` and `x-zm-signature`, and a JSON body of `{ event, payload }`.
 
@@ -171,13 +156,13 @@ function verifyZoomSignature(rawBody, timestamp, signature, secretToken) {
 
 The sample's `validateZoomWebhook` compares the signature with `!==` and does not check the timestamp age. Use the version above when you adapt it. See [Production Considerations](#production-considerations).
 
-**Other languages:** In Python, use `hmac` with `hmac.compare_digest`; in Go, use `crypto/subtle.ConstantTimeCompare`. Keep the 5-minute window and the length check in every language.
+
 
 ### RTMS session lifecycle
 
-File: `rtms/lib/rtmsSession.js` (`handleRTMSStart`, `handleRTMSStop`)
+Files: `rtms/lib/rtmsSession.js` (`handleRTMSStart`, `handleRTMSStop`)
 
-**Input:** `payload` with `call_id`, `rtms_stream_id`, and `server_urls`.
+**Input:** phone.call_rtms_started webhook payload with `call_id`, `rtms_stream_id`, and `server_urls`.
 
 **Output:** A session in the `sessions` map, keyed by `rtms_stream_id`. The session holds the audio, transcript, and signaling sockets and the four feature instances. If the payload is missing a required field, or the stream already has a session, the function returns without changes.
 
@@ -191,7 +176,7 @@ File: `rtms/lib/rtmsSession.js` (`handleRTMSStart`, `handleRTMSStop`)
 
 ### Signaling and media handshake
 
-File: `rtms/server.js` (`connectToSignalingWebSocket`, `connectToMediaWebSocket`), `rtms/lib/rtmsAuth.js`
+Files: `rtms/server.js` (`connectToSignalingWebSocket`, `connectToMediaWebSocket`), `rtms/lib/rtmsAuth.js`
 
 Every handshake and acknowledgment carries `protocol_version: 2`. These message types drive the session:
 
@@ -231,7 +216,7 @@ function generateSignature(callId, streamId, clientId, clientSecret) {
 
 ### Transcript pipeline
 
-File: `rtms/server.js` (the `msg_type === 17` branch), `rtms/features/transcript/index.js`
+Files: `rtms/server.js` (the `msg_type === 17` branch), `rtms/features/transcript/index.js`
 
 **Input:** `MEDIA_DATA_TRANSCRIPT` content with `data`, `start_time` (milliseconds), and `channel_id`.
 
@@ -240,9 +225,56 @@ File: `rtms/server.js` (the `msg_type === 17` branch), `rtms/features/transcript
 **Invariants:**
 
 - Skip segments with empty text
-- The speaker name comes from the participant map, keyed by `channel_id`. The default is `Unknown`.
+- The speaker name comes from the participant map, keyed by `channel_id`. The file writer uses `Unknown` when no name is found. The panel event carries `speaker` as `undefined` in that case, so the panel needs its own fallback.
 - Offsets are measured from the first segment that has a `start_time`, formatted as `[mm:ss]`. Use `--:--` before that segment arrives.
 - One transcript file per base call ID. A new stream for the same call appends to the existing file.
+
+The transcript websocket connection handles its own handshake, keep-alive, and transcript messages, so the handler checks the message type before it acts. Segments arrive as `MEDIA_DATA_TRANSCRIPT` messages (`msg_type` 17) on the socket opened with `media_type` 8. The handler below sends each segment to the panel and the transcript file. The full branch in `rtms/server.js` also runs the keyword and summary steps.
+
+```javascript
+// connectToMediaWebSocket (rtms/server.js), inside media.on('message')
+media.on('message', (data) => {
+  const message = JSON.parse(data.toString());
+
+  if (message.msg_type === 4) {
+    // data handshake response, then CLIENT_READY_ACK on the signaling socket
+    // ...
+  } else if (message.msg_type === 12) {
+    // keep-alive
+    // ...
+  } else if (mediaType === 8 && message.msg_type === 17) { // MEDIA_DATA_TRANSCRIPT
+    const speaker = session.participants?.[message.content.channel_id]?.name;
+    const text = message.content?.data?.trim();
+    if (text) notify(session, { type: 'transcript', speaker, text });
+    session.transcriptHelper.writeTranscript(message.content, speaker);
+  }
+});
+```
+
+The file write is done by `writeTranscript`, a method on the helper that `createTranscriptHelper` returns. It skips empty text, computes the offset, and appends one line:
+
+```javascript
+// 65432 ms -> "01:05"
+function formatOffset(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
+// Inside createTranscriptHelper(callId, streamId)
+writeTranscript(content, speaker = 'Unknown') {
+  const text = content?.data?.trim();
+  if (!text) return;
+
+  if (firstStartTime === undefined && content.start_time) firstStartTime = content.start_time;
+  const offset = content.start_time && firstStartTime !== undefined
+    ? formatOffset(content.start_time - firstStartTime)
+    : '--:--';
+
+  stream.write(`[${offset}] ${speaker}: ${text}\n`);
+}
+```
 
 Each line in the file reads like this:
 
@@ -252,11 +284,35 @@ Each line in the file reads like this:
 
 ### Keyword prompts and live keywords
 
-File: `rtms/features/keyword-detector/index.js`, `rtms/features/keyword-detector/keywords.json`
+Files: `rtms/features/keyword-detector/index.js`, `rtms/features/keyword-detector/keywords.json`
 
 **Input:** transcript text from each segment.
 
 **Output:** Two event types. A `prompt` event `{ ruleId, keyword, prompt, text }` fires when a rule matches. A `keywords` event `{ keywords: [{ term, count }] }` lists the most frequent terms.
+
+The keyword detector runs on the same transcript text as the transcript pipeline.  The handler calls the detector once per segment and sends each event it returns to the panel:
+
+```javascript
+// Inside the msg_type 17 branch of connectToMediaWebSocket (rtms/server.js)
+for (const event of session.keywordDetector.process(message.content)) notify(session, event);
+```
+
+`process` is the entry point of the detector. It matches the rules, then updates the live keyword counts:
+
+```javascript
+// rtms/features/keyword-detector/index.js
+process(content) {
+  const original = content?.data?.trim();
+  if (!original) return [];
+
+  const text = normalize(original);
+  const now = Date.now();
+  const events = matchRules(text, now).map((event) => ({ ...event, text: original }));
+  const keywords = extractKeywords(text, now);
+  if (keywords) events.push(keywords);
+  return events;
+}
+```
 
 **Rule shape** in `keywords.json`:
 
@@ -287,6 +343,28 @@ File: `rtms/features/summarizer/index.js`
 
 **Output:** Every 30 seconds, a `summary` event with the full bullet list so far.
 
+The summarizer runs on the same transcript text as the keyword detector and transcript pipeline. The handler passes each segment to `process`, and a timer digests the window every 30 seconds:
+
+```javascript
+// Inside the msg_type 17 branch of connectToMediaWebSocket (rtms/server.js)
+session.summarizer.process(message.content);
+```
+
+The summarizer skips interim results and starts the 30-second timer:
+
+```javascript
+// rtms/features/summarizer/index.js
+process(content) {
+  const text = content?.data?.trim();
+  if (!text || text.endsWith('…')) return;   // "…" marks an interim result
+  // ...skip repeats of the last 6 lines, then queue the sentences for this window
+},
+
+start(onSummary) {
+  timer = setInterval(() => tick(onSummary), SUMMARY_INTERVAL_MS); // SUMMARY_INTERVAL_MS = 30 s
+},
+```
+
 **Invariants:**
 
 - Skip interim results that end with `…`. A final result follows.
@@ -310,6 +388,19 @@ File: `rtms/features/audio/index.js`
 
 **Output:** One raw PCM file per channel in `rtms/data/audio/<timestamp>_<callId>/`. When the stream stops, one WAV file is written next to them.
 
+The audio websocket connection is opened with `media_type` 1, and the data handshake asks for audio at a 20 ms send rate. Each audio packet arrives as a `MEDIA_DATA_AUDIO` message (`msg_type` 14) with base64 PCM. The handler decodes it and writes it to the audio helper for that channel:
+
+```javascript
+// Inside connectToMediaWebSocket (rtms/server.js), inside media.on('message')
+} else if (mediaType === 1 && message.msg_type === 14) { // MEDIA_DATA_AUDIO
+  if (!message.content?.data) return;
+  const audioBuffer = Buffer.from(message.content.data, 'base64');
+  const { channel_id } = message.content;
+  session.audioHelper.writeAudio(audioBuffer, channel_id, session.participants?.[channel_id]?.name);
+  session.audioChunkCount++;
+}
+```
+
 **Invariants:**
 
 - Audio is 16 kHz, 16-bit little-endian PCM, one stream per `channel_id`
@@ -320,7 +411,7 @@ File: `rtms/features/audio/index.js`
 
 ### Event relay to the panel
 
-File: `rtms/lib/eventNotifier.js`, `backend/server.js` (`/internal/rtms-events` and `/api/events`)
+Files: `rtms/lib/eventNotifier.js`, `backend/server.js` (`/internal/rtms-events` and `/api/events`)
 
 **Input:** An event object from the RTMS service, with `call_id` and `rtms_stream_id` added.
 
@@ -346,7 +437,7 @@ if (!valid) return res.status(401).json({ message: 'Unauthorized.' });
 
 ### OAuth and token storage
 
-File: `backend/server.js` (`/api/auth/login`, `/api/auth/callback`), `backend/helpers/token-store.js`, `backend/helpers/zoom-api.js`
+Files: `backend/server.js` (`/api/auth/login`, `/api/auth/callback`), `backend/helpers/token-store.js`, `backend/helpers/zoom-api.js`
 
 **Input:** An authorization code from Zoom at `/api/auth/callback`.
 
@@ -355,8 +446,8 @@ File: `backend/server.js` (`/api/auth/login`, `/api/auth/callback`), `backend/he
 **Invariants:**
 
 - If the flow started at `/api/auth/login`, the callback must match the stored `state`. Marketplace installs arrive without a stored state, so the callback allows them through.
-- The code exchange uses HTTP Basic auth with the client ID and secret
-- Tokens are keyed by Zoom user ID. Session cookies do not reliably persist inside the Zoom client iframe, so the sample does not depend on them.
+- The code exchange uses HTTP Basic auth with the your app client ID and secret
+- Tokens are keyed by Zoom user ID. 
 - When a Zoom API call returns 401, refresh once, save the new access and refresh tokens, and retry once. If the refresh fails, return `needsAuth: true`.
 
 The refresh path is security-critical, so it stays concrete:
@@ -373,7 +464,7 @@ if (error.response?.status === 401 && tokens.refreshToken) {
 }
 ```
 
-### Zoom Apps panel
+### Zoom App panel
 
 File: `frontend/src/App.jsx`
 
@@ -469,7 +560,7 @@ The [`manifest.json`](manifest.json) in this folder describes the Zoom General A
 |-------|---------------|
 | `phone.call_rtms_started` | RTMS begins for a Zoom Phone call. The payload carries `call_id`, `rtms_stream_id`, and `server_urls`. |
 | `phone.call_rtms_stopped` | RTMS ends for the call. The backend forwards it so the RTMS service can write the WAV file. |
-| RTMS interrupted | Select it from the event list in the Marketplace. The backend does not forward it to the RTMS service yet. |
+| `phone.call_rtms_interrupted` | Select it from the event list in the Marketplace. The backend does not forward it to the RTMS service yet. |
 
 **Surface and SDK:** Under **Surface**, set the Home URL to `https://YOUR-NGROK-URL/api/home`. Allow `YOUR-NGROK-URL` and `appssdk.zoom.us` in the domain list. Select **Phone** as the product, enable the Zoom Apps SDK, and add `getPhoneContext` and `getRunningContext`.
 
@@ -488,12 +579,11 @@ Use this checklist to verify the implementation:
 - [ ] The summary gains one bullet about every 30 seconds while speech continues
 - [ ] Ending the call creates `rtms/data/transcripts/<timestamp>_<callId>.txt` and a WAV file in `rtms/data/audio/<timestamp>_<callId>/`
 - [ ] Restarting the RTMS service during a call, then recovering on the next start, produces a WAV from the leftover raw files
-- [ ] The panel bundle contains no client secret or session secret
 
 <details>
 <summary><strong>Production Considerations</strong></summary>
 
-The sample runs on a laptop with ngrok. Production needs these changes:
+Production needs these changes:
 
 | Area | Development (sample) | Production |
 |------|----------------------|------------|
