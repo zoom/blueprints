@@ -6,6 +6,7 @@
 
 | Stage | Result |
 |---|---|
+| 0. Use-case framing | pass / fail (stopped) |
 | 1. Lint | pass / N hints carried forward / not run |
 | 2. Contract consistency | N blockers, N should-fix |
 | 3. Implementation check | N match, N page-wrong, N sample-wrong, N no-code, N unverified |

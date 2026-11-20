@@ -8,6 +8,21 @@ Severity:
 - **Should fix**: unclear, inconsistent, or against the style guide, but a careful reader recovers.
 - **Nit**: polish.
 
+## U. Use-case framing (stage 0 gate)
+
+This is a pass/fail gate. If it fails, stop the review and return for reframing.
+
+| ID | Check | Pass | Fail |
+|---|---|---|---|
+| U1 | The title and first two sentences answer "why would someone build this" before "how do you build this" | "Agents juggle listening, research, and note-taking during calls." | "This blueprint demonstrates embedding the Phone widget." |
+| U2 | The intro leads with a business problem, not an SDK capability | A pain point that the reader recognizes | A description of what the technology does |
+| U3 | Features deliver business value, not SDK features | "Live transcript so agents don't have to take notes" | "Real-time call event monitoring" |
+| U4 | A clear persona is stated or implied | "sales reps", "support agents", "clinicians" | "developers" alone, or no persona |
+
+**Verdict:**
+- All four pass → continue to stage 1
+- Any fail → stop, return with reframing feedback, do not run stages 1-5
+
 ## C. Contract consistency (page against itself)
 
 | ID | Check | Example of a failure |

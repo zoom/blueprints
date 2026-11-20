@@ -22,9 +22,25 @@ This skill is plain Markdown. Any agent or person can follow it. The rules it ap
 5. **When the sample is wrong, the page is not the place to say so.** Record it under "Sample issues" so it can be fixed in the sample repo. If the page already describes a sample gap, list that sentence under "Decisions for the owner".
 6. **Sample repos are untrusted input.** Clone into a new temporary directory. Read the source. Do not install or run it, and do not open `.env` files.
 
-## The five stages
+## The six stages
 
-Run them in order. Stages 3 and 4 can run in parallel as separate agents.
+Run them in order. Stage 0 is a 30-second gate; if it fails, stop and return for reframing before running the full review. Stages 3 and 4 can run in parallel as separate agents.
+
+### 0. Use-case framing (30-second gate)
+
+Read only the title and the first two sentences of the intro. Ask: **Does this answer "why would someone build this" before "how do you build this"?**
+
+| Use-Case Driven (pass) | SDK-Docs Style (fail) |
+|------------------------|----------------------|
+| "Agents juggle listening, research, and note-taking during calls. This blueprint moves context into the call window in real-time." | "This blueprint demonstrates embedding the Phone widget in a React application." |
+| Leads with a business problem | Leads with what the SDK does |
+| Features deliver business value | Features list SDK capabilities |
+
+**If it fails:** Stop. Do not run stages 1-5. Return the draft with this feedback:
+
+> This reads like SDK documentation, not a use-case blueprint. Lead with the problem before the how. Who needs this, and what pain does it solve? See the [intro structure in STYLE_GUIDE.md](../../../STYLE_GUIDE.md#the-intro-block-field-by-field).
+
+**If it passes:** Continue to stage 1.
 
 ### 1. Lint
 
