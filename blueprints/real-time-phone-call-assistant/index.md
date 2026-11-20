@@ -1,5 +1,5 @@
 ---
-title: "Real-time call assistant in Zoom Phone"
+title: "Real-time phone call assistant in Zoom Phone"
 slug: "real-time-phone-call-assistant"
 description: >-
   Build a real-time phone agent assistant panel that lives inside of Zoom Phone. Stream audio and transcript with RTMS to display a live call transcript, a rolling call summary,
@@ -20,7 +20,7 @@ stack: "Node · Express · React · Redis · Docker"
 ---
 
 
-A real-time agent assistant streams call transcripts and audio from RTMS and displays them in a Zoom Surface App that runs inside the Zoom Phone client. The panel shows live call context, a speaker-labeled transcript, a summary bullet every 30 seconds, and keyword chips with suggested agent prompts. Every panel updates while the call is in progress.
+A real-time phone call assistant streams call transcripts and audio from RTMS and displays them in a Zoom Surface App that runs inside the Zoom Phone client. The panel shows live call context, a speaker-labeled transcript, a summary bullet every 30 seconds, and keyword chips with suggested agent prompts. Every panel updates while the call is in progress.
 
 Agents listen, look things up, and take notes at the same time, which makes it hard to act on information while the call is live. A real-time phone agent assistant surfaces key points as the conversation happens, so agents can stay focused on the caller instead of switching context.
 
