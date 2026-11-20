@@ -1,6 +1,6 @@
 ---
-title: "Realtime call assistant in Zoom Phone"
-slug: "realtime-phone-call-assistant"
+title: "Real-time call assistant in Zoom Phone"
+slug: "real-time-phone-call-assistant"
 description: >-
   Build a real-time phone agent assistant panel that lives inside of Zoom Phone. Stream audio and transcript with RTMS to display a live call transcript, a rolling call summary,
   and keyword-triggered agent prompts.
@@ -541,7 +541,7 @@ The keyword rules and the tuning constants are the main customization points.
 
 ## App Manifest
 
-The [`manifest.json`](manifest.json) in this folder describes the Zoom General App. Use it as a reference for the settings in the Zoom Marketplace, or validate it with `npm run validate-zoom-manifest -- realtime-phone-call-assistant`.
+The [`manifest.json`](manifest.json) in this folder describes the Zoom General App. Use it as a reference for the settings in the Zoom Marketplace, or validate it with `npm run validate-zoom-manifest -- real-time-phone-call-assistant`.
 
 **Scopes:**
 
